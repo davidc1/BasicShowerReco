@@ -48,6 +48,7 @@ art_make(
 add_subdirectory(ProtoShower)
 add_subdirectory(Base)
 add_subdirectory(ModularAlgo)
+add_subdirectory(Algo)
 
 
 install_headers()

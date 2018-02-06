@@ -15,10 +15,13 @@
 #define PROTOSHOWERALGBASE_H
 
 #include <iostream>
+
 #include "art/Framework/Principal/Event.h"
+
 #include "lardataobj/RecoBase/Cluster.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/PFParticle.h"
+#include "lardata/Utilities/AssociationUtil.h"
 
 #include "ProtoShower.h"
 

@@ -58,7 +58,7 @@ Shower_t ShowerRecoAlgModular::RecoOneShower(const ::protoshower::ProtoShower& p
     _module_time_v[n] += _watch.RealTime();
     _module_ctr_v[n] += 1;
     if (_debug && _verbose) {
-      printChanges(localCopy, result, _modules[n]->name());
+     printChanges(localCopy, result, _modules[n]->name());
       localCopy = result;
     }
 

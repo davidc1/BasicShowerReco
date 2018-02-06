@@ -16,7 +16,7 @@
 
 #include <iostream>
 #include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoAlgBase.h"
-#include "ShowerRecoModuleBase.h"
+#include "uboone/BasicShowerReco/ShowerReco3D/ModularAlgo/ShowerRecoModuleBase.h"
 #include "TTree.h"
 #include "TFile.h"
 #include <TStopwatch.h>
