@@ -28,8 +28,6 @@ const unsigned int kUINT_MAX    = std::numeric_limits<unsigned int>::max();
 const size_t kSIZE_MAX   = std::numeric_limits<size_t>::max();
 
 
-
-
 /// Output shower representation from shower reco algorithms
 struct Shower_t {
 
@@ -116,7 +114,7 @@ struct Shower_t {
     fBestPlane = ::geo::PlaneID();
     fPlaneIDs.clear();
   }
-};
+}; // end of shower struct
 
 }
 #endif

@@ -10,6 +10,7 @@ art_make(
                         ${Boost_SYSTEM_LIBRARY}
 			${ROOT_BASIC_LIB_LIST}
 			larcorealg_Geometry
+			lardata_Utilities
 			larcore_Geometry_Geometry_service
           MODULE_LIBRARIES 
 		   	larpandora_LArPandoraInterface	
@@ -46,6 +47,7 @@ art_make(
 
 add_subdirectory(ProtoShower)
 add_subdirectory(Base)
+add_subdirectory(ModularAlgo)
 
 
 install_headers()
