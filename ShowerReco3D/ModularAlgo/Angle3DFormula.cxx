@@ -152,17 +152,14 @@ namespace showerreco {
       // get the 3D start point of the shower
       auto const& start3D = resultShower.fXYZStart;
       
-      // get the proto-shower 3D vertex
-      auto const& vtx3D_v = proto_shower.vertexes();
-      
-      // are there many vertices? if more than 1 this algo does not know what to do
-      if (vtx3D_v.size() != 1){
-	std::cout << "Number of vertices is " << vtx3D_v.size() << " is not one!" << std::endl;
+      if (proto_shower.hasVertex() == false){
+	std::cout << "Number of vertices is not one!" << std::endl;
 	return;
       }
       
+      // get the proto-shower 3D vertex
       // take the vtx -> start point direction as the 3D direction
-      auto const& vtx = vtx3D_v[0];
+      auto const& vtx = proto_shower.vertex();
       
       std::vector<double> dir3D = {0,0,0};
       

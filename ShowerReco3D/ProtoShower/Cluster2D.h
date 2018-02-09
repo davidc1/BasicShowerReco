@@ -1,5 +1,5 @@
-#ifndef CLUSTER2D_H
-#define CLUSTER2D_H
+#ifndef CLUSTER2D_CLUSTER2D_H
+#define CLUSTER2D_CLUSTER2D_H
 
 #include <TVector3.h>
 #include <vector>
@@ -13,11 +13,15 @@ namespace cluster2d {
 
 class Cluster2D
 {
-  friend class Cluster2DHelper;
 
 public:
-  Cluster2D() {};
-  ~Cluster2D() {};
+  Cluster2D(){};
+  ~Cluster2D(){};
+
+  /**
+     @brief Reset containers for cluster
+   */
+  void Reset() {_hits.clear();};
 
   /**
      hits, stored as PxHit objects [http://nusoft.fnal.gov/larsoft/doxsvn/html/classutil_1_1PxHit.html]

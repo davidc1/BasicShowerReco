@@ -36,10 +36,10 @@ public:
   /// Default destructor
   virtual ~ProtoShowerCMTool() {}
 
-  void GenerateProtoShower(::art::Event & e,
-			   const std::unique_ptr<std::vector<recob::PFParticle> >& pfp_v,
-			   const size_t proto_shower_pfpart,
-			   protoshower::ProtoShower & proto_shower) = 0;
+  void GenerateProtoShowers(::art::Event & e,
+			    const std::string& fPFPproducer,
+			    const size_t proto_shower_pfpart,
+			    std::vector<protoshower::ProtoShower> & proto_shower_v);
   
 
   std::string name() { return _name; }
@@ -51,7 +51,9 @@ protected:
   // cluster producer name
   std::string fClusProducer;
   // vertex producer name
-  std::stirng fVertexProducer;
+  std::string fVertexProducer;
+  // hit producer name
+  std::string fHitProducer;
 
 };
 

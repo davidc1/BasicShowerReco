@@ -15,25 +15,21 @@ void FilterShowers::do_reconstruction(const ::protoshower::ProtoShower & proto_s
     throw ShowerRecoException(ss.str());
   }
 
-  // get the proto-shower 3D vertex
-    auto const& vtx3D_v = proto_shower.vertexes();
-
-    // are there many vertices? if more than 1 this algo does not know what to do
-    if (vtx3D_v.size() != 1){
-      std::cout << "Number of vertices is " << vtx3D_v.size() << " is not one!" << std::endl;
-      return;
-    }
-
-    // take the vtx -> start point direction as the 3D direction
-    auto const& vtx = vtx3D_v[0];
-
-    auto const& geomH = ::util::GeometryUtilities::GetME();
-
-    // project vertex onto this plane
-    auto const& vtx2D = geomH->Get2DPointProjection(vtx,2);
+  if (proto_shower.hasVertex() == false){
+    std::cout << "Number of vertices is not one!" << std::endl;
+    return;
+  }
+  
+  // take the vtx -> start point direction as the 3D direction
+  auto const& vtx = proto_shower.vertex();
+  
+  auto const& geomH = ::util::GeometryUtilities::GetME();
+  
+  // project vertex onto this plane
+  auto const& vtx2D = geomH->Get2DPointProjection(vtx,2);
   
   auto & clusters = proto_shower.clusters();
-
+  
   // get 3D shower direction projected on collection-plane
   double slope3D = resultShower.fDCosStart[0] / resultShower.fDCosStart[2];
   slope3D       /= sqrt( ( resultShower.fDCosStart[0] * resultShower.fDCosStart[0] ) +

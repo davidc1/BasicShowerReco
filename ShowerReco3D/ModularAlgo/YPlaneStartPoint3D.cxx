@@ -21,18 +21,14 @@ namespace showerreco {
         throw ShowerRecoException(ss.str());
     }
 
-    // get the proto-shower 3D vertex
-    auto const& vtx3D_v = proto_shower.vertexes();
-    
-    // are there many vertices? if more than 1 this algo does not know what to do
-    if (vtx3D_v.size() != 1){
-      std::cout << "Number of vertices is " << vtx3D_v.size() << " is not one!" << std::endl;
+    if (proto_shower.hasVertex() == false){
+      std::cout << "Number of vertices is not one!" << std::endl;
       return;
     }
-
-    // take the vtx for the neutrino interaction
-    auto const& vtx = vtx3D_v[0];
-
+    
+    // get the proto-shower 3D vertex
+    auto const& vtx = proto_shower.vertex();
+    
     auto & clusters = proto_shower.clusters();
 
     // STEP 1:

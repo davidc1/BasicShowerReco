@@ -21,7 +21,9 @@
 #include "lardataobj/RecoBase/Cluster.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/PFParticle.h"
+#include "lardataobj/RecoBase/Vertex.h"
 #include "lardata/Utilities/AssociationUtil.h"
+#include "lardata/Utilities/FindManyInChainP.h"
 
 #include "ProtoShower.h"
 
@@ -38,15 +40,22 @@ class ProtoShowerAlgBase {
 public:
 
   /// Default constructor
-  ProtoShowerAlgBase() { _name = "ProtoShowerAlgBase"; }
+  ProtoShowerAlgBase();
 
   /// Default destructor
   virtual ~ProtoShowerAlgBase() {}
 
-  virtual void GenerateProtoShower(::art::Event & e,
-				   const std::unique_ptr<std::vector<recob::PFParticle> >& pfp_v,
-                                   const size_t proto_shower_pfpart,
-                                   protoshower::ProtoShower & proto_shower) = 0;
+  virtual void GenerateProtoShowers(::art::Event & e,
+				    const std::string& fPFPproducer,
+				    const size_t proto_shower_pfpart,
+				    std::vector<protoshower::ProtoShower> & proto_shower_v) = 0;
+
+  /**
+     @brief function which takes recob::Cluster and vector of recob::Hits to create cluster2d::Cluster2D object
+     @input art::Ptr to cluster
+     @input vector of art::Ptr to hits associated to the cluster
+  */
+  cluster2d::Cluster2D MakeCluster2D( const art::Ptr<recob::Cluster>& clus, const std::vector< art::Ptr<recob::Hit> >& hit_v);
 
 
   std::string name() { return _name; }
@@ -54,6 +63,8 @@ public:
 protected:
 
   std::string _name;
+
+  double _wire2cm, _time2cm;
 
 };
 

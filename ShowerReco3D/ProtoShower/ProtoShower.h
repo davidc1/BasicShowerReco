@@ -8,6 +8,15 @@
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "Cluster2D.h"
 
+// Data Products
+#include "lardataobj/RecoBase/Cluster.h"
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/PFParticle.h"
+#include "lardataobj/RecoBase/Vertex.h"
+#include "lardata/Utilities/AssociationUtil.h"
+
+#include <TVector3.h>
+
 namespace protoshower {
 
 
@@ -19,7 +28,7 @@ public:
   ProtoShower() {};
   ~ProtoShower() {};
 
-  const std::vector<Double_t*> & vertexes() const {return _vertexes;}
+  Double_t* vertex() const { return _vertex; }
   const std::vector<::cluster2d::Cluster2D> & clusters() const { return _clusters; }
 
   // getters
@@ -31,11 +40,22 @@ public:
   void hasCluster3D(bool on) { _hasCluster3D = on; }
   void hasVertex   (bool on) { _hasVertex    = on; }
 
-  // list of 3D vertices associated to this ProtoShower
-  std::vector<Double_t*>  _vertexes;
+  // 3D vertex associated to this protoshower
+  Double_t*  _vertex;
   
   // list 2D clusters
   std::vector<::cluster2d::Cluster2D> _clusters;
+
+  /**
+     Reset function : clear everything and set bools to false
+   */
+  void Reset() { 
+    _clusters.clear(); 
+    _hasCluster2D = false;
+    _hasCluster3D = false;
+    _hasVertex    = false;
+    return;
+  }
 
 protected:
 
