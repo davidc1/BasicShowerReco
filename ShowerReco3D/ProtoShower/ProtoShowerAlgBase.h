@@ -47,7 +47,6 @@ public:
 
   virtual void GenerateProtoShowers(::art::Event & e,
 				    const std::string& fPFPproducer,
-				    const size_t proto_shower_pfpart,
 				    std::vector<protoshower::ProtoShower> & proto_shower_v) = 0;
 
   /**

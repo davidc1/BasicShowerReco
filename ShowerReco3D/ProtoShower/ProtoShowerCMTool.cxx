@@ -7,7 +7,6 @@ namespace protoshower {
 
   void ProtoShowerCMTool::GenerateProtoShowers(::art::Event & e,
 					       const std::string& fPFPproducer,
-					       const size_t proto_shower_pfpart,
 					       std::vector<protoshower::ProtoShower> & proto_shower_v) {
 
     // grab PFParticles in event

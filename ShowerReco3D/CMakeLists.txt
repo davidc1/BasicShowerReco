@@ -11,8 +11,11 @@ art_make(
 			${ROOT_BASIC_LIB_LIST}
 			larcorealg_Geometry
 			lardata_Utilities
+			lardataobj_RecoBase
 			larcore_Geometry_Geometry_service
           MODULE_LIBRARIES 
+	  		uboone_BasicShowerReco_ShowerReco3D_Base
+	  		uboone_BasicShowerReco_ShowerReco3D_ProtoShower
 		   	larpandora_LArPandoraInterface	
 			larcorealg_Geometry
 			larcore_Geometry_Geometry_service
