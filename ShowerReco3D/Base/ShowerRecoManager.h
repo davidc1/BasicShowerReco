@@ -11,8 +11,8 @@
 /** \addtogroup ShowerReco3D
 
     @{*/
-#ifndef LARLITE_SHOWERRECOMANAGER_H
-#define LARLITE_SHOWERRECOMANAGER_H
+#ifndef SHOWERRECO_SHOWERRECOMANAGER_H
+#define SHOWERRECO_SHOWERRECOMANAGER_H
 
 #include <iostream>
 #include <TFile.h>

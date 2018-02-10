@@ -1,5 +1,5 @@
-#ifndef SHOWERRECOMANAGER_CXX
-#define SHOWERRECOMANAGER_CXX
+#ifndef SHOWERRECO_SHOWERRECOMANAGER_CXX
+#define SHOWERRECO_SHOWERRECOMANAGER_CXX
 
 #include "ShowerRecoManager.h"
 #include <iomanip>
@@ -36,15 +36,6 @@ void ShowerRecoManager::Reconstruct (std::vector<showerreco::Shower_t>& showers)
   for (auto const& proto_shower : _proto_showers) {
 
 
-    /*  _____ ___  ____   ___
-       |_   _/ _ \|  _ \ / _ \
-         | || | | | | | | | | |
-         | || |_| | |_| | |_| |
-         |_| \___/|____/ \___/
-
-    Here, we should be running pre-check algorithms.  We aren't.
-    */
-
     for (auto& shower_alg : _alg_v) {
       auto this_shower = shower_alg->RecoOneShower(proto_shower);
       showers.emplace_back(this_shower);
@@ -53,15 +44,6 @@ void ShowerRecoManager::Reconstruct (std::vector<showerreco::Shower_t>& showers)
     // why is this a for-loop? DC very confused here...
     for (auto& shower_ana : _ana_v)
       shower_ana->Analyze(showers.back(), proto_shower);
-
-    /*  _____ ___  ____   ___
-       |_   _/ _ \|  _ \ / _ \
-         | || | | | | | | | | |
-         | || |_| | |_| | |_| |
-         |_| \___/|____/ \___/
-
-    Here, we should be running post-check algorithms.  We aren't.
-    */
 
   }// for all pfparticle proto-showers
 
