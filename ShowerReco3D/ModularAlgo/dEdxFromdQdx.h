@@ -15,14 +15,14 @@
 #define DEDXFROMDQDX_H
 
 #include <iostream>
-#include "ShowerRecoModuleBase.h"
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 /**
    \class dEdxFromdQdx : ShowerRecoModuleBase
    This is meant to compute the 2D dQdx along the start of the shower.
  */
 namespace showerreco {
 
-class dEdxFromdQdx : ShowerRecoModuleBase {
+class dEdxFromdQdx : public ShowerRecoModuleBase {
 
 public:
 

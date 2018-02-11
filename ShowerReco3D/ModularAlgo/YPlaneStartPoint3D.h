@@ -15,7 +15,7 @@
 #define YPLANESTARTPOINT3D_H
 
 #include <iostream>
-#include "ShowerRecoModuleBase.h"
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 /**
    \class ShowerRecoModuleBase
    User defined class ShowerRecoModuleBase ... these comments are used to generate
@@ -23,7 +23,7 @@
  */
 namespace showerreco {
 
-class YPlaneStartPoint3D : ShowerRecoModuleBase {
+class YPlaneStartPoint3D : public ShowerRecoModuleBase {
 
 public:
 

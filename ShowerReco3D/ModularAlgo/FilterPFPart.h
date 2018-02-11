@@ -15,7 +15,7 @@
 #define FILTERPFPART_H
 
 #include <iostream>
-#include "ShowerRecoModuleBase.h"
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 
 #include <sstream>
 
@@ -26,7 +26,7 @@
  */
 namespace showerreco {
 
-class FilterPFPart : ShowerRecoModuleBase {
+class FilterPFPart : public ShowerRecoModuleBase {
 
 public:
 

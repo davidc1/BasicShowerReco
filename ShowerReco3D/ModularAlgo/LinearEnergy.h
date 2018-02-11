@@ -16,7 +16,7 @@
 
 #include <iostream>
 
-#include "ShowerRecoModuleBase.h"
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 
 
 /**
@@ -26,7 +26,7 @@
  */
 namespace showerreco {
 
-class LinearEnergy : ShowerRecoModuleBase {
+class LinearEnergy : public ShowerRecoModuleBase {
 
 public:
 

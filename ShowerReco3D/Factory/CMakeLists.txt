@@ -1,12 +1,11 @@
 art_make(
           LIB_LIBRARIES
-			uboone_BasicShowerReco_ShowerReco3D_Base
-			uboone_BasicShowerReco_ShowerReco3D_ProtoShower
+			uboone_BasicShowerReco_ShowerReco3D_Base			
+			uboone_BasicShowerReco_ShowerReco3D_ModularAlgo
 			${ART_FRAMEWORK_CORE}
 			larcorealg_Geometry	
 		   	uboone_Geometry		
-			larcore_Geometry_Geometry_service
-			lardata_Utilities
+			larcore_Geometry_Geometry_service	
 			art_Utilities canvas
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}

@@ -15,7 +15,7 @@
 #define FILLLENGTH_H
 
 #include <iostream>
-#include "ShowerRecoModuleBase.h"
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 /**
    \class ShowerRecoModuleBase
    User defined class ShowerRecoModuleBase ... these comments are used to generate
@@ -23,7 +23,7 @@
  */
 namespace showerreco {
 
-class FillLength : ShowerRecoModuleBase {
+class FillLength : public ShowerRecoModuleBase {
 
 public:
 

@@ -14,7 +14,7 @@
 #ifndef DQDXMODULE_H
 #define DQDXMODULE_H
 #include <iostream>
-#include "ShowerRecoModuleBase.h"
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 
 //#include "AnalysisAlg/CalorimetryAlg.h"
 
@@ -24,7 +24,7 @@
 */
 namespace showerreco {
   
-  class dQdxModule : ShowerRecoModuleBase {
+  class dQdxModule : public ShowerRecoModuleBase {
     
   public:
     

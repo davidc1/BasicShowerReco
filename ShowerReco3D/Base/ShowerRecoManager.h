@@ -17,7 +17,7 @@
 #include <iostream>
 #include <TFile.h>
 #include "ShowerRecoException.h"
-#include "ShowerRecoAlgBase.h"
+#include "ShowerRecoModuleBase.h"
 #include "ShowerAnaBase.h"
 #include "TStopwatch.h"
 
@@ -43,20 +43,26 @@ public:
   ~ShowerRecoManager() {}
 
   /// Add shower reconstruction algorithm
-  void AddAlgo(ShowerRecoAlgBase* alg) { _alg_v.push_back(alg); }
+  void AddAlgo(ShowerRecoModuleBase* alg) { _alg_v.push_back(alg); }
 
   /// Add shower analysis class
   void AddAna(ShowerAnaBase* ana) { _ana_v.push_back(ana); }
 
-  /// Per event "Reset"
   void Reset();
 
   /**
    * @brief Reconstruct showers
    */
   void Reconstruct (std::vector< ::showerreco::Shower_t>& showers);
+  
+  /**
+     Reconstruct one shower
+   */
+  ::showerreco::Shower_t RecoOneShower(const ::protoshower::ProtoShower& proto_shower);
 
-  /// Finalize: provide TFile access so that anything that needs to be stored can be stored
+  /**
+     Finalize: provide TFile access so that anything that needs to be stored can be stored
+  */
   void Finalize(TFile* fout = nullptr);
 
   // initalize function
@@ -68,23 +74,56 @@ public:
   void SetProtoShowers(const std::vector< ::protoshower::ProtoShower >& proto_showers)
   { _proto_showers = proto_showers; }
 
+  /**
+   * @brief Prints the module list
+   * @details Prints out the module list in the order in which they will run, nicely formatted.
+   */
+    void PrintModuleList();
 
-private:
+    /**
+     * @brief Set the debug option
+     * @details Debug mode prints the changes in the shower_t object after each module is called.
+     * Modules are expected to have their own debug mode that is activated separately.
+     *
+     * @param b true or false to turn on or off debug mode.  Default for the whole class is off, default for this function is on
+     */
+    void SetDebug(bool b = true) {_debug = b;}
 
-  /// Shower reconstruction algorithm
-  std::vector< ::showerreco::ShowerRecoAlgBase* > _alg_v;
-
-  /// Shower analysis code
-  std::vector< ::showerreco::ShowerAnaBase* > _ana_v;
-
-  void Process(const ClusterAss_t& ass,
-               std::vector< ::showerreco::Shower_t >& showers);
-
-  // vector of input clusters to be used for reconstruction
-  std::vector< ::protoshower::ProtoShower > _proto_showers;
+    /**
+     * @brief set verbosity mode
+     */
+    void SetVerbose(bool b = true) { _verbose = b; }
 
 
 
+ private:
+    
+    bool _debug;
+    bool _verbose;
+
+    /// Shower reconstruction algorithm
+    std::vector< ::showerreco::ShowerRecoModuleBase* > _alg_v;
+    
+    /// Shower analysis code
+    std::vector< ::showerreco::ShowerAnaBase* > _ana_v;
+    
+    void Process(const ClusterAss_t& ass,
+		 std::vector< ::showerreco::Shower_t >& showers);
+    
+    // vector of input clusters to be used for reconstruction
+    std::vector< ::protoshower::ProtoShower > _proto_showers;
+    
+    void Reset(Shower_t& result);
+    
+    void printChanges(const Shower_t & localCopy,
+		      const Shower_t result,
+		      std::string moduleName);
+    
+    // Time profilers
+    TStopwatch _watch; ///< For profiling
+    std::vector<double> _alg_time_v; ///< Overall time for processing
+    std::vector<size_t> _alg_ctr_v;  ///< Overall number of clusters processed by algo;
+    
 };
 }
 
