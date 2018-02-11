@@ -26,7 +26,7 @@
 
 namespace protoshower {
 
-  class ProtoShowerCMTool : ProtoShowerAlgBase {
+  class ProtoShowerCMTool : public ProtoShowerAlgBase {
 
 public:
 
@@ -43,16 +43,18 @@ public:
 
   std::string name() { return _name; }
 
+  //void setVertexProducer(const std::string& producer) { fVertexProducer = producer; }
+
 protected:
 
   std::string _name;
 
   // cluster producer name
-  std::string fClusProducer;
+  //std::string fClusProducer;
   // vertex producer name
-  std::string fVertexProducer;
+  //std::string fVertexProducer;
   // hit producer name
-  std::string fHitProducer;
+  //std::string fHitProducer;
 
 };
 

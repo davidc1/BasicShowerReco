@@ -1,0 +1,8 @@
+BEGIN_PROLOG
+
+ShrReco3D: {
+ module_type : "ShrReco3D"  
+ InputProducer : "pandoraNu"
+}
+
+END_PROLOG

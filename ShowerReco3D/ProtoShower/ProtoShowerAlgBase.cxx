@@ -26,6 +26,8 @@ namespace protoshower {
   ::cluster2d::Cluster2D ProtoShowerAlgBase::MakeCluster2D( const art::Ptr<recob::Cluster>& clus, 
 							  const std::vector< art::Ptr<recob::Hit> >& hit_v) 
   {
+
+    auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
     
     ::cluster2d::Cluster2D clus2d;
     clus2d.Reset();
@@ -33,7 +35,8 @@ namespace protoshower {
     for (auto const hit : hit_v) {
       // create PxHit
       ::util::PxHit hit2d( clus->Plane().Plane,
-			   hit->WireID().Wire * _wire2cm, hit->PeakTime() * _time2cm,
+			   hit->WireID().Wire * _wire2cm,
+			   (hit->PeakTime() - detp->TriggerOffset()) * _time2cm,
 			   hit->Integral(), hit->Integral(), hit->PeakAmplitude() );
       
       clus2d._hits.push_back( hit2d );
@@ -41,10 +44,12 @@ namespace protoshower {
     
     clus2d._plane = clus->Plane().Plane;
 
+    // Missing : plane offset w.r.t. origin coordinates
+
     auto const& sw = clus->StartWire() * _wire2cm;
     auto const& ew = clus->EndWire()   * _wire2cm;
-    auto const& st = clus->StartTick() * _time2cm;
-    auto const& et = clus->EndTick()   * _time2cm;
+    auto const& st = (clus->StartTick() - detp->TriggerOffset()) * _time2cm;
+    auto const& et = (clus->EndTick()   - detp->TriggerOffset()) * _time2cm;
     
     clus2d._start = ::util::PxHit(clus->Plane().Plane, sw, st, 0., 0., 0.);
     clus2d._end   = ::util::PxHit(clus->Plane().Plane, ew, et, 0., 0., 0.);

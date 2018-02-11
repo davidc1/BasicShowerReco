@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
 // Class:       Showerreco
 // Plugin Type: producer (art v2_09_06)
-// File:        ShowerReco3D_module.cc
+// File:        ShrReco3D_module.cc
 //
 // Generated at Fri Feb  9 16:38:52 2018 by David Caratelli using cetskelgen
 // from cetlib version v3_01_03.
@@ -20,6 +20,9 @@
 // shower-reco classes and utilities
 #include "ProtoShower/ProtoShowerAlgBase.h"
 #include "Base/ShowerRecoManager.h"
+// include specific protoshower and recomanager instances
+#include "ProtoShower/ProtoShowerCMTool.h"
+#include "Factory/Pi0RecoAlgorithm.h"
 
 // larsoft data-products
 #include "lardataobj/RecoBase/Cluster.h"
@@ -29,22 +32,23 @@
 #include "lardataobj/RecoBase/Shower.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
+
 #include <memory>
 
-class ShowerReco3D;
+class ShrReco3D;
 
 
-class ShowerReco3D : public art::EDProducer {
+class ShrReco3D : public art::EDProducer {
 public:
-  explicit ShowerReco3D(fhicl::ParameterSet const & p);
+  explicit ShrReco3D(fhicl::ParameterSet const & p);
   // The compiler-generated destructor is fine for non-base
   // classes without bare pointers or other resource use.
 
   // Plugins should not be copied or assigned.
-  ShowerReco3D(ShowerReco3D const &) = delete;
-  ShowerReco3D(ShowerReco3D &&) = delete;
-  ShowerReco3D & operator = (ShowerReco3D const &) = delete;
-  ShowerReco3D & operator = (ShowerReco3D &&) = delete;
+  ShrReco3D(ShrReco3D const &) = delete;
+  ShrReco3D(ShrReco3D &&) = delete;
+  ShrReco3D & operator = (ShrReco3D const &) = delete;
+  ShrReco3D & operator = (ShrReco3D &&) = delete;
 
   // Required functions.
   void produce(art::Event & e) override;
@@ -75,19 +79,24 @@ private:
 };
 
 
-ShowerReco3D::ShowerReco3D(fhicl::ParameterSet const & p)
+ShrReco3D::ShrReco3D(fhicl::ParameterSet const & p)
 // :
 // Initialize member data here.
 {
+
+  fInputProducer  = p.get<std::string>("InputProducer" );
 
   produces<std::vector<recob::Shower> >();
   produces<art::Assns <recob::Shower, recob::PFParticle> >();
   produces<art::Assns <recob::Shower, recob::Cluster>    >();
   produces<art::Assns <recob::Shower, recob::Hit>        >();
 
+  _manager = new ::showerreco::Pi0RecoAlgorithm();
+  _psalg   = new ::protoshower::ProtoShowerCMTool();
+
 }
 
-void ShowerReco3D::produce(art::Event & e)
+void ShrReco3D::produce(art::Event & e)
 {
 
   // produce recob::Showers
@@ -120,18 +129,18 @@ void ShowerReco3D::produce(art::Event & e)
 
 }
 
-void ShowerReco3D::beginJob()
+void ShrReco3D::beginJob()
 {
   // Implementation of optional member function here.
 }
 
-void ShowerReco3D::endJob()
+void ShrReco3D::endJob()
 {
   // Implementation of optional member function here.
 }
 
 
-void ShowerReco3D::SaveShower(const showerreco::Shower_t& shower,
+void ShrReco3D::SaveShower(const showerreco::Shower_t& shower,
 			      std::unique_ptr< std::vector<recob::Shower> >& Shower_v) 
 {
   
@@ -167,4 +176,4 @@ void ShowerReco3D::SaveShower(const showerreco::Shower_t& shower,
     return;
 }
 
-DEFINE_ART_MODULE(ShowerReco3D)
+DEFINE_ART_MODULE(ShrReco3D)

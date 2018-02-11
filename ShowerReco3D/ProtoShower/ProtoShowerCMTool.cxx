@@ -9,18 +9,27 @@ namespace protoshower {
 					       const std::string& fPFPproducer,
 					       std::vector<protoshower::ProtoShower> & proto_shower_v) {
 
+    std::cout << "grabbing PFParticle" << std::endl;
+
     // grab PFParticles in event
     art::Handle<std::vector<recob::PFParticle> > pfp_h;
     e.getByLabel(fPFPproducer,pfp_h);    
+
+    std::cout << "grabbing associated Clusters" << std::endl;
     
     // grab clusters associated with PFParticles
-    art::FindManyP<recob::Cluster> pfp_clus_assn_v(pfp_h, e, fClusProducer);
+    art::FindManyP<recob::Cluster> pfp_clus_assn_v(pfp_h, e, fPFPproducer);
+
+    std::cout << "grabbing associated Hits" << std::endl;
+
     // grab the hits associated to the PFParticles
     auto pfp_hit_assn_v = lar::FindManyInChainP<recob::Hit, recob::Cluster>::find(pfp_h, e, fPFPproducer);
 
+    std::cout << "grabbing Vertex" << std::endl;
+
     // load event vertex associated to tagged neutrino interaction
     art::Handle<std::vector<recob::Vertex> > vertex_h;
-    e.getByLabel(fVertexProducer,vertex_h);
+    e.getByLabel(fPFPproducer,vertex_h);
 
     // loop through PFParticles
     for (size_t p=0; p < pfp_h->size(); p++) {
