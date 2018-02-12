@@ -4,8 +4,10 @@ art_make(
 			art_Framework_Core
 			art_Framework_Services_Registry
 			art_Framework_Principal
+			lardataobj_RecoBase
 			${ART_FRAMEWORK_CORE}
 			larcorealg_Geometry	
+			lardata_Utilities # added now
 		   	uboone_Geometry		
 			larcore_Geometry_Geometry_service	
 			art_Utilities canvas

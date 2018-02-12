@@ -90,7 +90,7 @@ namespace cluster {
 
       ::cluster::pt thispt(r,theta_deg,hw,ht,q,pl);
 
-      thispt._idx = hit->key();
+      thispt._idx = hit.key();
       
       pt_v.push_back(thispt);
       
