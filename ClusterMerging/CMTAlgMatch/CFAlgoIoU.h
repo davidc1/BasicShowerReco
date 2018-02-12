@@ -14,7 +14,7 @@
 #ifndef RECOTOOL_CFALGOIOU_H
 #define RECOTOOL_CFALGOIOU_H
 
-#include "CMTool/CMToolBase/CFloatAlgoBase.h"
+#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CFloatAlgoBase.h"
 
 namespace cmtool {
   /**

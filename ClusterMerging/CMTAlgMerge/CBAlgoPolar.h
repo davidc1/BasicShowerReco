@@ -15,7 +15,7 @@
 #define RECOTOOL_CBALGOPOLAR_H
 
 #include <iostream>
-#include "CMTool/CMToolBase/CBoolAlgoBase.h"
+#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CBoolAlgoBase.h"
 
 namespace cmtool {
   /**

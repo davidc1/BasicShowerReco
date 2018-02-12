@@ -50,7 +50,8 @@ art_make(
         )
 
 add_subdirectory(CMToolBase)
-
+add_subdirectory(CMTAlgMerge)
+add_subdirectory(CMTAlgMatch)
 
 install_headers()
 install_fhicl()
