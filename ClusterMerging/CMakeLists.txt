@@ -49,10 +49,7 @@ art_make(
 			${ROOT_BASIC_LIB_LIST}
         )
 
-add_subdirectory(ProtoShower)
-add_subdirectory(Base)
-add_subdirectory(ModularAlgo)
-add_subdirectory(Factory)
+add_subdirectory(CMToolBase)
 
 
 install_headers()
