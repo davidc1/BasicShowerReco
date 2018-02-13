@@ -24,15 +24,18 @@ namespace protoshower {
   }
   
   ::cluster2d::Cluster2D ProtoShowerAlgBase::MakeCluster2D( const art::Ptr<recob::Cluster>& clus, 
-							  const std::vector< art::Ptr<recob::Hit> >& hit_v) 
+							    const std::vector< art::Ptr<recob::Hit> >& hit_v) 
   {
-
+    
     auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
     
     ::cluster2d::Cluster2D clus2d;
     clus2d.Reset();
     
     for (auto const hit : hit_v) {
+
+      std::cout << "\t\t\t new hit!" << std::endl;
+
       // create PxHit
       ::util::PxHit hit2d( clus->Plane().Plane,
 			   hit->WireID().Wire * _wire2cm,
@@ -41,6 +44,8 @@ namespace protoshower {
       
       clus2d._hits.push_back( hit2d );
     }// for all hits
+
+    std::cout << "\t\t done looping through hits" << std::endl;
     
     clus2d._plane = clus->Plane().Plane;
 
@@ -55,6 +60,8 @@ namespace protoshower {
     clus2d._end   = ::util::PxHit(clus->Plane().Plane, ew, et, 0., 0., 0.);
     
     clus2d._angle_2d = clus->StartAngle();
+
+    std::cout << "\t\t returning cluster2D" << std::endl;
     
     return clus2d;
     

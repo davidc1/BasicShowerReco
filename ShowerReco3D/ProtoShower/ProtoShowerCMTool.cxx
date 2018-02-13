@@ -9,23 +9,18 @@ namespace protoshower {
 					       const std::string& fPFPproducer,
 					       std::vector<protoshower::ProtoShower> & proto_shower_v) {
 
-    std::cout << "grabbing PFParticle" << std::endl;
-
     // grab PFParticles in event
     art::Handle<std::vector<recob::PFParticle> > pfp_h;
     e.getByLabel(fPFPproducer,pfp_h);    
 
-    std::cout << "grabbing associated Clusters" << std::endl;
-    
     // grab clusters associated with PFParticles
     art::FindManyP<recob::Cluster> pfp_clus_assn_v(pfp_h, e, fPFPproducer);
 
-    std::cout << "grabbing associated Hits" << std::endl;
+    // ADDITION FROM PETRILLO
+    e.getValidHandle<std::vector<recob::Cluster>>(fPFPproducer);
 
     // grab the hits associated to the PFParticles
     auto pfp_hit_assn_v = lar::FindManyInChainP<recob::Hit, recob::Cluster>::find(pfp_h, e, fPFPproducer);
-
-    std::cout << "grabbing Vertex" << std::endl;
 
     // load event vertex associated to tagged neutrino interaction
     art::Handle<std::vector<recob::Vertex> > vertex_h;
@@ -38,14 +33,15 @@ namespace protoshower {
       proto_shower.Reset();
 
       const recob::PFParticle pfp = pfp_h->at(p);
-      
+
       // associated clusters
       const std::vector< art::Ptr<recob::Cluster> >& clus_v = pfp_clus_assn_v.at(p);
-      
+
       // associated hits
       const std::vector< art::Ptr<recob::Hit> >& hit_v = pfp_hit_assn_v.at(p);
 
-      std::cout << "there are " << hit_v.size() << " hits associated to the shower" << std::endl;
+      // set number of clusters for protoshower
+      proto_shower._clusters.resize(clus_v.size());
 
       // loop through clusters
       for (size_t c=0; c < clus_v.size(); c++) {
@@ -61,9 +57,9 @@ namespace protoshower {
 	}//for all hits associated to PFParticle
 
 	proto_shower._clusters.at(c) = MakeCluster2D( clus, clusterhits );
-
-	proto_shower.hasCluster2D(true);
 	
+	proto_shower.hasCluster2D(true);
+
       }// for all clusters
       
       // require a single vertex!
@@ -80,10 +76,6 @@ namespace protoshower {
       proto_shower_v.push_back( proto_shower );
       
     }// for all PFParticles
-    
-    std::cout << "there are " << pfp_clus_assn_v.size() << " associations" << std::endl;
-    std::cout << "there are " << vertex_h->size() << " vertices" << std::endl;
-    
     
   }// GenerateProtoShower end
 

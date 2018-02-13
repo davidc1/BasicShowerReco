@@ -94,6 +94,8 @@ ShrReco3D::ShrReco3D(fhicl::ParameterSet const & p)
   _manager = new ::showerreco::Pi0RecoAlgorithm();
   _psalg   = new ::protoshower::ProtoShowerCMTool();
 
+  _manager->Initialize();
+
 }
 
 void ShrReco3D::produce(art::Event & e)
