@@ -15,8 +15,6 @@
 #include "lardataobj/RecoBase/Vertex.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
-#include <TVector3.h>
-
 namespace protoshower {
 
 

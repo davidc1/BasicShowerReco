@@ -18,21 +18,11 @@ namespace cluster {
 
   }
 
-  void ClusterMaker::MakeClusters(::art::Event & e,
-				  const std::string& fClusterProducer,
-				  const std::string& fVertexProducer,
+  void ClusterMaker::MakeClusters(const art::Handle<std::vector<recob::Cluster> >& clus_h,
+				  const art::FindManyP<recob::Hit>&  clus_hit_assn_v,
+				  const art::Handle<std::vector<recob::Vertex> >& vtx_h,
 				  std::vector<::cluster::Cluster>& cluster) {
 
-    // load input clusters
-    art::Handle<std::vector<recob::Cluster> > clus_h;
-    e.getByLabel(fClusterProducer,clus_h);
-
-    // load associated hits
-    art::FindManyP<recob::Hit> clus_hit_assn_v(clus_h, e, fClusterProducer);
-
-    // load vertices
-    art::Handle<std::vector<recob::Vertex> > vtx_h;
-    e.getByLabel(fVertexProducer,vtx_h);
 
     if (loadVertex(vtx_h) == false) {
       std::cout << "NO VERTEX" << std::endl;
@@ -59,6 +49,20 @@ namespace cluster {
       cluster.push_back(clus);
       
     }// for all input clusters
+
+    return;
+  }
+
+  void ClusterMaker::MakeCluster(const std::vector<art::Ptr<recob::Hit> >& hit_v,
+				 const std::vector<unsigned int>& cluster_index_v,
+				 ::cluster::Cluster cluster) {
+
+    // and associated hits
+    std::vector<::cluster::pt> pts;
+    // fill hit information
+    GetClusterPts(hit_v, pts);
+    // assign hits to cluster
+    cluster.SetHits(pts);
 
     return;
   }

@@ -14,7 +14,7 @@
 #ifndef RECOTOOL_CPALGOQSUM_H
 #define RECOTOOL_CPALGOQSUM_H
 
-#include "CMTool/CMToolBase/CPriorityAlgoBase.h"
+#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CPriorityAlgoBase.h"
 
 namespace cmtool {
   /**

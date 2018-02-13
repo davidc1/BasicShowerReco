@@ -15,8 +15,8 @@
 #define CMERGEHELPER_H
 
 #include <iostream>
-#include "CMTool/CMToolBase/CMergeManager.h"
-#include "CMTool/CMToolBase/ClusterMaker.h"
+#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CMergeManager.h"
+#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/ClusterMaker.h"
 
 namespace cmtool {
   /**

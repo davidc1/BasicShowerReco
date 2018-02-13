@@ -53,10 +53,15 @@ namespace cluster {
     /// Default destructor
     ~ClusterMaker(){}
 
-    void MakeClusters(::art::Event & e,
-		      const std::string& fClusterProducer,
-		      const std::string& fVertexProducer,
+    void MakeClusters(const art::Handle<std::vector<recob::Cluster> >& clus_h,
+		      const art::FindManyP<recob::Hit>&  clus_hit_assn_v,
+		      const art::Handle<std::vector<recob::Vertex> >& vtx_h,
 		      std::vector<::cluster::Cluster>& cluster);
+
+    
+    void MakeCluster(const std::vector<art::Ptr<recob::Hit> >& hit_v,
+		     const std::vector<unsigned int>& cluster_index_v,
+		     ::cluster::Cluster cluster);
 
   private:
 

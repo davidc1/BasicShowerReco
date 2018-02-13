@@ -42,7 +42,9 @@ art_make(
 			${ROOT_BASIC_LIB_LIST}
         )
 
+add_subdirectory(TwoDimTools)
 add_subdirectory(ShowerReco3D)
+add_subdirectory(ClusterMerging)
 
 install_headers()
 install_fhicl()

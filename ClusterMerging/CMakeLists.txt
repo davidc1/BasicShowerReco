@@ -14,9 +14,8 @@ art_make(
 			lardataobj_RecoBase
 			larcore_Geometry_Geometry_service
           MODULE_LIBRARIES 
-	  		uboone_BasicShowerReco_ShowerReco3D_Base
-	  		uboone_BasicShowerReco_ShowerReco3D_ProtoShower
-	  		uboone_BasicShowerReco_ShowerReco3D_Factory
+			uboone_BasicShowerReco_ClusterMerging_CMToolBase
+			uboone_BasicShowerReco_ClusterMerging_CMToolApp
 		   	larpandora_LArPandoraInterface	
 			larcorealg_Geometry
 			larcore_Geometry_Geometry_service
@@ -52,6 +51,8 @@ art_make(
 add_subdirectory(CMToolBase)
 add_subdirectory(CMTAlgMerge)
 add_subdirectory(CMTAlgMatch)
+add_subdirectory(CMTAlgPriority)
+add_subdirectory(CMToolApp)
 
 install_headers()
 install_fhicl()

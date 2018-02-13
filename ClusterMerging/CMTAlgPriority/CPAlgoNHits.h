@@ -14,7 +14,7 @@
 #ifndef RECOTOOL_CPALGONHITS_H
 #define RECOTOOL_CPALGONHITS_H
 
-#include "CMTool/CMToolBase/CPriorityAlgoBase.h"
+#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CPriorityAlgoBase.h"
 
 namespace cmtool {
   /**
