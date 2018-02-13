@@ -1,9 +1,41 @@
 #ifndef RECOTOOL_CBALGOPOLAR_CXX
 #define RECOTOOL_CBALGOPOLAR_CXX
 
-#include "CBAlgoPolar.h"
+#include <iostream>
+#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CBoolAlgoBase.h"
 
 namespace cmtool {
+
+  class CBAlgoPolar : public CBoolAlgoBase {
+    
+  public:
+    
+    /// Default constructor
+    CBAlgoPolar();
+    
+    /// Default destructor
+    virtual ~CBAlgoPolar(){};
+ 
+    /**
+       Core function: given the ClusterParamsAlg input, return whether a cluster should be
+       merged or not.
+    */
+    virtual bool Bool(const ::cluster::Cluster &cluster1,
+                      const ::cluster::Cluster &cluster2);
+
+
+    /// Function to reset the algorithm instance ... maybe implemented via child class
+    virtual void Reset(){}
+
+    void SetBufferAngle(const float& b) { _buffer = b; }
+
+  protected:
+
+    float _buffer;
+    
+    float ClusterDistance(const ::cluster::Cluster& c1, const ::cluster::Cluster& c2);
+    
+  };
 
   //----------------------------------------
   CBAlgoPolar::CBAlgoPolar() : CBoolAlgoBase()

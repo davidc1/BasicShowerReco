@@ -1,9 +1,45 @@
 #ifndef RECOTOOL_CBALGOFAKE_CXX
 #define RECOTOOL_CBALGOFAKE_CXX
 
-#include "CBAlgoFake.h"
+#include <iostream>
+#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CBoolAlgoBase.h"
 
 namespace cmtool {
+
+  /**
+     \class CBAlgoFake
+     An abstract fake class for merging algorithm. Having this fake class helps
+     to have a better overall design of various merging for iterative approach.
+     The algorithms are run through CMergeManager.
+  */
+  class CBAlgoFake : public CBoolAlgoBase {
+    
+  public:
+    
+    /// Default constructor
+    CBAlgoFake();
+    
+    /// Default destructor
+    virtual ~CBAlgoFake(){};
+ 
+    /**
+       Core function: given the ClusterParamsAlg input, return whether a cluster should be
+       merged or not.
+    */
+    virtual bool Bool(const ::cluster::Cluster &cluster1,
+                      const ::cluster::Cluster &cluster2);
+
+    virtual std::vector<std::vector<size_t> > Merge(const std::vector<::cluster::Cluster>& clus_v);
+
+
+    /// Function to reset the algorithm instance ... maybe implemented via child class
+    virtual void Reset(){}
+
+  protected:
+
+    bool _flip;
+    int _ctr;
+  };
 
   //----------------------------------------
   CBAlgoFake::CBAlgoFake() : CBoolAlgoBase()

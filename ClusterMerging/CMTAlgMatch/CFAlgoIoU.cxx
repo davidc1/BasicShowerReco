@@ -1,10 +1,48 @@
 #ifndef RECOTOOL_CFALGOIOU_CXX
 #define RECOTOOL_CFALGOIOU_CXX
 
-#include "CFAlgoIoU.h"
+// art TOOLS
+//#include "art/Utilities/ToolMacros.h"
+//#include "art/Utilities/make_tool.h"
+
+// base class
+#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CFloatAlgoBase.h"
 
 namespace cmtool {
 
+
+  class CFAlgoIoU : public CFloatAlgoBase {
+    
+  public:
+    
+    /// Default constructor
+    CFAlgoIoU();
+    
+    /// Default destructor
+    virtual ~CFAlgoIoU(){};
+
+    /**This algorithm calculates the difference between start and end times for merged clusters,
+		and compares across planes to form matches. 
+    */
+    virtual float Float(const std::vector<const cluster::Cluster*> &clusters);
+
+    void SetMinIoU(float s) { _iou_min = s; }
+
+    virtual void Report();
+    
+    virtual void Reset();
+
+  protected:
+
+    void getMinMaxTime(const cluster::Cluster* cluster, double& min, double& max);
+    
+    float _time_ratio_cut ;
+    float _start_time_cut ;
+
+    float _iou_min;
+  };
+  
+  
   //-------------------------------------------------------
   CFAlgoIoU::CFAlgoIoU() : CFloatAlgoBase()
   //-------------------------------------------------------
@@ -146,6 +184,6 @@ namespace cmtool {
     return;
   }
   
-    
+  //DEFINE_ART_CLASS_TOOL(CFAlgoIoU)    
 }
 #endif

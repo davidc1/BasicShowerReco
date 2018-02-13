@@ -1,11 +1,56 @@
 #ifndef RECOTOOL_CBALGOVTXALIGN_CXX
 #define RECOTOOL_CBALGOVTXALIGN_CXX
 
-#include "CBAlgoVtxAlign.h"
 #include <map>
 #include <algorithm>
 
+#include <iostream>
+#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CBoolAlgoBase.h"
+
 namespace cmtool {
+
+  /**
+     \class CBAlgoVtxAlign
+     An abstract fake class for merging algorithm. Having this fake class helps
+     to have a better overall design of various merging for iterative approach.
+     The algorithms are run through CMergeManager.
+  */
+
+  class CBAlgoVtxAlign : public CBoolAlgoBase {
+    
+  public:
+    
+    /// Default constructor
+    CBAlgoVtxAlign();
+    
+    /// Default destructor
+    virtual ~CBAlgoVtxAlign(){};
+ 
+    /**
+       Core function: given the ClusterParamsAlg input, return whether a cluster should be
+       merged or not.
+    */
+    virtual std::vector<std::vector<size_t> > Merge(const std::vector<::cluster::Cluster>& clus_v);
+
+
+    /// Function to reset the algorithm instance ... maybe implemented via child class
+    virtual void Reset(){}
+
+    void SetMaxAngleDiff  (float a) { _max_angle_diff_merge = a;  }
+    void SetMinGammaOAngle(float a) { _min_gammagamma_oangle = a; }
+    void SetMinNHits(size_t n) { _min_nhits = n; }
+    void SetMaxMergeDist(float d) { _max_merge_dist = d; }
+
+  protected:
+
+    float ClusterDistance(const ::cluster::Cluster& c1, const ::cluster::Cluster& c2);
+
+    float _max_angle_diff_merge;
+    float _min_gammagamma_oangle;
+    float _max_merge_dist; // fraction of length of larger shower
+    size_t _min_nhits;
+
+  };
 
   //----------------------------------------
   CBAlgoVtxAlign::CBAlgoVtxAlign() : CBoolAlgoBase()
