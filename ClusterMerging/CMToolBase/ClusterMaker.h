@@ -53,9 +53,9 @@ namespace cluster {
     /// Default destructor
     ~ClusterMaker(){}
 
-    void MakeClusters(const art::Handle<std::vector<recob::Cluster> >& clus_h,
+    void MakeClusters(const art::ValidHandle<std::vector<recob::Cluster> >& clus_h,
 		      const art::FindManyP<recob::Hit>&  clus_hit_assn_v,
-		      const art::Handle<std::vector<recob::Vertex> >& vtx_h,
+		      const art::ValidHandle<std::vector<recob::Vertex> >& vtx_h,
 		      std::vector<::cluster::Cluster>& cluster);
 
     
@@ -65,7 +65,7 @@ namespace cluster {
 
   private:
 
-    bool loadVertex(const art::Handle<std::vector<::recob::Vertex> > vtx_h);
+    bool loadVertex(const art::ValidHandle<std::vector<::recob::Vertex> > vtx_h);
 
     void GetClusterPts(const std::vector<art::Ptr<recob::Hit> >& hit_v,
 		       std::vector<::cluster::pt>& pt_v);

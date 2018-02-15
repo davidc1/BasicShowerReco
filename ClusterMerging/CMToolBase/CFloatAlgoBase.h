@@ -28,11 +28,8 @@ namespace cmtool {
     
   public:
     
-    /// Default constructor
-    CFloatAlgoBase(){}
-    
     /// Default destructor
-    virtual ~CFloatAlgoBase(){}
+    virtual ~CFloatAlgoBase(){};
 
     /**
        Core function: given the CPAN input, return whether a cluster should be

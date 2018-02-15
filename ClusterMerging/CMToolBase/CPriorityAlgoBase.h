@@ -27,11 +27,8 @@ namespace cmtool {
     
   public:
     
-    /// Default constructor
-    CPriorityAlgoBase(){}
-    
     /// Default destructor
-    virtual ~CPriorityAlgoBase(){}
+    virtual ~CPriorityAlgoBase(){};
 
     /**
        Core function: given the CPAN input, return whether a cluster should be

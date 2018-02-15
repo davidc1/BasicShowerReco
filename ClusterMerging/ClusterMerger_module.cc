@@ -17,6 +17,8 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "art/Persistency/Common/PtrMaker.h"
+
 #include "uboone/BasicShowerReco/ClusterMerging/CMToolApp/CMergeHelper.h"
 #include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/ClusterMaker.h"
 
@@ -68,6 +70,13 @@ private:
 
   std::string fClusterProducer, fVertexProducer;
 
+  /**
+     Given the FindManyP cluster -> hit association
+     grab the ProductID and EDProductGetter 
+   */
+  void GetHitPointer(const art::FindManyP<recob::Hit>& associations);
+  art::Ptr<recob::Hit> _hitptr;
+
 };
 
 
@@ -76,6 +85,8 @@ ClusterMerger::ClusterMerger(fhicl::ParameterSet const & p)
 // Initialize member data here.
 {
 
+  //_CMaker = new ::cmtool::CMergeHelper();
+  
   // get detector specific properties
   auto const* geom = ::lar::providerFrom<geo::Geometry>();
   auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
@@ -97,18 +108,27 @@ void ClusterMerger::produce(art::Event & e)
   std::unique_ptr< std::vector<recob::Cluster> > Cluster_v(new std::vector<recob::Cluster>);
   std::unique_ptr< art::Assns <recob::Cluster, recob::Hit> > Cluster_Hit_assn_v(new art::Assns<recob::Cluster,recob::Hit>);
 
+  // cluster pointer maker for later to create associations
+  art::PtrMaker<recob::Cluster> ClusPtrMaker(e, *this);
+
   // load data products needed
 
   // load input clusters
-  art::Handle<std::vector<recob::Cluster> > clus_h;
-  e.getByLabel(fClusterProducer,clus_h);
+   auto const& clus_h = e.getValidHandle<std::vector<recob::Cluster>>(fClusterProducer);
   
   // load associated hits
   art::FindManyP<recob::Hit> clus_hit_assn_v(clus_h, e, fClusterProducer);
 
+  GetHitPointer(clus_hit_assn_v);
+
+  // get generic hit art::Ptr
+  // from it get id() and productGetter()
+  // see http://nusoft.fnal.gov/larsoft/doxsvn/html/classart_1_1Ptr.html
+  // and then can call Ptr (ProductID const productID, key_type itemKey, EDProductGetter const *prodGetter)
+  // to make art::Ptr for the hit I want to associate.
+
   // load vertices
-  art::Handle<std::vector<recob::Vertex> > vtx_h;
-  e.getByLabel(fVertexProducer,vtx_h);
+  auto const& vtx_h = e.getValidHandle<std::vector<recob::Vertex>>(fVertexProducer);
 
   // create cluster::Clusters
   std::vector<::cluster::Cluster> event_clusters;
@@ -130,6 +150,13 @@ void ClusterMerger::produce(art::Event & e)
     Cluster_v->emplace_back(outclus);
 
     // create association to hits
+    for (auto const& hit : out_clus.GetHits()) {
+      auto key = hit._idx;
+      art::Ptr<recob::Hit> HitPtr(_hitptr.id(),key,_hitptr.productGetter());
+      art::Ptr<recob::Cluster> const ClusPtr = ClusPtrMaker(Cluster_v->size()-1);
+      Cluster_Hit_assn_v->addSingle(ClusPtr,HitPtr);
+      
+    }// for all hits associated to the cluster
     
   }// for all output clsters
   
@@ -169,6 +196,23 @@ void ClusterMerger::FillClusterProperties(::recob::Cluster& cluster,
 		      geom->View(planeid),
 		      planeid);
   
+}
+
+void ClusterMerger::GetHitPointer(const art::FindManyP<recob::Hit>& associations)
+{
+
+  // find a valid hit pointer!
+  if (associations.size()) {
+    if (associations.at(0).size()) {
+
+      
+      _hitptr = associations.at(0).at(0);
+
+    }// if hit exists
+  }// if cluster exists
+
+
+  return;
 }
 
 

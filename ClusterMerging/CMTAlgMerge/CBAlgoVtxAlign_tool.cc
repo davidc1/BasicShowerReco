@@ -1,6 +1,3 @@
-#ifndef RECOTOOL_CBALGOVTXALIGN_CXX
-#define RECOTOOL_CBALGOVTXALIGN_CXX
-
 #include <map>
 #include <algorithm>
 
@@ -21,7 +18,7 @@ namespace cmtool {
   public:
     
     /// Default constructor
-    CBAlgoVtxAlign();
+    CBAlgoVtxAlign(const fhicl::ParameterSet& pset);
     
     /// Default destructor
     virtual ~CBAlgoVtxAlign(){};
@@ -30,11 +27,11 @@ namespace cmtool {
        Core function: given the ClusterParamsAlg input, return whether a cluster should be
        merged or not.
     */
-    virtual std::vector<std::vector<size_t> > Merge(const std::vector<::cluster::Cluster>& clus_v);
+    std::vector<std::vector<size_t> > Merge(const std::vector<::cluster::Cluster>& clus_v);
 
 
     /// Function to reset the algorithm instance ... maybe implemented via child class
-    virtual void Reset(){}
+    void Reset(){}
 
     void SetMaxAngleDiff  (float a) { _max_angle_diff_merge = a;  }
     void SetMinGammaOAngle(float a) { _min_gammagamma_oangle = a; }
@@ -53,7 +50,7 @@ namespace cmtool {
   };
 
   //----------------------------------------
-  CBAlgoVtxAlign::CBAlgoVtxAlign() : CBoolAlgoBase()
+  CBAlgoVtxAlign::CBAlgoVtxAlign(const fhicl::ParameterSet& pset) 
   //----------------------------------------
   {
     _max_angle_diff_merge  = 0.;
@@ -264,7 +261,5 @@ namespace cmtool {
     return -1;
   }
 
-  
+DEFINE_ART_CLASS_TOOL(CBAlgoVtxAlign)  
 }
-
-#endif

@@ -24,6 +24,7 @@ art_make(
 			lardata_RecoObjects larreco_Deprecated  
 			larreco_RecoAlg
 			lardata_Utilities
+                        ${Boost_SYSTEM_LIBRARY}
 			larevt_Filters
 			nusimdata_SimulationBase
 			${LARRECO_LIB}

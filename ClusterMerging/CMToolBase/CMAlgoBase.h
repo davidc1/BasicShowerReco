@@ -8,6 +8,10 @@
  * @author kazuhiro
  */
 
+// art TOOLS
+#include "art/Utilities/ToolMacros.h"
+#include "art/Utilities/make_tool.h"
+
 /** \addtogroup CMTool
 
     @{*/
@@ -17,6 +21,8 @@
 #include <iostream>
 #include "TFile.h"
 #include "Cluster.h"
+
+#include "fhiclcpp/ParameterSet.h"
 
 namespace cmtool {
 
@@ -30,14 +36,12 @@ namespace cmtool {
     
   public:
     
-    /// Default constructor
-    CMAlgoBase(){ _fout = 0; _verbose = false; }
-    
-    /// Default destructor
-    virtual ~CMAlgoBase(){}
+    virtual ~CMAlgoBase() noexcept = default;
+
+    void configure(const fhicl::ParameterSet& pset){};
 
     /// Function to reset the algorithm instance called within CMergeManager/CMatchManager's Reset() ... maybe implemented via child class
-    virtual void Reset(){}
+    virtual void Reset(){};
 
     /**
        Optional function: called after Bool() function is called for all possible cluster
@@ -51,7 +55,7 @@ namespace cmtool {
     void SetAnaFile(TFile* fout) { _fout = fout; }
 
     /// Setter function for verbosity
-    virtual void SetVerbose(bool doit=true) { _verbose = doit; }
+    void SetVerbose(bool doit=true) { _verbose = doit; }
 
   protected:
 

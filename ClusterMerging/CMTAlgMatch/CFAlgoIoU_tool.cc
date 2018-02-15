@@ -1,12 +1,7 @@
-#ifndef RECOTOOL_CFALGOIOU_CXX
-#define RECOTOOL_CFALGOIOU_CXX
-
-// art TOOLS
-//#include "art/Utilities/ToolMacros.h"
-//#include "art/Utilities/make_tool.h"
-
 // base class
 #include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CFloatAlgoBase.h"
+
+
 
 namespace cmtool {
 
@@ -16,25 +11,27 @@ namespace cmtool {
   public:
     
     /// Default constructor
-    CFAlgoIoU();
+    explicit CFAlgoIoU(const fhicl::ParameterSet& pset);
     
     /// Default destructor
-    virtual ~CFAlgoIoU(){};
+    ~CFAlgoIoU(){};
 
     /**This algorithm calculates the difference between start and end times for merged clusters,
 		and compares across planes to form matches. 
     */
-    virtual float Float(const std::vector<const cluster::Cluster*> &clusters);
+    float Float(const std::vector<const cluster::Cluster*> &clusters);
 
     void SetMinIoU(float s) { _iou_min = s; }
 
-    virtual void Report();
+    void Report();
     
-    virtual void Reset();
+    void Reset();
 
   protected:
 
     void getMinMaxTime(const cluster::Cluster* cluster, double& min, double& max);
+
+    void configure(const fhicl::ParameterSet& pset);
     
     float _time_ratio_cut ;
     float _start_time_cut ;
@@ -44,10 +41,18 @@ namespace cmtool {
   
   
   //-------------------------------------------------------
-  CFAlgoIoU::CFAlgoIoU() : CFloatAlgoBase()
+  CFAlgoIoU::CFAlgoIoU(const fhicl::ParameterSet& pset) 
   //-------------------------------------------------------
   {
+    configure(pset);
     _iou_min = 0.5;
+  }
+
+  //--------------------------------------------------------
+  void CFAlgoIoU::configure(const fhicl::ParameterSet& pset)
+  //--------------------------------------------------------
+  {
+    return;
   }
 
   //-----------------------------
@@ -175,7 +180,7 @@ namespace cmtool {
     max = 0;
 
     for (auto const& hit : hits){
-
+      
       if (hit._t > max) max = hit._t;
       if (hit._t < min) min = hit._t;
 
@@ -184,6 +189,5 @@ namespace cmtool {
     return;
   }
   
-  //DEFINE_ART_CLASS_TOOL(CFAlgoIoU)    
+  DEFINE_ART_CLASS_TOOL(CFAlgoIoU)    
 }
-#endif

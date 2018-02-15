@@ -28,11 +28,8 @@ namespace cmtool {
     
   public:
     
-    /// Default constructor
-    CBoolAlgoBase(){ _merge_till_converge = false; _pair_wise = true; }
-    
     /// Default destructor
-    virtual ~CBoolAlgoBase(){}
+    virtual ~CBoolAlgoBase(){};
 
     /**
        Core function: given the CPAN input, return whether a cluster should be

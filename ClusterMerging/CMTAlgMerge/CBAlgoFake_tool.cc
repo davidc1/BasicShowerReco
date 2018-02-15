@@ -1,6 +1,3 @@
-#ifndef RECOTOOL_CBALGOFAKE_CXX
-#define RECOTOOL_CBALGOFAKE_CXX
-
 #include <iostream>
 #include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CBoolAlgoBase.h"
 
@@ -17,23 +14,23 @@ namespace cmtool {
   public:
     
     /// Default constructor
-    CBAlgoFake();
+    explicit CBAlgoFake(const fhicl::ParameterSet& pset);
     
     /// Default destructor
-    virtual ~CBAlgoFake(){};
+    ~CBAlgoFake(){};
  
     /**
        Core function: given the ClusterParamsAlg input, return whether a cluster should be
        merged or not.
     */
-    virtual bool Bool(const ::cluster::Cluster &cluster1,
-                      const ::cluster::Cluster &cluster2);
+    bool Bool(const ::cluster::Cluster &cluster1,
+	      const ::cluster::Cluster &cluster2);
 
-    virtual std::vector<std::vector<size_t> > Merge(const std::vector<::cluster::Cluster>& clus_v);
+    std::vector<std::vector<size_t> > Merge(const std::vector<::cluster::Cluster>& clus_v);
 
 
     /// Function to reset the algorithm instance ... maybe implemented via child class
-    virtual void Reset(){}
+    void Reset(){}
 
   protected:
 
@@ -42,7 +39,7 @@ namespace cmtool {
   };
 
   //----------------------------------------
-  CBAlgoFake::CBAlgoFake() : CBoolAlgoBase()
+  CBAlgoFake::CBAlgoFake(const fhicl::ParameterSet& pset)
   //----------------------------------------
   {
     _flip = false;
@@ -84,7 +81,6 @@ namespace cmtool {
     return merge_result;
   }
 
-  
+DEFINE_ART_CLASS_TOOL(CBAlgoFake)  
 }
 
-#endif

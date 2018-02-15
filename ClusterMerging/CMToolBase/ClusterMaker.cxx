@@ -18,9 +18,9 @@ namespace cluster {
 
   }
 
-  void ClusterMaker::MakeClusters(const art::Handle<std::vector<recob::Cluster> >& clus_h,
+  void ClusterMaker::MakeClusters(const art::ValidHandle<std::vector<recob::Cluster> >& clus_h,
 				  const art::FindManyP<recob::Hit>&  clus_hit_assn_v,
-				  const art::Handle<std::vector<recob::Vertex> >& vtx_h,
+				  const art::ValidHandle<std::vector<recob::Vertex> >& vtx_h,
 				  std::vector<::cluster::Cluster>& cluster) {
 
 
@@ -106,7 +106,7 @@ namespace cluster {
 
   
 
-  bool ClusterMaker::loadVertex(const art::Handle<std::vector<::recob::Vertex> > vtx_h) {
+  bool ClusterMaker::loadVertex(const art::ValidHandle<std::vector<::recob::Vertex> > vtx_h) {
 
     // load required services to obtain offsets
     auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();

@@ -1,6 +1,3 @@
-#ifndef RECOTOOL_CBALGOANGLECOMPAT_CXX
-#define RECOTOOL_CBALGOANGLECOMPAT_CXX
-
 /**
  * \file CBAlgoAngleCompat.h
  *
@@ -27,21 +24,21 @@ namespace cmtool {
   public:
     
     /// Default constructor
-    CBAlgoAngleCompat();
+    explicit CBAlgoAngleCompat(const fhicl::ParameterSet& pset);
     
     /// Default destructor
-    virtual ~CBAlgoAngleCompat(){};
+    ~CBAlgoAngleCompat(){};
  
     /**
        Core function: given the ClusterParamsAlg input, return whether a cluster should be
        merged or not.
     */
-    virtual bool Bool(const ::cluster::Cluster &cluster1,
-                      const ::cluster::Cluster &cluster2);
-
+    bool Bool(const ::cluster::Cluster &cluster1,
+	      const ::cluster::Cluster &cluster2);
+    
 
     /// Function to reset the algorithm instance ... maybe implemented via child class
-    virtual void Reset(){}
+    void Reset(){}
 
     void SetMinLargeNHits(size_t n) { _min_size = n; }
     void SetMaxAngleDiff(float a) { _max_angle_diff = a; }
@@ -56,7 +53,7 @@ namespace cmtool {
   };
 
   //----------------------------------------
-  CBAlgoAngleCompat::CBAlgoAngleCompat() : CBoolAlgoBase()
+  CBAlgoAngleCompat::CBAlgoAngleCompat(const fhicl::ParameterSet& pset) 
   //----------------------------------------
   {
     _flip = false;
@@ -82,6 +79,6 @@ namespace cmtool {
     return false;
   }
 
+DEFINE_ART_CLASS_TOOL(CBAlgoAngleCompat)
 }
 
-#endif
