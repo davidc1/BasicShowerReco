@@ -18,14 +18,13 @@ namespace cmtool {
     /// Default destructor
     ~CPAlgoNHits(){};
 
+    void configure(const fhicl::ParameterSet& pset);
+
     /**
        Core function: given the CPAN input, return a float which indicates 
        the user-defined priority for analysis.
     */
     float Priority(const ::cluster::Cluster &cluster);
-
-    /// Setter for minimum # hits
-    void SetMinHits(size_t n) { _min_hits = n; }
 
   protected:
 
@@ -38,6 +37,11 @@ namespace cmtool {
   //----------------------------------------------
   {
     _min_hits = 0;
+  }
+
+  void CPAlgoNHits::configure(const fhicl::ParameterSet& pset)
+  {
+    _min_hits = pset.get<size_t>("min_hits");
   }
 
   //------------------------------------------------------------------------

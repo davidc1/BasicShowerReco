@@ -29,6 +29,8 @@ namespace cmtool {
     /// Default destructor
     ~CBAlgoAngleCompat(){};
  
+    void configure(const fhicl::ParameterSet& pset);
+
     /**
        Core function: given the ClusterParamsAlg input, return whether a cluster should be
        merged or not.
@@ -58,9 +60,15 @@ namespace cmtool {
   {
     _flip = false;
     _ctr  = 0;
-    _min_size = 0.;
-    _max_angle_diff = 0.;
-    // Nothing to be done in the base class
+    configure(pset);
+  }
+
+  void CBAlgoAngleCompat::configure(const fhicl::ParameterSet& pset)
+  {
+    
+    _min_size       = pset.get<size_t>("min_size");
+    _max_angle_diff = pset.get<float>("max_angle_diff");
+
   }
 
   //--------------------------------------------------------

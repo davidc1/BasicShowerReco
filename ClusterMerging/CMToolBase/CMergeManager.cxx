@@ -12,6 +12,12 @@ namespace cmtool {
     Reset();
   }
 
+  CMergeManager::~CMergeManager()
+  {
+    std::cout << "destruction!" << std::endl;
+    return;
+  }
+
   void CMergeManager::Reset()
   {
     CMManagerBase::Reset();
@@ -34,7 +40,7 @@ namespace cmtool {
     if(_merge_algo_v.size() == 0) throw CMTException("No algorithm to run!");
 
     // Merging algorithm
-    for (auto algo : _merge_algo_v)
+    for (auto const &algo : _merge_algo_v)
       algo->SetAnaFile(_fout);
 
     // Priority ordering algorithm

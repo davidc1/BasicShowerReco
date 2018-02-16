@@ -21,8 +21,6 @@ namespace cmtool {
     */
     float Float(const std::vector<const cluster::Cluster*> &clusters);
 
-    void SetMinIoU(float s) { _iou_min = s; }
-
     void Report();
     
     void Reset();
@@ -33,9 +31,6 @@ namespace cmtool {
 
     void configure(const fhicl::ParameterSet& pset);
     
-    float _time_ratio_cut ;
-    float _start_time_cut ;
-
     float _iou_min;
   };
   
@@ -45,13 +40,13 @@ namespace cmtool {
   //-------------------------------------------------------
   {
     configure(pset);
-    _iou_min = 0.5;
   }
 
   //--------------------------------------------------------
   void CFAlgoIoU::configure(const fhicl::ParameterSet& pset)
   //--------------------------------------------------------
   {
+    _iou_min = pset.get<float>("iou_min");
     return;
   }
 

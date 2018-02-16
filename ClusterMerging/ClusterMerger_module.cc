@@ -19,6 +19,8 @@
 
 #include "art/Persistency/Common/PtrMaker.h"
 
+#include "art/Utilities/make_tool.h"
+
 #include "uboone/BasicShowerReco/ClusterMerging/CMToolApp/CMergeHelper.h"
 #include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/ClusterMaker.h"
 
@@ -29,7 +31,7 @@ class ClusterMerger;
 
 class ClusterMerger : public art::EDProducer {
 public:
-  explicit ClusterMerger(fhicl::ParameterSet const & p);
+  explicit ClusterMerger(fhicl::ParameterSet const & pset);
   // The compiler-generated destructor is fine for non-base
   // classes without bare pointers or other resource use.
 
@@ -80,10 +82,18 @@ private:
 };
 
 
-ClusterMerger::ClusterMerger(fhicl::ParameterSet const & p)
+ClusterMerger::ClusterMerger(fhicl::ParameterSet const & pset)
 // :
 // Initialize member data here.
 {
+
+  std::cout << "DD calling constructor" << std::endl;
+
+  _merge_helper = new ::cmtool::CMergeHelper();
+
+  std::cout << "DD reset Merge manager" << std::endl;
+  _merge_helper->GetManager().Reset();
+  std::cout << "DD done with reset" << std::endl;
 
   //_CMaker = new ::cmtool::CMergeHelper();
   
@@ -93,17 +103,34 @@ ClusterMerger::ClusterMerger(fhicl::ParameterSet const & p)
   _wire2cm = geom->WirePitch(0,1,0);
   _time2cm = detp->SamplingRate() / 1000.0 * detp->DriftVelocity( detp->Efield(), detp->Temperature() );
 
-  fClusterProducer = p.get<std::string>("ClusterProducer");
-  fVertexProducer  = p.get<std::string>("VertexProducer" );
+  fClusterProducer = pset.get<std::string>("ClusterProducer");
+  fVertexProducer  = pset.get<std::string>("VertexProducer" );
+
+  std::cout << "DD setting up algos" << std::endl;
+  
+  // grab algorithms for merging
+  const fhicl::ParameterSet& mergeTools = pset.get<fhicl::ParameterSet>("MergeTools");
+  std::cout << "DD got parameter set. start loop..." << std::endl;
+  for (const std::string& mergeTool : mergeTools.get_pset_names()) {
+    std::cout << "DD \t in loop..." << std::endl;
+    const fhicl::ParameterSet& merge_pset = mergeTools.get<fhicl::ParameterSet>(mergeTool);
+    std::cout << "DD \t add merge algor..." << std::endl;
+    _merge_helper->GetManager().AddMergeAlgo(art::make_tool<cmtool::CBoolAlgoBase>(merge_pset));
+    std::cout << "DD \t done adding algo" << std::endl;
+  }// for all algorithms to be added
 
   produces<std::vector<recob::Cluster> >();
   produces<art::Assns <recob::Cluster, recob::Hit> >();
+
+  std::cout << "DD done with constructor" << std::endl;
 
 }
 
 void ClusterMerger::produce(art::Event & e)
 {
   // Implementation of required member function here.
+
+  std::cout << "DD entering producer" << std::endl;
 
   std::unique_ptr< std::vector<recob::Cluster> > Cluster_v(new std::vector<recob::Cluster>);
   std::unique_ptr< art::Assns <recob::Cluster, recob::Hit> > Cluster_Hit_assn_v(new art::Assns<recob::Cluster,recob::Hit>);

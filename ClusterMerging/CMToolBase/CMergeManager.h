@@ -34,14 +34,18 @@ namespace cmtool {
     /// Default constructor
     CMergeManager();
     
+    /// copy constructor
+    //CMergeManager(const CMergeManager&) = delete;
+    // CMergeManager& operator=(const CMergeManager&) = delete;
+    
     /// Default destructor
-    virtual ~CMergeManager(){}
+    ~CMergeManager();
 
     /// Method to reset itself
     virtual void Reset();
 
     /// A simple method to add an algorithm for merging
-    void AddMergeAlgo(CBoolAlgoBase* algo) {_merge_algo_v.push_back(algo); }
+    void AddMergeAlgo(std::shared_ptr<cmtool::CBoolAlgoBase> algo) { _merge_algo_v.push_back(std::move(algo)); }
 
     /// A method to obtain output clusters
     const std::vector<::cluster::Cluster>& GetClusters() const { return _out_clusters; }
@@ -56,6 +60,7 @@ namespace cmtool {
 
     /// A method to obtain book keeper
     const CMergeBookKeeper& GetBookKeeper() const { return _book_keeper; }
+
 
   protected:
     
@@ -78,8 +83,6 @@ namespace cmtool {
     /// FMWK function called @ end of Process()
     virtual void EventEnd();
 
-  protected:
-
     void RunMerge(const int& algo_idx,
 		  const std::vector<::cluster::Cluster > &in_clusters,
 		  CMergeBookKeeper &book_keeper) const;
@@ -89,16 +92,11 @@ namespace cmtool {
 		  const std::vector<bool> &merge_flag,
 		  CMergeBookKeeper &book_keeper) const;
 
-  protected:
-
     /// Output clusters
     std::vector<cluster::Cluster> _out_clusters;
 
     /// Book keeper instance
     CMergeBookKeeper _book_keeper;
-
-    /// Merging algorithm
-    std::vector<::cmtool::CBoolAlgoBase*> _merge_algo_v;
 
     size_t _iter_ctr;
 
@@ -107,6 +105,10 @@ namespace cmtool {
     std::vector<std::vector<unsigned short> > _tmp_merged_indexes;
 
     std::vector<::cluster::Cluster> _tmp_merged_clusters;
+
+    /// Merging algorithm
+    std::vector<std::shared_ptr<::cmtool::CBoolAlgoBase> > _merge_algo_v;
+    
 
   };
 }

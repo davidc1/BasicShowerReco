@@ -1,0 +1,18 @@
+#include "mergeTools.fcl"
+#include "matchTools.fcl"
+#include "priorityTools.fcl"
+
+BEGIN_PROLOG
+
+ClusterMerger: {
+ module_type: "ClusterMerger"  
+ ClusterProducer: "pandoraNu"
+ VertexProducer:  "ccvertex"
+ MergeTools:
+     {
+        Tool0: @local::merge_cbalgopolar
+        Tool1: @local::merge_cbalgovtxalign
+     }
+}
+
+END_PROLOG

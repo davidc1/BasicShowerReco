@@ -34,7 +34,7 @@ namespace cmtool {
     /// Default destructor
     virtual ~CMergeHelper(){}
 
-    CMergeManager& GetManager(size_t mgr_id);
+    CMergeManager& GetManager(size_t mgr_id=0);
 
     void SetAnaFile(TFile* fout);
 

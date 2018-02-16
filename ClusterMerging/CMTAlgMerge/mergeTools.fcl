@@ -1,0 +1,30 @@
+BEGIN_PROLOG
+
+merge_cbalgoanglecompat:
+{
+  tool_type:      CBAlgoAngleCompat
+  min_size:       0
+  max_angle_diff: 0
+}
+
+merge_cbalgofake:
+{
+ tool_type: CBAlgoFake
+}
+
+merge_cbalgovtxalign:
+{
+ tool_type: CBAlgoVtxAlign
+ max_angle_diff_merge: 12
+ min_gammagamma_oangle: 15
+ min_nhits: 10
+ max_merge_dist: 3
+}
+
+merge_cbalgopolar:
+{
+ tool_type: CBAlgoPolar
+ buffer: 0
+}
+
+END_PROLOG

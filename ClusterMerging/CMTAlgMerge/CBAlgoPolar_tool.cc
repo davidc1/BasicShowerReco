@@ -12,6 +12,8 @@ namespace cmtool {
     
     /// Default destructor
     ~CBAlgoPolar(){};
+
+    void configure(const fhicl::ParameterSet& pset);
  
     /**
        Core function: given the ClusterParamsAlg input, return whether a cluster should be
@@ -23,8 +25,6 @@ namespace cmtool {
 
     /// Function to reset the algorithm instance ... maybe implemented via child class
     void Reset(){}
-
-    void SetBufferAngle(const float& b) { _buffer = b; }
 
   protected:
 
@@ -40,6 +40,11 @@ namespace cmtool {
   {
     _buffer = 0.;
     // Nothing to be done in the base class
+  }
+
+  void CBAlgoPolar::configure(const fhicl::ParameterSet& pset)
+  {
+    _buffer = pset.get<float>("buffer");
   }
 
   //--------------------------------------------------------

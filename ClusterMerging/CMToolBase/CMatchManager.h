@@ -46,7 +46,7 @@ namespace cmtool {
     virtual void Reset();
 
     /// A simple method to add an algorithm for merging
-    void AddMatchAlgo(CFloatAlgoBase* algo) {_match_algo = algo;}
+    void AddMatchAlgo(std::shared_ptr<::cmtool::CFloatAlgoBase> algo) {_match_algo = algo;}
 
     /// A method to obtain book keeper
     const CMatchBookKeeper& GetBookKeeper() const { return _book_keeper; }
@@ -77,8 +77,8 @@ namespace cmtool {
     /// Book keeper instance
     CMatchBookKeeper _book_keeper;
 
-    /// Merging algorithm
-    ::cmtool::CFloatAlgoBase* _match_algo;
+    /// Matching algorithm
+    std::shared_ptr<::cmtool::CFloatAlgoBase> _match_algo;
 
     /// Number of planes
     size_t _nplanes;

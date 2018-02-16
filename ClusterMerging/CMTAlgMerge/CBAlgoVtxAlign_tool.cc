@@ -22,6 +22,8 @@ namespace cmtool {
     
     /// Default destructor
     virtual ~CBAlgoVtxAlign(){};
+
+    void configure(const fhicl::ParameterSet& pset);
  
     /**
        Core function: given the ClusterParamsAlg input, return whether a cluster should be
@@ -32,11 +34,6 @@ namespace cmtool {
 
     /// Function to reset the algorithm instance ... maybe implemented via child class
     void Reset(){}
-
-    void SetMaxAngleDiff  (float a) { _max_angle_diff_merge = a;  }
-    void SetMinGammaOAngle(float a) { _min_gammagamma_oangle = a; }
-    void SetMinNHits(size_t n) { _min_nhits = n; }
-    void SetMaxMergeDist(float d) { _max_merge_dist = d; }
 
   protected:
 
@@ -53,9 +50,17 @@ namespace cmtool {
   CBAlgoVtxAlign::CBAlgoVtxAlign(const fhicl::ParameterSet& pset) 
   //----------------------------------------
   {
-    _max_angle_diff_merge  = 0.;
-    _min_gammagamma_oangle = 0.;
-    _min_nhits = 0;
+    configure(pset);
+  }
+
+  void CBAlgoVtxAlign::configure(const fhicl::ParameterSet& pset)
+  {
+    _max_angle_diff_merge  = pset.get<float>("max_angle_diff_merge");
+    _min_gammagamma_oangle = pset.get<float>("min_gammagamma_oangle");
+    _min_nhits             = pset.get<size_t>("min_nhits");
+    _max_merge_dist        = pset.get<float>("max_merge_dist");
+
+    return;
   }
 
   std::vector< std::vector<size_t> > CBAlgoVtxAlign::Merge(const std::vector<::cluster::Cluster>& clus_v) {

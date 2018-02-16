@@ -1,0 +1,10 @@
+BEGIN_PROLOG
+
+match_cbalgoiou:
+{
+ tool_type: CBAlgoIoU
+ iou_min: 0.25
+ 
+}
+
+END_PROLOG

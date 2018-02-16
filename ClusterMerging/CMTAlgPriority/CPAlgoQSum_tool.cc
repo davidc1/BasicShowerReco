@@ -18,14 +18,13 @@ namespace cmtool {
     /// Default destructor
     ~CPAlgoQSum(){};
 
+    void configure(const fhicl::ParameterSet& pset);
+
     /**
        Core function: given the CPAN input, return a float which indicates 
        the user-defined priority for analysis.
     */
     float Priority(const ::cluster::Cluster &cluster);
-
-    /// Setter for minimum charge
-    void SetMinQ(double v) { _qsum_cut = v; }
 
   protected:
 
@@ -37,7 +36,12 @@ namespace cmtool {
   CPAlgoQSum::CPAlgoQSum(const fhicl::ParameterSet& pset)
   //----------------------------------------------------------
   {
-    _qsum_cut = 0;
+    configure(pset);
+  }
+
+  void CPAlgoQSum::configure(const fhicl::ParameterSet& pset)
+  {
+    _qsum_cut = pset.get<double>("qsum_cut");
   }
 
   //------------------------------------------------------------------------------
