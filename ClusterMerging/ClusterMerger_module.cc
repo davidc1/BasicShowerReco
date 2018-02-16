@@ -95,7 +95,7 @@ ClusterMerger::ClusterMerger(fhicl::ParameterSet const & pset)
   _merge_helper->GetManager().Reset();
   std::cout << "DD done with reset" << std::endl;
 
-  //_CMaker = new ::cmtool::CMergeHelper();
+  _CMaker = new ::cluster::ClusterMaker();
   
   // get detector specific properties
   auto const* geom = ::lar::providerFrom<geo::Geometry>();
@@ -138,15 +138,23 @@ void ClusterMerger::produce(art::Event & e)
   // cluster pointer maker for later to create associations
   art::PtrMaker<recob::Cluster> ClusPtrMaker(e, *this);
 
+  std::cout << "DD created empty container storer for product objects" << std::endl;
+
   // load data products needed
 
   // load input clusters
    auto const& clus_h = e.getValidHandle<std::vector<recob::Cluster>>(fClusterProducer);
+
+   std::cout << "DD loaded clusters..." << std::endl;
   
   // load associated hits
   art::FindManyP<recob::Hit> clus_hit_assn_v(clus_h, e, fClusterProducer);
 
+  std::cout << "DD and associations..." << std::endl;
+
   GetHitPointer(clus_hit_assn_v);
+
+  std::cout << "DD got hit pointer to create output associations..." << std::endl;
 
   // get generic hit art::Ptr
   // from it get id() and productGetter()
@@ -157,9 +165,13 @@ void ClusterMerger::produce(art::Event & e)
   // load vertices
   auto const& vtx_h = e.getValidHandle<std::vector<recob::Vertex>>(fVertexProducer);
 
+  std::cout << "DD vertex loaded" << std::endl;
+
   // create cluster::Clusters
   std::vector<::cluster::Cluster> event_clusters;
   _CMaker->MakeClusters(clus_h, clus_hit_assn_v, vtx_h, event_clusters);
+
+  std::cout << "DD Make clusters called" << std::endl;
 
   _merge_helper->Process(event_clusters);
 
