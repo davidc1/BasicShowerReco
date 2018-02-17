@@ -27,10 +27,6 @@ namespace cmtool {
 
   void CMatchManager::EventBegin()
   {
-    if(_debug_mode <= kPerMerging) {
-      if(_match_algo)    _match_algo->SetVerbose(true);
-      if(_priority_algo) _priority_algo->SetVerbose(true);
-    }
 
   }
   

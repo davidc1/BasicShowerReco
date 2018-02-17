@@ -145,7 +145,7 @@ void ClusterMerger::produce(art::Event & e)
   // load input clusters
    auto const& clus_h = e.getValidHandle<std::vector<recob::Cluster>>(fClusterProducer);
 
-   std::cout << "DD loaded clusters..." << std::endl;
+   std::cout << "DD loaded " << clus_h->size() << " clusters..." << std::endl;
   
   // load associated hits
   art::FindManyP<recob::Hit> clus_hit_assn_v(clus_h, e, fClusterProducer);
@@ -187,14 +187,13 @@ void ClusterMerger::produce(art::Event & e)
     FillClusterProperties(outclus,out_clus,Cluster_v->size());
     
     Cluster_v->emplace_back(outclus);
+    art::Ptr<recob::Cluster> const ClusPtr = ClusPtrMaker(Cluster_v->size()-1);
 
     // create association to hits
     for (auto const& hit : out_clus.GetHits()) {
       auto key = hit._idx;
       art::Ptr<recob::Hit> HitPtr(_hitptr.id(),key,_hitptr.productGetter());
-      art::Ptr<recob::Cluster> const ClusPtr = ClusPtrMaker(Cluster_v->size()-1);
       Cluster_Hit_assn_v->addSingle(ClusPtr,HitPtr);
-      
     }// for all hits associated to the cluster
     
   }// for all output clsters

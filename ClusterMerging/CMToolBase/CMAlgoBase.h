@@ -54,9 +54,6 @@ namespace cmtool {
     /// Setter function for an output plot TFile pointer
     void SetAnaFile(TFile* fout) { _fout = fout; }
 
-    /// Setter function for verbosity
-    void SetVerbose(bool doit=true) { _verbose = doit; }
-
   protected:
 
     /// TFile pointer to an output file

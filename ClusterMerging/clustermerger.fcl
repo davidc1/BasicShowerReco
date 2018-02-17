@@ -6,7 +6,7 @@ BEGIN_PROLOG
 
 ClusterMerger: {
  module_type: "ClusterMerger"  
- ClusterProducer: "pandoraNu"
+ ClusterProducer: "proximity"
  VertexProducer:  "ccvertex"
  MergeTools:
      {

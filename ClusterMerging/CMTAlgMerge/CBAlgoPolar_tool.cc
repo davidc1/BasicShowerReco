@@ -44,7 +44,8 @@ namespace cmtool {
 
   void CBAlgoPolar::configure(const fhicl::ParameterSet& pset)
   {
-    _buffer = pset.get<float>("buffer");
+    _buffer  = pset.get<float>("buffer");
+    _verbose = pset.get<bool> ("verbose",false);
   }
 
   //--------------------------------------------------------

@@ -59,6 +59,7 @@ namespace cmtool {
     _min_gammagamma_oangle = pset.get<float>("min_gammagamma_oangle");
     _min_nhits             = pset.get<size_t>("min_nhits");
     _max_merge_dist        = pset.get<float>("max_merge_dist");
+    _verbose               = pset.get<bool> ("verbose",false);
 
     return;
   }

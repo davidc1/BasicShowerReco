@@ -68,6 +68,7 @@ namespace cmtool {
     
     _min_size       = pset.get<size_t>("min_size");
     _max_angle_diff = pset.get<float>("max_angle_diff");
+    _verbose        = pset.get<bool> ("verbose",false);
 
   }
 

@@ -119,11 +119,17 @@ namespace cluster {
     Double_t xyz[3] = {};
     vtx.XYZ(xyz);
 
+
+    std::cout << "Vtx coordinates : [" << xyz[0] << ", " << xyz[1] << ", " << xyz[2] << "]" << std::endl;
+
     for (size_t pl = 0; pl < 3; pl++) {
 
       auto const& pt = geomH->Get2DPointProjection(xyz,pl);
       _vtx_w_cm[pl] = pt.w;
       _vtx_t_cm[pl] = pt.t + (detp->TriggerOffset() * _time2cm);
+
+      std::cout << "trigger offset [cm] : " << (detp->TriggerOffset() * _time2cm) << std::endl;
+      std::cout << "Vtx @ pl " << pl << " [" << _vtx_w_cm[pl] << ", " << _vtx_t_cm[pl] << " ]" << std::endl;
 
       }
 
