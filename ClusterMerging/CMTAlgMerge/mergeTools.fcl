@@ -19,12 +19,15 @@ merge_cbalgovtxalign:
  min_gammagamma_oangle: 15
  min_nhits: 10
  max_merge_dist: 3
+ mergetillconverge: true
 }
 
 merge_cbalgopolar:
 {
  tool_type: CBAlgoPolar
  buffer: 0
+ mergetillconverge: true
+ verbose: true
 }
 
 END_PROLOG

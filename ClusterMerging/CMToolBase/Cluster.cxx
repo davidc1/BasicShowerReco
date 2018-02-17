@@ -29,7 +29,7 @@ namespace cluster {
     float angle_min =  360.;
     float angle_max = -360.;
     float angle_avg = 0.;
-    float rad_min   = 1000.;
+    float rad_min   = 100000.;
     float rad_max   = 0.;
 
     // prepare vectors for linearity calculation

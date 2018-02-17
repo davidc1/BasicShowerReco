@@ -124,7 +124,7 @@ namespace cluster {
 
     for (size_t pl = 0; pl < 3; pl++) {
 
-      auto const& pt = geomH->Get2DPointProjection(xyz,pl);
+      auto const& pt = geomH->Get2DPointProjectionCM(xyz,pl);
       _vtx_w_cm[pl] = pt.w;
       _vtx_t_cm[pl] = pt.t + (detp->TriggerOffset() * _time2cm);
 

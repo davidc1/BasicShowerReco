@@ -52,13 +52,12 @@ private:
 
   /**
      @brief given a cluster::Cluster fill a recob::Cluster
-     @input Cluster   -> reference to cluster to be created
      @input CMCluster -> where cluster variables are currently stored
      @input n         -> index of current cluster
+     @return          -> recob::Cluster
    */
-  void FillClusterProperties(::recob::Cluster& cluster,
-			     const ::cluster::Cluster& CMCluster,
-			     const size_t& n);
+  const recob::Cluster FillClusterProperties(const ::cluster::Cluster& CMCluster,
+					     const size_t& n);
 
   // Declare member data here.
 
@@ -152,15 +151,14 @@ void ClusterMerger::produce(art::Event & e)
 
   std::cout << "DD and associations..." << std::endl;
 
-  GetHitPointer(clus_hit_assn_v);
-
-  std::cout << "DD got hit pointer to create output associations..." << std::endl;
-
   // get generic hit art::Ptr
   // from it get id() and productGetter()
   // see http://nusoft.fnal.gov/larsoft/doxsvn/html/classart_1_1Ptr.html
   // and then can call Ptr (ProductID const productID, key_type itemKey, EDProductGetter const *prodGetter)
   // to make art::Ptr for the hit I want to associate.
+  GetHitPointer(clus_hit_assn_v);
+
+  std::cout << "DD got hit pointer to create output associations..." << std::endl;
 
   // load vertices
   auto const& vtx_h = e.getValidHandle<std::vector<recob::Vertex>>(fVertexProducer);
@@ -183,18 +181,18 @@ void ClusterMerger::produce(art::Event & e)
   // loop through output clusters
   for (auto const& out_clus : out_clusters) {
 
-    ::recob::Cluster outclus;
-    FillClusterProperties(outclus,out_clus,Cluster_v->size());
-    
-    Cluster_v->emplace_back(outclus);
+    Cluster_v->emplace_back( FillClusterProperties(out_clus,Cluster_v->size()) );
     art::Ptr<recob::Cluster> const ClusPtr = ClusPtrMaker(Cluster_v->size()-1);
 
     // create association to hits
+    size_t ctr = 0;
     for (auto const& hit : out_clus.GetHits()) {
       auto key = hit._idx;
+      ctr += 1;
       art::Ptr<recob::Hit> HitPtr(_hitptr.id(),key,_hitptr.productGetter());
       Cluster_Hit_assn_v->addSingle(ClusPtr,HitPtr);
     }// for all hits associated to the cluster
+    std::cout << " associated hits : " << ctr << std::endl;
     
   }// for all output clsters
   
@@ -213,12 +211,11 @@ void ClusterMerger::endJob()
   // Implementation of optional member function here.
 }
 
-void ClusterMerger::FillClusterProperties(::recob::Cluster& cluster,
-					  const ::cluster::Cluster& CMCluster,
-					  const size_t& n) {
+const recob::Cluster ClusterMerger::FillClusterProperties(const ::cluster::Cluster& CMCluster,
+							  const size_t& n) {
   
   auto const* geom = ::lar::providerFrom<geo::Geometry>();
-
+  
   float startW = CMCluster._start_pt._w;
   float startT = CMCluster._start_pt._t;
   
@@ -227,22 +224,29 @@ void ClusterMerger::FillClusterProperties(::recob::Cluster& cluster,
   
   auto planeid = geo::PlaneID(0,0,CMCluster._plane);
 
+  std::cout << "cluster nhits   : " << CMCluster.GetHits().size() << std::endl;
+  std::cout << "cluster planeid : " << planeid << std::endl;
+
   recob::Cluster clus(startW, 0., startT, 0., 0., CMCluster._angle, 0., 
 		      endW,   0., endT,   0., 0., 0., 0., 
 		      CMCluster._sum_charge, 0., CMCluster._sum_charge, 0., 
-		      CMCluster.size(), 0., 0., n,
+		      CMCluster.GetHits().size(), 0., 0., n,
 		      geom->View(planeid),
 		      planeid);
-  
+
+  return clus;
 }
 
+/**
+   This function returns a pointer to a hit in the event and is used to be
+   able to create associations via addSingle once the modules have finished running
+ */
 void ClusterMerger::GetHitPointer(const art::FindManyP<recob::Hit>& associations)
 {
 
   // find a valid hit pointer!
   if (associations.size()) {
     if (associations.at(0).size()) {
-
       
       _hitptr = associations.at(0).at(0);
 

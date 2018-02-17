@@ -38,14 +38,17 @@ namespace cmtool {
   CBAlgoPolar::CBAlgoPolar(const fhicl::ParameterSet& pset) 
   //----------------------------------------
   {
-    _buffer = 0.;
-    // Nothing to be done in the base class
+    configure(pset);
   }
 
   void CBAlgoPolar::configure(const fhicl::ParameterSet& pset)
   {
     _buffer  = pset.get<float>("buffer");
     _verbose = pset.get<bool> ("verbose",false);
+
+    std::cout << "DD \t BUFFER IS " << _buffer << std::endl;
+    std::cout << "DD \t verbose is " << _verbose << std::endl;
+
   }
 
   //--------------------------------------------------------
@@ -90,6 +93,7 @@ namespace cmtool {
 	if (clusDistance < cluster1.Length() ) {
 	  
 	  if (_verbose) { std::cout << "merge 2 with 1 " << std::endl << std::endl; }
+	  std::cout << "merge 2 with 1 " << std::endl << std::endl;
 	  
 	  return true;
 
@@ -107,6 +111,7 @@ namespace cmtool {
 	if (clusDistance < cluster2.Length() ) {
 	  
 	  if (_verbose) { std::cout << "merge 1 with 2 " << std::endl << std::endl; }
+	  std::cout << "merge 1 with 2 " << std::endl << std::endl;
 	  
 	  return true;
 
@@ -115,7 +120,8 @@ namespace cmtool {
       }
       
     }// if cluster 2 upstream of cluster 1 and larger
-      
+
+    std::cout << "\t\t unsuccessful merge " << std::endl;
 
     return false;
   }
