@@ -118,6 +118,8 @@ ClusterMerger::ClusterMerger(fhicl::ParameterSet const & pset)
     std::cout << "DD \t done adding algo" << std::endl;
   }// for all algorithms to be added
 
+  _merge_helper->GetManager().ReportAlgoChain();
+
   produces<std::vector<recob::Cluster> >();
   produces<art::Assns <recob::Cluster, recob::Hit> >();
 
@@ -142,7 +144,7 @@ void ClusterMerger::produce(art::Event & e)
   // load data products needed
 
   // load input clusters
-   auto const& clus_h = e.getValidHandle<std::vector<recob::Cluster>>(fClusterProducer);
+  auto const& clus_h = e.getValidHandle<std::vector<recob::Cluster>>(fClusterProducer);
 
    std::cout << "DD loaded " << clus_h->size() << " clusters..." << std::endl;
   
@@ -185,14 +187,11 @@ void ClusterMerger::produce(art::Event & e)
     art::Ptr<recob::Cluster> const ClusPtr = ClusPtrMaker(Cluster_v->size()-1);
 
     // create association to hits
-    size_t ctr = 0;
     for (auto const& hit : out_clus.GetHits()) {
       auto key = hit._idx;
-      ctr += 1;
       art::Ptr<recob::Hit> HitPtr(_hitptr.id(),key,_hitptr.productGetter());
       Cluster_Hit_assn_v->addSingle(ClusPtr,HitPtr);
     }// for all hits associated to the cluster
-    std::cout << " associated hits : " << ctr << std::endl;
     
   }// for all output clsters
   
@@ -223,9 +222,6 @@ const recob::Cluster ClusterMerger::FillClusterProperties(const ::cluster::Clust
   float endT   = CMCluster._end_pt._t;
   
   auto planeid = geo::PlaneID(0,0,CMCluster._plane);
-
-  std::cout << "cluster nhits   : " << CMCluster.GetHits().size() << std::endl;
-  std::cout << "cluster planeid : " << planeid << std::endl;
 
   recob::Cluster clus(startW, 0., startT, 0., 0., CMCluster._angle, 0., 
 		      endW,   0., endT,   0., 0., 0., 0., 

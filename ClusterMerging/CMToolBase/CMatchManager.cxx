@@ -248,6 +248,19 @@ namespace cmtool {
 
   }
 
+  void CMatchManager::ReportAlgoChain() {
+    
+    std::cout << "\t\t" << std::endl;
+    std::cout << "\t\t *****************" << std::endl;
+    std::cout << "\t\t" << std::endl;
+    std::cout << "\t\t Algo : " << _match_algo->Name() << std::endl;
+    std::cout << "\t\t" << std::endl;
+    std::cout << "\t\t *****************" << std::endl;
+    std::cout << "\t\t" << std::endl;
+      
+    
+  }
+
 }
 
 #endif
