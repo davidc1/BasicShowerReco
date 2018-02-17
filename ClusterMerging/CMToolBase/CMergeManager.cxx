@@ -329,6 +329,20 @@ namespace cmtool {
 
   }
 
+  void CMergeManager::ReportAlgoChain() {
+    
+    std::cout << "\t\t" << std::endl;
+    std::cout << "\t\t *****************" << std::endl;
+    std::cout << "\t\t" << std::endl;
+    for (size_t i=0; i < _merge_algo_v.size(); i++)
+      std::cout << "\t\t Algo : " << _merge_algo_v[i]->Name() << std::endl;
+    std::cout << "\t\t" << std::endl;
+    std::cout << "\t\t *****************" << std::endl;
+    std::cout << "\t\t" << std::endl;
+      
+    
+  }
+
 }
 
 #endif

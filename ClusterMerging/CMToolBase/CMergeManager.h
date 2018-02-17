@@ -61,6 +61,11 @@ namespace cmtool {
     /// A method to obtain book keeper
     const CMergeBookKeeper& GetBookKeeper() const { return _book_keeper; }
 
+    /**
+       Report algorithm chain
+     */
+    void ReportAlgoChain();
+
 
   protected:
     

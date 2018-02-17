@@ -51,8 +51,15 @@ namespace cmtool {
     virtual void Report()
     {return;}
 
-    /// Setter function for an output plot TFile pointer
+    /**
+       Setter function for an output plot TFile pointer
+     */
     void SetAnaFile(TFile* fout) { _fout = fout; }
+
+    /**
+       Report algorithm name
+     */
+    std::string Name() { return _name; }
 
   protected:
 
@@ -61,6 +68,9 @@ namespace cmtool {
 
     /// Boolean to choose verbose mode. Turned on if CMergeManager/CMatchManager's verbosity level is >= kPerMerging
     bool _verbose;
+
+    /// algorithm name
+    std::string _name;
 
   };
 

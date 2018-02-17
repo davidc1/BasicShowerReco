@@ -58,6 +58,7 @@ namespace cmtool {
   CBAlgoAngleCompat::CBAlgoAngleCompat(const fhicl::ParameterSet& pset) 
   //----------------------------------------
   {
+    _name = "CBAlgoAngleCompat";
     _flip = false;
     _ctr  = 0;
     configure(pset);

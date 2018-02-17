@@ -50,6 +50,7 @@ namespace cmtool {
   CBAlgoVtxAlign::CBAlgoVtxAlign(const fhicl::ParameterSet& pset) 
   //----------------------------------------
   {
+    _name = "CBAlgoVtxAlgin";
     configure(pset);
   }
 
