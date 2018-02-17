@@ -62,7 +62,7 @@ namespace cmtool {
     void Reset();
 
     /// Setter to add an algorithm for priority determination
-    void AddPriorityAlgo(CPriorityAlgoBase* algo) { _priority_algo = algo; }
+    void AddPriorityAlgo(std::shared_ptr<cmtool::CPriorityAlgoBase> algo) { _priority_algo = algo; }
 
     /// Switch to continue merging till converges
     void MergeTillConverge(bool doit=true) {_merge_till_converge = doit;}
@@ -125,7 +125,7 @@ namespace cmtool {
     std::vector<::cluster::Cluster> _in_clusters;
 
     /// Priority algorithm
-    ::cmtool::CPriorityAlgoBase* _priority_algo;
+    std::shared_ptr<::cmtool::CPriorityAlgoBase> _priority_algo;
 
     /// Output analysis plot TFile
     TFile* _fout;

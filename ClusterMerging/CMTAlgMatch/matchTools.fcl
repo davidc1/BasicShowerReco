@@ -1,8 +1,8 @@
 BEGIN_PROLOG
 
-match_cbalgoiou:
+match_cfalgoiou:
 {
- tool_type: CBAlgoIoU
+ tool_type: CFAlgoIoU
  iou_min: 0.25
  
 }

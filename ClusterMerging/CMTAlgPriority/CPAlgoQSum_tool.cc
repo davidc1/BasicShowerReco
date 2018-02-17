@@ -53,5 +53,5 @@ namespace cmtool {
     return cluster._sum_charge;
   }
   
-    
+  DEFINE_ART_CLASS_TOOL(CPAlgoQSum)        
 }

@@ -19,6 +19,7 @@
 
 #include "lardataobj/RecoBase/Cluster.h"
 #include "lardataobj/RecoBase/PFParticle.h"
+#include "lardataobj/RecoBase/Hit.h"
 
 #include "art/Persistency/Common/PtrMaker.h"
 
@@ -69,7 +70,7 @@ private:
   // cluster maker
   ::cluster::ClusterMaker* _CMaker;
 
-  std::string fClusterProducer;
+  std::string fClusterProducer, fVertexProducer;
 
   // cluster match manager
   ::cmtool::CMatchManager* _mgr;
@@ -100,10 +101,15 @@ ClusterMatcher::ClusterMatcher(fhicl::ParameterSet const & pset)
   _CMaker = new ::cluster::ClusterMaker();
   
   fClusterProducer = pset.get<std::string>("ClusterProducer");
+  fVertexProducer  = pset.get<std::string>("VertexProducer" );
 
   std::cout << "DD setting up algos" << std::endl;
   
-  // grab algorithms for merging
+  // grab algorithm for pirority
+  const fhicl::ParameterSet& priorityTool = pset.get<fhicl::ParameterSet>("PriorityTool");
+  _mgr->AddPriorityAlgo(art::make_tool<cmtool::CPriorityAlgoBase>(priorityTool));
+
+  // grab algorithm for matching
   const fhicl::ParameterSet& matchTool = pset.get<fhicl::ParameterSet>("MatchTool");
   _mgr->AddMatchAlgo(art::make_tool<cmtool::CFloatAlgoBase>(matchTool));
   std::cout << "DD \t done adding algo" << std::endl;
@@ -133,11 +139,36 @@ void ClusterMatcher::produce(art::Event & e)
   // load associated hits
   art::FindManyP<recob::Hit> clus_hit_assn_v(clus_h, e, fClusterProducer);
 
+  // load vertices
+  auto const& vtx_h = e.getValidHandle<std::vector<recob::Vertex>>(fVertexProducer);
+
+  // create cluster::Clusters
+  std::vector<::cluster::Cluster> event_clusters;
+  _CMaker->MakeClusters(clus_h, clus_hit_assn_v, vtx_h, event_clusters);
+
   _mgr->Reset();
-  //_mgr->SetClusters();//local_clusters);
+  _mgr->SetClusters(event_clusters);
   _mgr->Process();
 
+  // result is a vector of vector of unsigned int
+  // each entry is a new PFP
+  // and the vector it stores is the list of cluster indices which have been matched
+  auto const& result_v = _mgr->GetBookKeeper().GetResult();
 
+  // create PFParticle outputs
+  for (auto const& result : result_v) {
+
+    recob::PFParticle pfp(11,0,0,std::vector<size_t>());
+    PFP_v->emplace_back(pfp);
+    art::Ptr<recob::PFParticle> const PFPPtr = PFPPtrMaker(PFP_v->size()-1);
+    for (auto const& clus_idx : result) {
+      const art::Ptr<recob::Cluster> ClusPtr(clus_h, clus_idx);
+      PFP_Hit_assn_v->addSingle(PFPPtr,ClusPtr);
+    }// for all associated clusters
+  }// for all PFParticles creates
+
+  e.put(std::move(PFP_v));
+  e.put(std::move(PFP_Hit_assn_v));
 }
 
 void ClusterMatcher::beginJob()

@@ -1,3 +1,6 @@
+#include <map>
+#include <algorithm>
+
 #include <iostream>
 #include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CPriorityAlgoBase.h"
 
@@ -36,7 +39,8 @@ namespace cmtool {
   CPAlgoNHits::CPAlgoNHits(const fhicl::ParameterSet& pset)
   //----------------------------------------------
   {
-    _min_hits = 0;
+    _name = "CPAlgoNHits";
+    configure(pset);
   }
 
   void CPAlgoNHits::configure(const fhicl::ParameterSet& pset)
@@ -52,5 +56,6 @@ namespace cmtool {
 
     return ( nhit < _min_hits ? -1 : (float)nhit );
   }
-  
+
+  DEFINE_ART_CLASS_TOOL(CPAlgoNHits)      
 }
