@@ -43,7 +43,7 @@ public:
   explicit ShrReco3D(fhicl::ParameterSet const & p);
   // The compiler-generated destructor is fine for non-base
   // classes without bare pointers or other resource use.
-
+  
   // Plugins should not be copied or assigned.
   ShrReco3D(ShrReco3D const &) = delete;
   ShrReco3D(ShrReco3D &&) = delete;
@@ -56,11 +56,13 @@ public:
   // Selected optional functions.
   void beginJob() override;
   void endJob() override;
-
+  
 private:
 
-    /// Input producer name
-    std::string fInputProducer;
+  /// Input producer name
+  std::string fPFPproducer;
+  std::string fClusproducer;
+  std::string fVtxproducer;
 
     /// Shower reco core class instance
     ::showerreco::ShowerRecoManager* _manager;
@@ -84,7 +86,9 @@ ShrReco3D::ShrReco3D(fhicl::ParameterSet const & p)
 // Initialize member data here.
 {
 
-  fInputProducer  = p.get<std::string>("InputProducer" );
+  fPFPproducer  = p.get<std::string>("PFPproducer" );
+  fClusproducer = p.get<std::string>("Clusproducer");
+  fVtxproducer  = p.get<std::string>("Vtxproducer" );
 
   produces<std::vector<recob::Shower> >();
   produces<art::Assns <recob::Shower, recob::PFParticle> >();
@@ -110,7 +114,7 @@ void ShrReco3D::produce(art::Event & e)
   // pass event to ProtoShowerAlgBase to create ProtoShower objects
   // which will then be fed to shower reco algorithm chain
   std::vector<protoshower::ProtoShower> event_protoshower_v;
-  _psalg->GenerateProtoShowers(e, fInputProducer, event_protoshower_v);
+  _psalg->GenerateProtoShowers(e, fPFPproducer, fClusproducer, fVtxproducer, event_protoshower_v);
   
   // set protoshowers for algorithms
   _manager->SetProtoShowers(event_protoshower_v);

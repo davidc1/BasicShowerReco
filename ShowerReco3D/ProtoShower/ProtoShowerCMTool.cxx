@@ -7,24 +7,24 @@ namespace protoshower {
 
   void ProtoShowerCMTool::GenerateProtoShowers(::art::Event & e,
 					       const std::string& fPFPproducer,
+					       const std::string& fClusterproducer,
+					       const std::string& fVtxproducer,
 					       std::vector<protoshower::ProtoShower> & proto_shower_v) {
 
     // grab PFParticles in event
-    art::Handle<std::vector<recob::PFParticle> > pfp_h;
-    e.getByLabel(fPFPproducer,pfp_h);    
+    auto const& pfp_h = e.getValidHandle<std::vector<recob::PFParticle> >(fPFPproducer);
 
     // grab clusters associated with PFParticles
     art::FindManyP<recob::Cluster> pfp_clus_assn_v(pfp_h, e, fPFPproducer);
 
     // ADDITION FROM PETRILLO
-    e.getValidHandle<std::vector<recob::Cluster>>(fPFPproducer);
+    e.getValidHandle<std::vector<recob::Cluster>>(fClusterproducer);
 
     // grab the hits associated to the PFParticles
     auto pfp_hit_assn_v = lar::FindManyInChainP<recob::Hit, recob::Cluster>::find(pfp_h, e, fPFPproducer);
 
     // load event vertex associated to tagged neutrino interaction
-    art::Handle<std::vector<recob::Vertex> > vertex_h;
-    e.getByLabel(fPFPproducer,vertex_h);
+    auto const& vertex_h = e.getValidHandle<std::vector<recob::Vertex> >(fVtxproducer);
 
     // loop through PFParticles
     for (size_t p=0; p < pfp_h->size(); p++) {

@@ -36,8 +36,18 @@ public:
   /// Default destructor
   virtual ~ProtoShowerCMTool() {}
 
+  /**
+     @brief Generate ProtoShower objects starting with from art event
+     @input art:Event e -> event information
+     @input fPFPproducer -> producer name for PFParticle
+     @input fClusterproducer -> producer for Clusters associated to PFParticle
+     @input fVtxproducer -> producer for vertex which notes shower origin
+     @input proto_shower_v -> vector of protoshowers passed by reference. Filled by function
+   */
   void GenerateProtoShowers(::art::Event & e,
 			    const std::string& fPFPproducer,
+			    const std::string& fClusterproducer,
+			    const std::string& fVtxproducer,
 			    std::vector<protoshower::ProtoShower> & proto_shower_v);
   
 
@@ -48,13 +58,6 @@ public:
 protected:
 
   std::string _name;
-
-  // cluster producer name
-  //std::string fClusProducer;
-  // vertex producer name
-  //std::string fVertexProducer;
-  // hit producer name
-  //std::string fHitProducer;
 
 };
 
