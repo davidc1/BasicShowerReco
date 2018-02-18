@@ -1,9 +1,50 @@
 #ifndef FILTERSHOWERS_CXX
 #define FILTERSHOWERS_CXX
 
-#include "FilterShowers.h"
+#include <iostream>
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
+
+#include <sstream>
+
+/**
+   \class ShowerRecoModuleBase
+   User defined class ShowerRecoModuleBase ... these comments are used to generate
+   doxygen documentation!
+ */
 
 namespace showerreco {
+
+  class FilterShowers : public ShowerRecoModuleBase {
+    
+  public:
+    
+    /// Default constructor
+    FilterShowers(const fhicl::ParameterSet& pset);
+    
+    /// Default destructor
+    ~FilterShowers() {}
+
+    void configure(const fhicl::ParameterSet& pset);
+    
+    
+    void do_reconstruction(const ::protoshower::ProtoShower &, Shower_t &);
+    
+  private:
+    
+    double _anglecut;
+    
+  };
+
+  FilterShowers::FilterShowers(const fhicl::ParameterSet& pset)
+  {
+    _name = "FilterShowers";
+    configure(pset);
+  }
+
+  void FilterShowers::configure(const fhicl::ParameterSet& pset)
+  {
+    _anglecut = pset.get<double>("anglecut");
+  }
 
 void FilterShowers::do_reconstruction(const ::protoshower::ProtoShower & proto_shower,
                                     Shower_t& resultShower) {
@@ -109,7 +150,7 @@ void FilterShowers::do_reconstruction(const ::protoshower::ProtoShower & proto_s
   }
 }
 
-
+  DEFINE_ART_CLASS_TOOL(FilterShowers)
 } //showerreco
 
 #endif

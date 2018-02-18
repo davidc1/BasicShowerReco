@@ -1,16 +1,63 @@
 #ifndef ANGLE3DFORMULA_CXX
 #define ANGLE3DFORMULA_CXX
 
-#include "Angle3DFormula.h"
+#include <iostream>
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
+/**
+   \class ShowerRecoModuleBase
+   User defined class ShowerRecoModuleBase ... these comments are used to generate
+   doxygen documentation!
+ */
 
 namespace showerreco {
 
-  Angle3DFormula::Angle3DFormula()
+  class Angle3DFormula : public ShowerRecoModuleBase {
+    
+  public:
+    
+    /// Default constructor
+    Angle3DFormula(const fhicl::ParameterSet& pset);
+    
+    /// Default destructor
+    ~Angle3DFormula(){};
+
+    void configure(const fhicl::ParameterSet& pset);
+    
+    /// set the maximum angle that is allowed as an error (radians)
+    void setMaxAngleError(double err) { _max_err = err; }
+    
+    /// set whether we should validate the direction using info from reco'd vertex
+    void setValidateDirection(bool on) { _validate_dir = on; }
+    
+    /// set minimum dot product between shower direction and vtx -> strt direction
+    void setMinDotProduct(double d) { _dot_min = d; }
+    
+    void do_reconstruction(const ::protoshower::ProtoShower &, Shower_t &);
+    
+  private:
+    
+    // maximum error in the angle that is allowed
+    double _max_err;
+    
+    // validate direction by using reconstructed vertex
+    bool _validate_dir;
+    
+    // minimum dot product value
+    double _dot_min;
+    
+  };
+
+  Angle3DFormula::Angle3DFormula(const fhicl::ParameterSet& pset)
   {
+    configure(pset);
     _name = "Angle3DFormula";
-    _max_err = 0.1;
-    _validate_dir = false;
-    _dot_min = 0.9;
+  }
+
+  void Angle3DFormula::configure(const fhicl::ParameterSet& pset)
+  {
+    _max_err = pset.get<double>("max_err");
+    _validate_dir = pset.get<bool>("validate_dir");
+    _dot_min = pset.get<double>("dot_min");
   }
   
   void Angle3DFormula::do_reconstruction(const ::protoshower::ProtoShower & proto_shower,
@@ -197,7 +244,8 @@ namespace showerreco {
     return;
     
   }
-  
+
+  DEFINE_ART_CLASS_TOOL(Angle3DFormula)    
 } //showerreco
 
 #endif

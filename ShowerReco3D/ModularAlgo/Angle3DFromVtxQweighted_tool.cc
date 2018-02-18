@@ -1,13 +1,48 @@
 #ifndef ANGLE3DFROMVERTEXQWEIGHTED_CXX
 #define ANGLE3DFROMVERTEXQWEIGHTED_CXX
 
-#include "Angle3DFromVtxQweighted.h"
+#include <iostream>
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
+/**
+   \class ShowerRecoModuleBase
+   User defined class ShowerRecoModuleBase ... these comments are used to generate
+   doxygen documentation!
+ */
 
 #include <math.h>
 #include <sstream>
 #include <algorithm>
 
 namespace showerreco {
+  
+  class Angle3DFromVtxQweighted : public ShowerRecoModuleBase {
+    
+  public:
+    
+    /// Default constructor
+    Angle3DFromVtxQweighted(const fhicl::ParameterSet& pset); 
+    
+    /// Default destructor
+    ~Angle3DFromVtxQweighted(){};
+    
+    void configure(const fhicl::ParameterSet& pset);
+    
+    void do_reconstruction(const ::protoshower::ProtoShower &, Shower_t &);
+    
+  private:
+    
+  };
+  
+  Angle3DFromVtxQweighted::Angle3DFromVtxQweighted(const fhicl::ParameterSet& pset)
+  {
+    configure(pset);
+    _name = "Angle3DFromVtxQweighted";
+  }
+
+  void Angle3DFromVtxQweighted::configure(const fhicl::ParameterSet& pset)
+  {
+    return;
+  }
   
   void Angle3DFromVtxQweighted::do_reconstruction(const ::protoshower::ProtoShower & proto_shower,
 					 Shower_t& resultShower) {
@@ -117,7 +152,7 @@ namespace showerreco {
     return;
   }
   
-  
+  DEFINE_ART_CLASS_TOOL(Angle3DFromVtxQweighted)
 } //showerreco
 
 #endif

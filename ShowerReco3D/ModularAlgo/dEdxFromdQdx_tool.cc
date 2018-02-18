@@ -1,15 +1,50 @@
 #ifndef DEDXFROMDQDX_CXX
 #define DEDXFROMDQDX_CXX
 
-#include "dEdxFromdQdx.h"
+#include <iostream>
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
+/**
+   \class dEdxFromdQdx : ShowerRecoModuleBase
+   This is meant to compute the 2D dQdx along the start of the shower.
+ */
 
 namespace showerreco {
 
-dEdxFromdQdx::dEdxFromdQdx()
-{
-  _name = "dEdxFromdQdx";
-  _use_pitch = true;
-}
+class dEdxFromdQdx : public ShowerRecoModuleBase {
+
+public:
+
+  /// Default constructor
+  dEdxFromdQdx(const fhicl::ParameterSet& pset);
+
+  /// Default destructor
+  ~dEdxFromdQdx(){};
+
+  void configure(const fhicl::ParameterSet& pset);
+
+  void do_reconstruction(const ::protoshower::ProtoShower &, Shower_t &);
+
+  void initialize();
+
+private:
+
+  bool _use_pitch;
+  double _dEdx;
+  int _pl_best;
+  int _pl;
+};
+
+  dEdxFromdQdx::dEdxFromdQdx(const fhicl::ParameterSet& pset)
+  {
+    _name = "dEdxFromdQdx";
+    configure(pset);
+  }
+
+  void dEdxFromdQdx::configure(const fhicl::ParameterSet& pset)
+  {
+    _use_pitch = true;
+    return;
+  }
 
 void dEdxFromdQdx::initialize()
 {
@@ -66,7 +101,7 @@ void dEdxFromdQdx::do_reconstruction(const ::protoshower::ProtoShower & proto_sh
   return;
 }
 
-
+  DEFINE_ART_CLASS_TOOL(dEdxFromdQdx)
 } //showerreco
 
 #endif

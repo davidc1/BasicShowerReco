@@ -1,10 +1,35 @@
 #ifndef YPLANESTARTPOINT3D_CXX
 #define YPLANESTARTPOINT3D_CXX
 
-#include "YPlaneStartPoint3D.h"
-
+#include <iostream>
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
+/**
+   \class ShowerRecoModuleBase
+   User defined class ShowerRecoModuleBase ... these comments are used to generate
+   doxygen documentation!
+ */
 
 namespace showerreco {
+
+  class YPlaneStartPoint3D : public ShowerRecoModuleBase {
+    
+  public:
+    
+    /// Default constructor
+    YPlaneStartPoint3D(const fhicl::ParameterSet& pset);
+
+    /// Default destructor
+    ~YPlaneStartPoint3D() {}
+    
+    /// Inherited/overloaded function from ShowerRecoModuleBase
+    void do_reconstruction(const ::protoshower::ProtoShower &, Shower_t &);
+    
+  };
+  
+  YPlaneStartPoint3D::YPlaneStartPoint3D(const fhicl::ParameterSet& pset)
+  {
+    _name = "YPlaneStartPoint3D"; 
+  }
 
   void YPlaneStartPoint3D::do_reconstruction( const ::protoshower::ProtoShower & proto_shower,
 					      Shower_t& resultShower)
@@ -147,6 +172,7 @@ namespace showerreco {
     
 }
 
+  DEFINE_ART_CLASS_TOOL(YPlaneStartPoint3D)
 } //showerreco
 
 #endif

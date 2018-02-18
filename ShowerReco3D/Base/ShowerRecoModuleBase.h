@@ -25,6 +25,11 @@
 
 #include "TTree.h"
 
+// art TOOLS
+#include "art/Utilities/ToolMacros.h"
+#include "art/Utilities/make_tool.h"
+#include "fhiclcpp/ParameterSet.h"
+
 /**
    \class ShowerRecoModuleBase
    User defined class ShowerRecoModuleBase ... these comments are used to generate
@@ -36,17 +41,16 @@ class ShowerRecoModuleBase {
 
 public:
 
-    /// Default constructor
-    ShowerRecoModuleBase();
-
-    /// Default destructor
-    virtual ~ShowerRecoModuleBase() {}
+  /// Default destructor
+  virtual ~ShowerRecoModuleBase() noexcept = default;
 
     /**
      * @brief get the name of this module, used in helping organize order of modules and insertion/removal
      * @return name
      */
     std::string name() {return _name;}
+
+    void configure(const fhicl::ParameterSet& pset){};
 
     /**
      * @brief Virtual function that is overridden in child class, does the reconstruction work

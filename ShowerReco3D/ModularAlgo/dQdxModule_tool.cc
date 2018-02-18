@@ -1,19 +1,68 @@
 #ifndef DQDXMODULE_CXX
 #define DQDXMODULE_CXX
 
-#include "dQdxModule.h"
+#include <iostream>
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
+
+/**
+   \class dQdxModule : ShowerRecoModuleBase
+   This is meant to compute the 2D dQdx along the start of the shower.
+*/
 
 #include "math.h"
 #include <algorithm>
 #include <functional>
 
 namespace showerreco {
+
+  class dQdxModule : public ShowerRecoModuleBase {
+    
+  public:
+    
+    /// Default constructor
+    dQdxModule(const fhicl::ParameterSet& pset);
+    
+    /// Default destructor
+    ~dQdxModule(){};
+
+    void configure(const fhicl::ParameterSet& pset);
+    
+    void do_reconstruction(const ::protoshower::ProtoShower &, Shower_t &);
+    
+    void initialize();
+    
+  protected:
+    
+    double _timetick; // sampling size in usec
+    
+    // distance along which to calculate dEdx
+    double _dtrunk;
+    
+    // debugging tree
+    double _dqdx;
+    std::vector<double> _dqdx_v;
+    std::vector<double> _dist_v;
+    double _pitch;
+    double _dmax;
+    int    _nhits;
+    int    _ntot;
+    double _start_w, _start_t;
+
+    // position-dependent response map
+    std::vector< std::vector< std::vector< double > > >_responseMap;
+    double _responseStep;
+    
+  };
   
-  dQdxModule::dQdxModule()
+  dQdxModule::dQdxModule(const fhicl::ParameterSet& pset)
   {
     _name = "dQdxModule";
-    _tree = nullptr;
-    _dtrunk = 0.;
+    configure(pset);
+  }
+
+  void dQdxModule::configure(const fhicl::ParameterSet& pset)
+  {
+    _dtrunk = pset.get<double>("dtrunk");
   }
   
   void dQdxModule::initialize()
@@ -122,6 +171,7 @@ namespace showerreco {
     return;
   }
 
+  DEFINE_ART_CLASS_TOOL(dQdxModule)
 } //showerreco
 
 #endif

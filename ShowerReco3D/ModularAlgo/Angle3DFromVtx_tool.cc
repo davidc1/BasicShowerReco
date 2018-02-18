@@ -1,11 +1,48 @@
 #ifndef ANGLE3DFROMVERTEX_CXX
 #define ANGLE3DFROMVERTEX_CXX
 
-#include "Angle3DFromVtx.h"
+#include <iostream>
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
+/**
+   \class ShowerRecoModuleBase
+   User defined class ShowerRecoModuleBase ... these comments are used to generate
+   doxygen documentation!
+ */
+
 #include <math.h>
 #include <sstream>
 
 namespace showerreco {
+
+  class Angle3DFromVtx : public ShowerRecoModuleBase {
+    
+  public:
+    
+    /// Default constructor
+    Angle3DFromVtx(const fhicl::ParameterSet& pset);
+
+    void configure(const fhicl::ParameterSet& pset);
+    
+    /// Default destructor
+    ~Angle3DFromVtx(){};
+    
+    
+    void do_reconstruction(const ::protoshower::ProtoShower &, Shower_t &);
+    
+  private:
+    
+  };
+
+  Angle3DFromVtx::Angle3DFromVtx(const fhicl::ParameterSet& pset)
+  {
+    configure(pset);
+    _name = "Angle3DFromVtx";
+  }
+
+  void Angle3DFromVtx::configure(const fhicl::ParameterSet& pset)
+  {
+    return;
+  }
   
   void Angle3DFromVtx::do_reconstruction(const ::protoshower::ProtoShower & proto_shower,
 					 Shower_t& resultShower) {
@@ -49,7 +86,7 @@ namespace showerreco {
     return;
   }
   
-  
+  DEFINE_ART_CLASS_TOOL(Angle3DFromVtx)  
 } //showerreco
 
 #endif

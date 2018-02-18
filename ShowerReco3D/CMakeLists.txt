@@ -16,7 +16,6 @@ art_make(
           MODULE_LIBRARIES 
 	  		uboone_BasicShowerReco_ShowerReco3D_Base
 	  		uboone_BasicShowerReco_ShowerReco3D_ProtoShower
-	  		uboone_BasicShowerReco_ShowerReco3D_Factory
 		   	larpandora_LArPandoraInterface	
 			larcorealg_Geometry
 			larcore_Geometry_Geometry_service
@@ -52,7 +51,6 @@ art_make(
 add_subdirectory(ProtoShower)
 add_subdirectory(Base)
 add_subdirectory(ModularAlgo)
-add_subdirectory(Factory)
 
 
 install_headers()

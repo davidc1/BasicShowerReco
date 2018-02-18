@@ -22,7 +22,6 @@
 #include "Base/ShowerRecoManager.h"
 // include specific protoshower and recomanager instances
 #include "ProtoShower/ProtoShowerCMTool.h"
-#include "Factory/Pi0RecoAlgorithm.h"
 
 // larsoft data-products
 #include "lardataobj/RecoBase/Cluster.h"
@@ -32,6 +31,7 @@
 #include "lardataobj/RecoBase/Shower.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
+#include "art/Utilities/make_tool.h"
 
 #include <memory>
 
@@ -49,7 +49,7 @@ public:
   ShrReco3D(ShrReco3D &&) = delete;
   ShrReco3D & operator = (ShrReco3D const &) = delete;
   ShrReco3D & operator = (ShrReco3D &&) = delete;
-
+  
   // Required functions.
   void produce(art::Event & e) override;
 
@@ -58,26 +58,26 @@ public:
   void endJob() override;
   
 private:
-
+  
   /// Input producer name
   std::string fPFPproducer;
   std::string fClusproducer;
   std::string fVtxproducer;
-
-    /// Shower reco core class instance
-    ::showerreco::ShowerRecoManager* _manager;
-
-    // ProtoShowerAlgBase to make protoshowers
-    ::protoshower::ProtoShowerAlgBase* _psalg;
-
+  
+  /// Shower reco core class instance
+  ::showerreco::ShowerRecoManager* _manager;
+  
+  // ProtoShowerAlgBase to make protoshowers
+  ::protoshower::ProtoShowerAlgBase* _psalg;
+  
   /**
      Save output showers produced by reconstruction algorithms
-   */
+  */
   void SaveShower(const showerreco::Shower_t& shower,
 		  std::unique_ptr< std::vector<recob::Shower> >& Shower_v);
-
+  
   // Declare member data here.
-
+  
 };
 
 
@@ -90,13 +90,27 @@ ShrReco3D::ShrReco3D(fhicl::ParameterSet const & p)
   fClusproducer = p.get<std::string>("Clusproducer");
   fVtxproducer  = p.get<std::string>("Vtxproducer" );
 
+  // grab algorithms for merging
+  _manager = new showerreco::ShowerRecoManager();
+  const fhicl::ParameterSet& showerrecoTools = p.get<fhicl::ParameterSet>("ShowerRecoTools");
+  std::cout << "DD got parameter set. start loop..." << std::endl;
+  for (const std::string& showerrecoTool : showerrecoTools.get_pset_names()) {
+    std::cout << "DD \t in loop..." << std::endl;
+    const fhicl::ParameterSet& showerreco_pset = showerrecoTools.get<fhicl::ParameterSet>(showerrecoTool);
+    std::cout << "DD \t add merge algor..." << std::endl;
+    _manager->AddAlgo(art::make_tool<showerreco::ShowerRecoModuleBase>(showerreco_pset));
+    std::cout << "DD \t done adding algo" << std::endl;
+  }// for all algorithms to be added
+
+  //_manager = new ::showerreco::Pi0RecoAlgorithm();
+  _psalg   = new ::protoshower::ProtoShowerCMTool();
+
   produces<std::vector<recob::Shower> >();
   produces<art::Assns <recob::Shower, recob::PFParticle> >();
   produces<art::Assns <recob::Shower, recob::Cluster>    >();
   produces<art::Assns <recob::Shower, recob::Hit>        >();
 
-  _manager = new ::showerreco::Pi0RecoAlgorithm();
-  _psalg   = new ::protoshower::ProtoShowerCMTool();
+
 
   _manager->Initialize();
 
@@ -147,7 +161,7 @@ void ShrReco3D::endJob()
 
 
 void ShrReco3D::SaveShower(const showerreco::Shower_t& shower,
-			      std::unique_ptr< std::vector<recob::Shower> >& Shower_v) 
+			   std::unique_ptr< std::vector<recob::Shower> >& Shower_v) 
 {
   
     if (shower.fPassedReconstruction == false) {

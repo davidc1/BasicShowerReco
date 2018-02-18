@@ -3,15 +3,49 @@
 
 #include <iomanip>
 
-#include "LinearEnergy.h"
+#include <iostream>
+
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
+
+/**
+   \class ShowerRecoModuleBase
+   User defined class ShowerRecoModuleBase ... these comments are used to generate
+   doxygen documentation!
+ */
 
 namespace showerreco {
+
+  class LinearEnergy : public ShowerRecoModuleBase {
+    
+  public:
+    
+    /// Default constructor
+    LinearEnergy(const fhicl::ParameterSet& pset);
+    
+    /// Default destructor
+    ~LinearEnergy(){};
+
+    void configure(const fhicl::ParameterSet& pset);
+
+    
+    void do_reconstruction(const ::protoshower::ProtoShower &, Shower_t &);
+    
+    void initialize();
+    
+  private:
+    
+  };
   
-  LinearEnergy::LinearEnergy()
+  LinearEnergy::LinearEnergy(const fhicl::ParameterSet& pset)
   {
     
+    configure(pset);
     _name = "LinearEnergy";
+    return;
+  }
 
+  void LinearEnergy::configure(const fhicl::ParameterSet& pset)
+  {
     return;
   }
   
@@ -76,7 +110,8 @@ namespace showerreco {
     
     return;
   }
-  
+
+  DEFINE_ART_CLASS_TOOL(LinearEnergy)
 } //showerreco
 
 #endif

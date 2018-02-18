@@ -1,10 +1,37 @@
 #ifndef STARTPOINT3DMODULE_CXX
 #define STARTPOINT3DMODULE_CXX
 
-#include "StartPoint3DModule.h"
+#include <iostream>
+#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
+/**
+   \class ShowerRecoModuleBase
+   User defined class ShowerRecoModuleBase ... these comments are used to generate
+   doxygen documentation!
+ */
 
 namespace showerreco {
 
+  class StartPoint3DModule : public ShowerRecoModuleBase {
+    
+  public:
+    
+    /// Default constructor
+    StartPoint3DModule(const fhicl::ParameterSet& pset);
+
+    
+    /// Default destructor
+    ~StartPoint3DModule() {}
+    
+    /// Inherited/overloaded function from ShowerRecoModuleBase
+    void do_reconstruction(const ::protoshower::ProtoShower &, Shower_t &);
+    
+  };
+
+  StartPoint3DModule::StartPoint3DModule(const fhicl::ParameterSet& pset)
+    {
+      _name = "StartPoint3DModule"; 
+    }
+  
   void StartPoint3DModule::do_reconstruction( const ::protoshower::ProtoShower & proto_shower,
 					      Shower_t& resultShower)
 {
@@ -95,7 +122,7 @@ namespace showerreco {
     resultShower.fXYZStart = {sX / 2, sY, sZ} ;
 
 }
-
+  DEFINE_ART_CLASS_TOOL(StartPoint3DModule)
 } //showerreco
 
 #endif

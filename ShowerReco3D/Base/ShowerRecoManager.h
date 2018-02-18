@@ -43,7 +43,7 @@ public:
   ~ShowerRecoManager() {}
 
   /// Add shower reconstruction algorithm
-  void AddAlgo(ShowerRecoModuleBase* alg) { _alg_v.push_back(alg); }
+  void AddAlgo(std::shared_ptr<showerreco::ShowerRecoModuleBase> alg) { _alg_v.push_back(alg); }
 
   /// Add shower analysis class
   void AddAna(ShowerAnaBase* ana) { _ana_v.push_back(ana); }
@@ -102,7 +102,7 @@ public:
     bool _verbose;
 
     /// Shower reconstruction algorithm
-    std::vector< ::showerreco::ShowerRecoModuleBase* > _alg_v;
+    std::vector< std::shared_ptr<::showerreco::ShowerRecoModuleBase> > _alg_v;
     
     /// Shower analysis code
     std::vector< ::showerreco::ShowerAnaBase* > _ana_v;
