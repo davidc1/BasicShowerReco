@@ -39,6 +39,7 @@ namespace cmtool {
   CFAlgoIoU::CFAlgoIoU(const fhicl::ParameterSet& pset) 
   //-------------------------------------------------------
   {
+    _name = "CFAlgoIoU";
     configure(pset);
   }
 
@@ -47,6 +48,7 @@ namespace cmtool {
   //--------------------------------------------------------
   {
     _iou_min = pset.get<float>("iou_min");
+    _verbose = pset.get<bool> ("verbose",false);
     return;
   }
 
@@ -63,14 +65,13 @@ namespace cmtool {
   {
 
 
-    if (_verbose)
-      std::cout << "Matching " << clusters.size() << " clusters" << std::endl;
-    
     // if 3 clusters -> skip
     if (clusters.size() != 2) return -1;
 
     // require collection plane
     if ( (clusters[0]->_plane != 2) && (clusters[1]->_plane != 2) ) return -1;
+
+    if ( (clusters[0]->size() < 10) || (clusters[1]->size() < 10) ) return -1;
 
     double t_min_abs = 9600; // smallest start point of the 3
     double t_max_abs = 0;    // largest start point of the three

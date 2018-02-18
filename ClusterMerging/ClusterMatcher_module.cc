@@ -136,6 +136,13 @@ void ClusterMatcher::produce(art::Event & e)
   // load input clusters
   auto const& clus_h = e.getValidHandle<std::vector<recob::Cluster>>(fClusterProducer);
 
+  int nabove = 0;
+  for (size_t c=0; c < clus_h->size(); c++){
+    auto clus = clus_h->at(c);
+    if (clus.NHits() > 10) { nabove += 1; }
+  }
+  std::cout << "DD \t\t There are " << nabove << " clusters with more than 10 hits" << std::endl;
+
   // load associated hits
   art::FindManyP<recob::Hit> clus_hit_assn_v(clus_h, e, fClusterProducer);
 
@@ -154,6 +161,8 @@ void ClusterMatcher::produce(art::Event & e)
   // each entry is a new PFP
   // and the vector it stores is the list of cluster indices which have been matched
   auto const& result_v = _mgr->GetBookKeeper().GetResult();
+
+  std::cout << "\t\t DD produced " << result_v.size() << " PFPartilces" << std::endl;
 
   // create PFParticle outputs
   for (auto const& result : result_v) {

@@ -4,7 +4,7 @@ match_cfalgoiou:
 {
  tool_type: CFAlgoIoU
  iou_min: 0.25
- 
+ verbose: true
 }
 
 END_PROLOG
