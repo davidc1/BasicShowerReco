@@ -33,7 +33,13 @@ namespace showerreco {
     void initialize();
     
   private:
-    
+
+    // recombination factor to apply to convert Q [$ e-] -> E [MeV]
+    float _recomb;
+    // conversion from electrons to MeV
+    float _e_to_MeV;
+    // conversion from ADC to electrons
+    float _ADC_to_e;
   };
   
   LinearEnergy::LinearEnergy(const fhicl::ParameterSet& pset)
@@ -46,7 +52,10 @@ namespace showerreco {
 
   void LinearEnergy::configure(const fhicl::ParameterSet& pset)
   {
+    _recomb    = pset.get<float>("recomb");
+    _ADC_to_e  = pset.get<float>("ADC_to_e");
     _verbose   = pset.get<bool>("verbose",false);
+    _e_to_MeV  = 23.6 * (1e-6);
     return;
   }
   
@@ -88,12 +97,12 @@ namespace showerreco {
       if (pl == 2)
 	hasPl2 = true;
       
-      // store calculated energy
+      // store calculated energy [MeV]
       double E  = 0.;
       
       // loop over hits
       for (auto const &h : hits) 
-	E += h.charge;
+	E += h.charge * _ADC_to_e * _e_to_MeV / _recomb;
       
       if (_verbose)
 	std::cout << "energy on plane " << pl << " is : " << E << std::endl;
