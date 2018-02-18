@@ -42,7 +42,8 @@ private:
 
   void dEdxFromdQdx::configure(const fhicl::ParameterSet& pset)
   {
-    _use_pitch = true;
+    _use_pitch = pset.get<bool>("use_pitch");
+    _verbose   = pset.get<bool>("verbose",false);
     return;
   }
 

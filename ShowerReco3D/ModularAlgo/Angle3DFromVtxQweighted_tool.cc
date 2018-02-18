@@ -41,6 +41,7 @@ namespace showerreco {
 
   void Angle3DFromVtxQweighted::configure(const fhicl::ParameterSet& pset)
   {
+    _verbose   = pset.get<bool>("verbose",false);
     return;
   }
   

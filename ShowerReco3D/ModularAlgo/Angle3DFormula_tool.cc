@@ -55,6 +55,7 @@ namespace showerreco {
 
   void Angle3DFormula::configure(const fhicl::ParameterSet& pset)
   {
+    _verbose   = pset.get<bool>("verbose",false);
     _max_err = pset.get<double>("max_err");
     _validate_dir = pset.get<bool>("validate_dir");
     _dot_min = pset.get<double>("dot_min");

@@ -1,8 +1,21 @@
+#include "shrrecomodule.fcl"
+
 BEGIN_PROLOG
 
 ShrReco3D: {
- module_type : "ShrReco3D"  
- InputProducer : "pandoraNu"
+ module_type  : "ShrReco3D"  
+ PFPproducer  : "pandoraNu"
+ Clusproducer : "pandoraNu"
+ Vtxproducer  : "pandoraNu"
+ ShowerRecoTools:
+     {
+        Algo0: @local::filterpfpart
+        Algo1: @local::angle3dfromvtxqweighted
+        Algo2: @local::yplanestartpoint3d
+        Algo3: @local::linearenergy
+        Algo4: @local::dqdxmodule
+        Algo5: @local::filtershowers
+     }
 }
 
 END_PROLOG

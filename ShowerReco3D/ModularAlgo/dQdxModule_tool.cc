@@ -63,6 +63,7 @@ namespace showerreco {
   void dQdxModule::configure(const fhicl::ParameterSet& pset)
   {
     _dtrunk = pset.get<double>("dtrunk");
+    _verbose   = pset.get<bool>("verbose",false);
   }
   
   void dQdxModule::initialize()

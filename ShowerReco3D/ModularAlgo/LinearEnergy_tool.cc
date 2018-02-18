@@ -46,6 +46,7 @@ namespace showerreco {
 
   void LinearEnergy::configure(const fhicl::ParameterSet& pset)
   {
+    _verbose   = pset.get<bool>("verbose",false);
     return;
   }
   

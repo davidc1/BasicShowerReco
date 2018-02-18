@@ -45,6 +45,7 @@ namespace showerreco {
   
   void FilterPFPart::configure(const fhicl::ParameterSet& pset)
   {
+    _verbose   = pset.get<bool>("verbose",false);
     _min_nhits_absolute = pset.get<size_t>("min_nhits_absolute");
     _min_nhits_largest  = pset.get<size_t>("min_nhits_largest" );
   }
