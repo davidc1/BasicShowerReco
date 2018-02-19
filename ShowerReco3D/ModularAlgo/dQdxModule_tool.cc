@@ -95,8 +95,7 @@ namespace showerreco {
     // grab shower direction
     auto const& dir3D = resultShower.fDCosStart;
 
-    //auto const& geomH = ::util::GeometryUtilities::GetME();
-    //auto const* geomH = ::lar::providerFrom<util::GeometryUtilities>();
+    auto const& geomH = ::util::GeometryUtilities();
     
     // loop through planes
     for (size_t n = 0; n < clusters.size(); n++) {
@@ -116,7 +115,12 @@ namespace showerreco {
       
       double f = (1 - dir3D[1]*dir3D[1] );
 
-      _pitch = 0.001;//geomH->GetPitch(dir3D, (int)pl);
+      // grab phi, theta angles from dir3D
+      // using inverse of what contained @ LL 193-195 of Angle3DFormula
+      double theta = asin(dir3D[0]);
+      double phi   = asin(dir3D[1] / cos(theta) );
+
+      _pitch = geomH.PitchInView(pl, phi, theta);
       
       _dmax = 0.;
 
