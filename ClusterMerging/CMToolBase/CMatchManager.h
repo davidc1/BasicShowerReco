@@ -40,13 +40,13 @@ namespace cmtool {
     CMatchManager(size_t nplanes);
     
     /// Default destructor
-    virtual ~CMatchManager(){}
+    //virtual ~CMatchManager(){}
 
     /// Method to reset itself
     virtual void Reset();
 
     /// A simple method to add an algorithm for merging
-    void AddMatchAlgo(std::shared_ptr<::cmtool::CFloatAlgoBase> algo) {_match_algo = algo;}
+    void AddMatchAlgo(std::unique_ptr<::cmtool::CFloatAlgoBase>&& algo) {_match_algo = std::move(algo);}
 
     /// A method to obtain book keeper
     const CMatchBookKeeper& GetBookKeeper() const { return _book_keeper; }
@@ -83,7 +83,7 @@ namespace cmtool {
     CMatchBookKeeper _book_keeper;
 
     /// Matching algorithm
-    std::shared_ptr<::cmtool::CFloatAlgoBase> _match_algo;
+    std::unique_ptr<::cmtool::CFloatAlgoBase> _match_algo;
 
     /// Number of planes
     size_t _nplanes;

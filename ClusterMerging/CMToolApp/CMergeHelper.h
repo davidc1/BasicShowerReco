@@ -32,15 +32,16 @@ namespace cmtool {
     CMergeHelper(){}
     
     /// Default destructor
-    virtual ~CMergeHelper(){}
+    //virtual ~CMergeHelper(){}
 
-    CMergeManager& GetManager(size_t mgr_id=0);
+    //CMergeManager& GetManager(size_t mgr_id=0);
+    CMergeManager& GetManager();
 
     void SetAnaFile(TFile* fout);
 
     void Process(const std::vector< ::cluster::Cluster >& clusters);
 
-    size_t size() const { return _mgr_v.size(); }
+    //size_t size() const { return _mgr_v.size(); }
 
     const CMergeBookKeeper& GetResult() const { return _bk; }
 
@@ -48,7 +49,8 @@ namespace cmtool {
 
   protected:
 
-    std::vector< ::cmtool::CMergeManager> _mgr_v;
+    ::cmtool::CMergeManager _mgr;
+    //std::vector< ::cmtool::CMergeManager> _mgr_v;
 
     CMergeBookKeeper _bk;
     

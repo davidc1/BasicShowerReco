@@ -16,6 +16,8 @@
 
 #include <iostream>
 
+#include <typeinfo>
+
 #include "CMManagerBase.h"
 #include "CMergeBookKeeper.h"
 #include "CBoolAlgoBase.h"
@@ -38,14 +40,11 @@ namespace cmtool {
     //CMergeManager(const CMergeManager&) = delete;
     // CMergeManager& operator=(const CMergeManager&) = delete;
     
-    /// Default destructor
-    ~CMergeManager();
-
     /// Method to reset itself
     virtual void Reset();
 
     /// A simple method to add an algorithm for merging
-    void AddMergeAlgo(std::shared_ptr<cmtool::CBoolAlgoBase> algo) { _merge_algo_v.push_back(std::move(algo)); }
+    void AddMergeAlgo(std::unique_ptr<cmtool::CBoolAlgoBase>&& algo) { _merge_algo_v.push_back(std::move(algo)); }
 
     /// A method to obtain output clusters
     const std::vector<::cluster::Cluster>& GetClusters() const { return _out_clusters; }
@@ -112,7 +111,7 @@ namespace cmtool {
     std::vector<::cluster::Cluster> _tmp_merged_clusters;
 
     /// Merging algorithm
-    std::vector<std::shared_ptr<::cmtool::CBoolAlgoBase> > _merge_algo_v;
+    std::vector<std::unique_ptr<::cmtool::CBoolAlgoBase> > _merge_algo_v;
     
 
   };

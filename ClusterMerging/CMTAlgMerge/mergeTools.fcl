@@ -20,6 +20,7 @@ merge_cbalgovtxalign:
  min_nhits: 10
  max_merge_dist: 3
  mergetillconverge: true
+ verbose: false
 }
 
 merge_cbalgopolar:
@@ -27,7 +28,7 @@ merge_cbalgopolar:
  tool_type: CBAlgoPolar
  buffer: 0
  mergetillconverge: true
- verbose: true
+ verbose: false
 }
 
 END_PROLOG

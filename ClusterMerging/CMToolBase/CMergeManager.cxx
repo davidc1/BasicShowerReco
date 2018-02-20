@@ -12,12 +12,6 @@ namespace cmtool {
     Reset();
   }
 
-  CMergeManager::~CMergeManager()
-  {
-    std::cout << "destruction!" << std::endl;
-    return;
-  }
-
   void CMergeManager::Reset()
   {
     CMManagerBase::Reset();
@@ -133,7 +127,11 @@ namespace cmtool {
     size_t iter_ctr = 0;
 
     while (algo_idx < _merge_algo_v.size() ) {
-    
+
+      std::cout << "\t\t DD Calling ALGO IDX : " << algo_idx << std::endl;
+      std::cout << "\t\t DD " << typeid(*(_merge_algo_v[algo_idx].get())).name() << std::endl;    
+      std::cout << "\t\t DD " << _merge_algo_v[algo_idx]->Name() << std::endl;    
+
       if(!iter_ctr) _tmp_merged_clusters = _in_clusters;
       else _tmp_merged_clusters = _out_clusters;
       _out_clusters.clear();
@@ -233,6 +231,8 @@ namespace cmtool {
     // Merging
     //
 
+    int niter = 0;
+
     // which mode? pair-wise:
     if (_merge_algo_v[algo_idx]->PairWiseMode() == true) {
       
@@ -240,7 +240,7 @@ namespace cmtool {
       for(auto citer1 = _priority.rbegin();
 	  citer1 != _priority.rend();
 	  ++citer1) {
-	
+
 	auto citer2 = citer1;
 	
 	UChar_t plane1 = in_clusters.at((*citer1).second)._plane;
@@ -265,6 +265,8 @@ namespace cmtool {
 	      << Form("    \033[93mInspecting a pair (%zu, %zu) for merging... \033[00m",(*citer1).second, (*citer2).second)
 	      << std::endl;
 	  }
+
+	  niter += 1;
 	  
 	  bool merge = _merge_algo_v[algo_idx]->Bool(in_clusters.at((*citer1).second),in_clusters.at((*citer2).second));
 	  
@@ -289,6 +291,9 @@ namespace cmtool {
 	} // end looping over all cluster pairs for citer1
 	
       } // end looping over clusters
+
+      if (_debug_mode <= kPerIteration)
+	std::cout << "    \033[093m pair-wise comparisons : \033[00m  "  << niter << std::endl;
 
     }// if pair-wise mode
 

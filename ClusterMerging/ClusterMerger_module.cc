@@ -92,6 +92,13 @@ ClusterMerger::ClusterMerger(fhicl::ParameterSet const & pset)
 
   std::cout << "DD reset Merge manager" << std::endl;
   _merge_helper->GetManager().Reset();
+  _merge_helper->GetManager().DebugMode(cmtool::CMManagerBase::kPerIteration);
+  _merge_helper->GetManager().MergeTillConverge(false);
+
+  const fhicl::ParameterSet& priorityTool = pset.get<fhicl::ParameterSet>("PriorityTool");
+
+  _merge_helper->GetManager().AddPriorityAlgo(art::make_tool<cmtool::CPriorityAlgoBase>(priorityTool));
+  
   std::cout << "DD done with reset" << std::endl;
 
   _CMaker = new ::cluster::ClusterMaker();
@@ -214,12 +221,14 @@ const recob::Cluster ClusterMerger::FillClusterProperties(const ::cluster::Clust
 							  const size_t& n) {
   
   auto const* geom = ::lar::providerFrom<geo::Geometry>();
+
+  auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
   
-  float startW = CMCluster._start_pt._w;
-  float startT = CMCluster._start_pt._t;
+  float startW = CMCluster._start_pt._w / _wire2cm;
+  float startT = CMCluster._start_pt._t / _time2cm + detp->TriggerOffset();
   
-  float endW   = CMCluster._end_pt._w;
-  float endT   = CMCluster._end_pt._t;
+  float endW   = CMCluster._end_pt._w / _wire2cm;
+  float endT   = CMCluster._end_pt._t / _time2cm + detp->TriggerOffset();
   
   auto planeid = geo::PlaneID(0,0,CMCluster._plane);
 

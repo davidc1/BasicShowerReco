@@ -12,7 +12,7 @@ namespace cmtool {
 
   CMatchManager::CMatchManager(size_t nplanes) : CMManagerBase()
   {
-    _match_algo = nullptr;
+    //_match_algo = nullptr;
     _nplanes    = nplanes;
     Reset();
   }
@@ -25,22 +25,13 @@ namespace cmtool {
     _book_keeper.Reset();
   }
 
-  void CMatchManager::EventBegin()
-  {
-
-  }
+  void CMatchManager::EventBegin(){}
   
-  void CMatchManager::IterationBegin()
-  {
-  }
+  void CMatchManager::IterationBegin(){}
   
-  void CMatchManager::IterationEnd()
-  {
-  }
+  void CMatchManager::IterationEnd(){}
 
-  void CMatchManager::EventEnd()
-  {
-  }
+  void CMatchManager::EventEnd(){}
 
   unsigned int CMFactorial(unsigned int n)
   {return (n == 1 || n == 0) ? 1 : CMFactorial(n - 1) * n;}
