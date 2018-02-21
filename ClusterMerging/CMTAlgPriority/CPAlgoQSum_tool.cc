@@ -24,7 +24,7 @@ namespace cmtool {
        Core function: given the CPAN input, return a float which indicates 
        the user-defined priority for analysis.
     */
-    float Priority(const ::cluster::Cluster &cluster);
+    //float Priority(const ::cluster::Cluster &cluster);
 
   protected:
 
@@ -44,14 +44,16 @@ namespace cmtool {
     _qsum_cut = pset.get<double>("qsum_cut");
   }
 
+  /*
   //------------------------------------------------------------------------------
   float CPAlgoQSum::Priority(const ::cluster::Cluster &cluster)
   //------------------------------------------------------------------------------
   {
-    if(cluster._sum_charge < _qsum_cut) return -1;
+    //if(cluster._sum_charge < _qsum_cut) return -1;
 
     return cluster._sum_charge;
   }
+  */
   
   DEFINE_ART_CLASS_TOOL(CPAlgoQSum)        
 }

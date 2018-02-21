@@ -128,6 +128,7 @@ namespace cmtool {
 
     while (algo_idx < _merge_algo_v.size() ) {
 
+      // verbosity to debug mysterious algorithm call malfunction
       std::cout << "\t\t DD Calling ALGO IDX : " << algo_idx << std::endl;
       std::cout << "\t\t DD " << typeid(*(_merge_algo_v[algo_idx].get())).name() << std::endl;    
       std::cout << "\t\t DD " << _merge_algo_v[algo_idx]->Name() << std::endl;    
@@ -190,7 +191,7 @@ namespace cmtool {
       // if no merging occurred -> move to next algo
       if(_tmp_merged_clusters.size() == _out_clusters.size())
 	algo_idx += 1;
-
+      // if merging occurred and algorithm's specific merge-till-converge flag is true -> re-run
       if( (_tmp_merged_clusters.size() != _out_clusters.size()) && (_merge_algo_v[algo_idx]->MergeTillConverge() == false) )
 	algo_idx += 1;
 

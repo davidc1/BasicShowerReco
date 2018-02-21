@@ -1,6 +1,5 @@
 /**
- * \file CPriorityAlgoBase.h
- *
+ * \file CPriorityAlgoBase.h *
  * \ingroup CMTool
  * 
  * \brief Class def header for a class CPriorityAlgoBase
@@ -30,13 +29,20 @@ namespace cmtool {
     CPriorityAlgoBase(){}
     
     /// Default destructor
-    virtual ~CPriorityAlgoBase(){};
+    virtual ~CPriorityAlgoBase() = default;
 
     /**
        Core function: given the CPAN input, return whether a cluster should be
        merged or not.
     */
-    virtual float Priority(const ::cluster::Cluster &cluster) = 0;
+    float Priority(const ::cluster::Cluster &cluster) 
+    {
+      return ( cluster.size() < 10 ? -1 : (float)cluster.size() );
+      //std::cout << "PRIORITY BEING DEFINED "  << std::endl;
+      //return cluster.size() * 1000;
+      //
+      //return -1;
+    };
 
   };
 

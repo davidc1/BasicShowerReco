@@ -27,7 +27,13 @@ namespace cmtool {
        Core function: given the CPAN input, return a float which indicates 
        the user-defined priority for analysis.
     */
-    float Priority(const ::cluster::Cluster &cluster);
+    /*
+    float Priority(const ::cluster::Cluster &cluster) 
+    {
+      std::cout << "OVERRIDE!" << std::endl;
+      return 100;
+    }
+    */
 
   protected:
 
@@ -45,9 +51,11 @@ namespace cmtool {
 
   void CPAlgoNHits::configure(const fhicl::ParameterSet& pset)
   {
+    std::cout << "MIN HITS :  " << pset.get<size_t>("min_hits") << std::endl;
     _min_hits = pset.get<size_t>("min_hits");
   }
 
+  /*
   //------------------------------------------------------------------------
   float CPAlgoNHits::Priority(const ::cluster::Cluster &cluster)
   //------------------------------------------------------------------------
@@ -58,6 +66,7 @@ namespace cmtool {
 
     return ( nhit < _min_hits ? -1 : (float)nhit );
   }
+  */
 
   DEFINE_ART_CLASS_TOOL(CPAlgoNHits)      
 }

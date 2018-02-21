@@ -154,9 +154,14 @@ namespace cmtool {
     _priority.clear();
     _planes.clear();
 
-    std::cout << "Computing priority algo with algo " << _priority_algo->Name() 
-	      << " for " << clusters.size() << " clusters" 
-	      << std::endl;
+    // verbosity to debug mysterious call of priority algo
+    /*
+      std::cout << "\t\t DD Calling Priority ALGO : " << std::endl;
+      std::cout << "\t\t DD " << typeid(*(_priority_algo.get())).name() << std::endl;    
+      std::cout << "\t\t DD " << _priority_algo->Name() 
+		<< " for " << clusters.size() << " clusters" 
+		<< std::endl;
+    */
 
     if(!clusters.size()) return;
 
@@ -169,15 +174,11 @@ namespace cmtool {
       size_t c_index = clusters.size() - i - 1;
       float priority = clusters.at(c_index).size();
       if (priority < 10) priority = -1;
-      /*
+
       if(_priority_algo) {
-	std::cout << "\t calculating priority. now it is " << priority << std::endl;
 	priority = _priority_algo->Priority(clusters.at(c_index));
       }
-      */
 
-      std::cout << "\t\t priority for cluster " << i << " is " << priority << std::endl;
-      
       if(priority>0) {
         _priority.insert(std::make_pair(priority,c_index));
 	

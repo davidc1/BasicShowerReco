@@ -28,7 +28,7 @@ namespace cmtool {
     
   public:
 
-    CBoolAlgoBase(){_merge_till_converge = false; _pair_wise = true;}
+    CBoolAlgoBase(){_pair_wise = true;}
     
     /// Default destructor
     virtual ~CBoolAlgoBase() = default;

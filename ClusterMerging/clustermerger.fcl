@@ -13,7 +13,8 @@ ClusterMerger: {
         Tool0: @local::merge_cbalgopolar
         Tool1: @local::merge_cbalgovtxalign
      }
- PriorityTool: @local::priority_cpalgonhits
+ #PriorityTool: @local::priority_cpalgonhits
+ PriorityTool: @local::priority_cpalgoqsum
 }
 
 END_PROLOG
