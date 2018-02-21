@@ -54,6 +54,8 @@ namespace cmtool {
   {
     auto nhit = cluster.size();
 
+    std::cout << "\t\t size is " << cluster.size() << std::endl;
+
     return ( nhit < _min_hits ? -1 : (float)nhit );
   }
 

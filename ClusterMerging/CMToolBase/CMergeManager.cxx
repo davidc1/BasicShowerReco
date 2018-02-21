@@ -146,7 +146,9 @@ namespace cmtool {
 	  
 	  merge_switch.at(i) = false;
       
+      std::cout << "Computing priority over " << _tmp_merged_clusters.size() << " input clusters" << std::endl;
       ComputePriority(_tmp_merged_clusters);
+      std::cout << "there are " << _priority.size() << " pairs" << std::endl;
       
       // Run merging algorithm
       RunMerge(algo_idx,_tmp_merged_clusters, merge_switch, bk);
@@ -227,11 +229,19 @@ namespace cmtool {
 
     }
 
+    std::cout << "    \033[093m priority pairs : \033[00m  "  << _priority.size()  << std::endl;
+
     //
     // Merging
     //
+    int niter   = 0;
+    int nloop1  = 0;
+    int nloop2  = 0;
+    int ndiffpl = 0;
+    int nflag   = 0;
+    int nmerge  = 0;
 
-    int niter = 0;
+    std::cout << "pair-wise mode? " << _merge_algo_v[algo_idx]->PairWiseMode() << std::endl;
 
     // which mode? pair-wise:
     if (_merge_algo_v[algo_idx]->PairWiseMode() == true) {
@@ -240,7 +250,9 @@ namespace cmtool {
       for(auto citer1 = _priority.rbegin();
 	  citer1 != _priority.rend();
 	  ++citer1) {
-
+	
+	nloop1 += 1;
+	
 	auto citer2 = citer1;
 	
 	UChar_t plane1 = in_clusters.at((*citer1).second)._plane;
@@ -248,16 +260,24 @@ namespace cmtool {
 	while(1) {
 	  citer2++;
 	  if(citer2 == _priority.rend()) break;
+
+	  nloop2 += 1;
 	  
 	  // Skip if not on the same plane
 	  UChar_t plane2 = in_clusters.at((*citer2).second)._plane;
 	  if(plane1 != plane2) continue;
+
+	  ndiffpl += 1;
 	  
 	  // Skip if this combination is not meant to be compared
 	  if(!(merge_flag.at((*citer2).second)) && !(merge_flag.at((*citer1).second)) ) continue;
+
+	  nflag += 1;
 	  
 	  // Skip if this combination is not allowed to merge
 	  if(!(book_keeper.MergeAllowed((*citer1).second,(*citer2).second))) continue;
+
+	  nmerge += 1;
 	  
 	  if(_debug_mode <= kPerMerging){
 	    
@@ -292,9 +312,14 @@ namespace cmtool {
 	
       } // end looping over clusters
 
-      if (_debug_mode <= kPerIteration)
-	std::cout << "    \033[093m pair-wise comparisons : \033[00m  "  << niter << std::endl;
-
+      if (_debug_mode <= kPerIteration){
+	std::cout << "    \033[093m pair-wise comparisons : \033[00m  "  << niter  << std::endl;
+	std::cout << "    \033[093m loop1 iterations      : \033[00m  "  << nloop1 << std::endl;
+	std::cout << "    \033[093m loop2 iterations      : \033[00m  "  << nloop2 << std::endl;
+	std::cout << "    \033[093m ndiffplane            : \033[00m  "  << ndiffpl << std::endl;
+	std::cout << "    \033[093m nflag                 : \033[00m  "  << nflag << std::endl;
+	std::cout << "    \033[093m nmerge                : \033[00m  "  << nmerge << std::endl;
+      }
     }// if pair-wise mode
 
 
@@ -334,7 +359,7 @@ namespace cmtool {
 
   }
 
-  void CMergeManager::ReportAlgoChain() {
+    void CMergeManager::ReportAlgoChain() {
     
     std::cout << "\t\t" << std::endl;
     std::cout << "\t\t *****************" << std::endl;

@@ -26,6 +26,8 @@ namespace cmtool {
   class CPriorityAlgoBase : public CMAlgoBase {
     
   public:
+
+    CPriorityAlgoBase(){}
     
     /// Default destructor
     virtual ~CPriorityAlgoBase(){};

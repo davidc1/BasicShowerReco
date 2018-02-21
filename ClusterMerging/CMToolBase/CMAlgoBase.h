@@ -36,7 +36,7 @@ namespace cmtool {
     
   public:
     
-    virtual ~CMAlgoBase() noexcept = default;
+    virtual ~CMAlgoBase() = default;
 
     void configure(const fhicl::ParameterSet& pset){};
 

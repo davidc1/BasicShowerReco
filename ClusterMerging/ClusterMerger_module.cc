@@ -125,7 +125,7 @@ ClusterMerger::ClusterMerger(fhicl::ParameterSet const & pset)
     std::cout << "DD \t done adding algo" << std::endl;
   }// for all algorithms to be added
 
-  _merge_helper->GetManager().ReportAlgoChain();
+  _omerge_helper->GetManager().ReportAlgoChain();
 
   produces<std::vector<recob::Cluster> >();
   produces<art::Assns <recob::Cluster, recob::Hit> >();
