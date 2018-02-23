@@ -169,9 +169,11 @@ void ClusterMatcher::produce(art::Event & e)
 
     recob::PFParticle pfp(11,0,0,std::vector<size_t>());
     PFP_v->emplace_back(pfp);
+    std::cout << "\t\t DD NEW PFPARTICLE : associated with clusters" << std::endl;
     art::Ptr<recob::PFParticle> const PFPPtr = PFPPtrMaker(PFP_v->size()-1);
     for (auto const& clus_idx : result) {
       const art::Ptr<recob::Cluster> ClusPtr(clus_h, clus_idx);
+      std::cout << "\t\t DD \t\t pl : " << ClusPtr->Plane() << "\t Nhits : " << ClusPtr->NHits() << "\t start [ " << ClusPtr->StartWire() << ", " << ClusPtr->StartTick() << " ]" << std::endl;
       PFP_Hit_assn_v->addSingle(PFPPtr,ClusPtr);
     }// for all associated clusters
   }// for all PFParticles creates

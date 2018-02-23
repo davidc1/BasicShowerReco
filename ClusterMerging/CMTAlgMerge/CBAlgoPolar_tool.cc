@@ -44,8 +44,10 @@ namespace cmtool {
 
   void CBAlgoPolar::configure(const fhicl::ParameterSet& pset)
   {
-    _buffer  = pset.get<float>("buffer");
-    _verbose = pset.get<bool> ("verbose",false);
+    _buffer              = pset.get<float>("buffer");
+    _pair_wise           = pset.get<bool >("pair_wise");
+    _merge_till_converge = pset.get<bool >("mergetillconverge");
+    _verbose             = pset.get<bool> ("verbose",false);
 
     std::cout << "DD \t BUFFER IS " << _buffer << std::endl;
     std::cout << "DD \t verbose is " << _verbose << std::endl;

@@ -173,7 +173,6 @@ namespace cmtool {
 
       size_t c_index = clusters.size() - i - 1;
       float priority = clusters.at(c_index).size();
-      if (priority < 10) priority = -1;
 
       if(_priority_algo) {
 	priority = _priority_algo->Priority(clusters.at(c_index));

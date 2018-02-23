@@ -95,9 +95,8 @@ ClusterMerger::ClusterMerger(fhicl::ParameterSet const & pset)
   _merge_helper->GetManager().DebugMode(cmtool::CMManagerBase::kPerIteration);
   _merge_helper->GetManager().MergeTillConverge(false);
 
-  const fhicl::ParameterSet& priorityTool = pset.get<fhicl::ParameterSet>("PriorityTool");
-
-  _merge_helper->GetManager().AddPriorityAlgo(art::make_tool<cmtool::CPriorityAlgoBase>(priorityTool));
+  //const fhicl::ParameterSet& priorityTool = pset.get<fhicl::ParameterSet>("PriorityTool");
+  //_merge_helper->GetManager().AddPriorityAlgo(art::make_tool<cmtool::CPriorityAlgoBase>(priorityTool));
   
   std::cout << "DD done with reset" << std::endl;
 
@@ -182,6 +181,41 @@ void ClusterMerger::produce(art::Event & e)
 
   _merge_helper->Process(event_clusters);
 
+  // Grab output cluster from manager
+  auto const& bk = _merge_helper->GetResult();
+  std::vector<std::vector<unsigned short> > merged_indexes;
+  bk.PassResult(merged_indexes);
+  // merged_indexes is a vector of vectors
+  // each entry is the vector of original clsuter indices to be merged
+  for (auto const& clus_idx_v : merged_indexes) {
+
+    // create vector of hit pointers
+    std::vector<art::Ptr<recob::Hit> > clus_hit_ptr_v;
+
+    for (auto const& clus_idx : clus_idx_v) {
+
+      std::vector<art::Ptr<recob::Hit> > clushits = clus_hit_assn_v.at(clus_idx);
+      for (size_t h = 0; h < clushits.size(); h++) {
+	clus_hit_ptr_v.push_back( clushits.at(h) );
+      }
+
+    }// for all cluster indices in this merged cluster
+
+    // create the actual cluster
+    ::cluster::Cluster out_clus;
+    _CMaker->MakeCluster(clus_hit_ptr_v, out_clus);
+    
+    // and add output cluster
+    Cluster_v->emplace_back( FillClusterProperties(out_clus,Cluster_v->size()) );
+    // finally, hit associations
+    art::Ptr<recob::Cluster> const ClusPtr = ClusPtrMaker(Cluster_v->size()-1);
+    for (size_t h=0; h < clus_hit_ptr_v.size(); h++) 
+      Cluster_Hit_assn_v->addSingle(ClusPtr,clus_hit_ptr_v.at(h));
+    
+  }// for all output clusters
+
+  // OPTION 2
+  /*
   // get output clusters
   auto out_clusters = _merge_helper->GetClusters();
 
@@ -199,12 +233,14 @@ void ClusterMerger::produce(art::Event & e)
       art::Ptr<recob::Hit> HitPtr(_hitptr.id(),key,_hitptr.productGetter());
       Cluster_Hit_assn_v->addSingle(ClusPtr,HitPtr);
     }// for all hits associated to the cluster
+    std::cout << "new cluster w/ " << out_clus.GetHits().size() << " hits" << std::endl;
     
   }// for all output clsters
+  */
   
   e.put(std::move(Cluster_v));
   e.put(std::move(Cluster_Hit_assn_v));
-
+  
 }
 
 void ClusterMerger::beginJob()
@@ -222,15 +258,22 @@ const recob::Cluster ClusterMerger::FillClusterProperties(const ::cluster::Clust
   
   auto const* geom = ::lar::providerFrom<geo::Geometry>();
 
-  auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
+  //auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
   
   float startW = CMCluster._start_pt._w / _wire2cm;
-  float startT = CMCluster._start_pt._t / _time2cm + detp->TriggerOffset();
+  float startT = CMCluster._start_pt._t / _time2cm;// + detp->TriggerOffset();
   
   float endW   = CMCluster._end_pt._w / _wire2cm;
-  float endT   = CMCluster._end_pt._t / _time2cm + detp->TriggerOffset();
+  float endT   = CMCluster._end_pt._t / _time2cm;// + detp->TriggerOffset();
+
   
   auto planeid = geo::PlaneID(0,0,CMCluster._plane);
+
+  if (CMCluster.GetHits().size() > 30) {
+    std::cout << "Cluster start in cm : " << CMCluster._start_pt._w << ", " << CMCluster._start_pt._t << std::endl;
+    std::cout << "Creating new cluster @ start w, t [ " << startW << ", " << startT
+	      << " ] with " << CMCluster.GetHits().size() << " hits" << std::endl;
+  }
 
   recob::Cluster clus(startW, 0., startT, 0., 0., CMCluster._angle, 0., 
 		      endW,   0., endT,   0., 0., 0., 0., 

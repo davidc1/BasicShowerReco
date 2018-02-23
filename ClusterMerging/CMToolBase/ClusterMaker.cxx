@@ -54,8 +54,9 @@ namespace cluster {
   }
 
   void ClusterMaker::MakeCluster(const std::vector<art::Ptr<recob::Hit> >& hit_v,
-				 const std::vector<unsigned int>& cluster_index_v,
-				 ::cluster::Cluster cluster) {
+				 ::cluster::Cluster& cluster) {
+
+    std::cout << "making new cluster with " << hit_v.size() << " hits" << std::endl;
 
     // and associated hits
     std::vector<::cluster::pt> pts;
@@ -71,7 +72,6 @@ namespace cluster {
 				   std::vector<::cluster::pt>& pt_v) {
 
     pt_v.clear();
-    pt_v.reserve(hit_v.size());
     
     for (art::Ptr<recob::Hit> hit : hit_v) {
       
@@ -110,7 +110,7 @@ namespace cluster {
 
     // load required services to obtain offsets
     auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    auto const& geomH = ::util::GeometryUtilities::GetME();
+    auto const* geom = ::lar::providerFrom<geo::Geometry>();
     
     if (vtx_h->size() != 1) return false;
 
@@ -124,9 +124,8 @@ namespace cluster {
 
     for (size_t pl = 0; pl < 3; pl++) {
 
-      auto const& pt = geomH->Get2DPointProjectionCM(xyz,pl);
-      _vtx_w_cm[pl] = pt.w;
-      _vtx_t_cm[pl] = pt.t + (detp->TriggerOffset() * _time2cm);
+      _vtx_w_cm[pl] = geom->WireCoordinate(xyz[1],xyz[2],geo::PlaneID(0,0,pl)) * _wire2cm + 0.15;
+      _vtx_t_cm[pl] = xyz[0] + (detp->TriggerOffset() * _time2cm) + pl*0.3;
 
       std::cout << "trigger offset [cm] : " << (detp->TriggerOffset() * _time2cm) << std::endl;
       std::cout << "Vtx @ pl " << pl << " [" << _vtx_w_cm[pl] << ", " << _vtx_t_cm[pl] << " ]" << std::endl;

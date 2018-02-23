@@ -60,8 +60,7 @@ namespace cluster {
 
     
     void MakeCluster(const std::vector<art::Ptr<recob::Hit> >& hit_v,
-		     const std::vector<unsigned int>& cluster_index_v,
-		     ::cluster::Cluster cluster);
+		     ::cluster::Cluster& cluster);
 
   private:
 

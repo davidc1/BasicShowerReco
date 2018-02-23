@@ -53,16 +53,14 @@ namespace cmtool {
     /**
        Set MergeTillConverge flag
      */
-    void SetMergeTillConverge(bool on) { _merge_till_converge = on;   }
     bool MergeTillConverge()           { return _merge_till_converge; }
 
     /**
        Use algorithm pair-wise or with full list of event clusters?
      */
-    void SetUsePairWise(bool on) { _pair_wise = on;   }
     bool PairWiseMode()          { return _pair_wise; }
 
-  private:
+  protected:
 
     bool _merge_till_converge;
 
