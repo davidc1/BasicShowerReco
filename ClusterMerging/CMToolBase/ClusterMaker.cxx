@@ -56,8 +56,6 @@ namespace cluster {
   void ClusterMaker::MakeCluster(const std::vector<art::Ptr<recob::Hit> >& hit_v,
 				 ::cluster::Cluster& cluster) {
 
-    std::cout << "making new cluster with " << hit_v.size() << " hits" << std::endl;
-
     // and associated hits
     std::vector<::cluster::pt> pts;
     // fill hit information
@@ -120,15 +118,15 @@ namespace cluster {
     vtx.XYZ(xyz);
 
 
-    std::cout << "Vtx coordinates : [" << xyz[0] << ", " << xyz[1] << ", " << xyz[2] << "]" << std::endl;
+    //std::cout << "Vtx coordinates : [" << xyz[0] << ", " << xyz[1] << ", " << xyz[2] << "]" << std::endl;
 
     for (size_t pl = 0; pl < 3; pl++) {
 
       _vtx_w_cm[pl] = geom->WireCoordinate(xyz[1],xyz[2],geo::PlaneID(0,0,pl)) * _wire2cm + 0.15;
       _vtx_t_cm[pl] = xyz[0] + (detp->TriggerOffset() * _time2cm) + pl*0.3;
 
-      std::cout << "trigger offset [cm] : " << (detp->TriggerOffset() * _time2cm) << std::endl;
-      std::cout << "Vtx @ pl " << pl << " [" << _vtx_w_cm[pl] << ", " << _vtx_t_cm[pl] << " ]" << std::endl;
+      //std::cout << "trigger offset [cm] : " << (detp->TriggerOffset() * _time2cm) << std::endl;
+      //std::cout << "Vtx @ pl " << pl << " [" << _vtx_w_cm[pl] << ", " << _vtx_t_cm[pl] << " ]" << std::endl;
 
       }
 

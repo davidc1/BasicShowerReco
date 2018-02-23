@@ -214,30 +214,6 @@ void ClusterMerger::produce(art::Event & e)
     
   }// for all output clusters
 
-  // OPTION 2
-  /*
-  // get output clusters
-  auto out_clusters = _merge_helper->GetClusters();
-
-  std::cout << "there are " << out_clusters.size() << " outputs" << std::endl;
-
-  // loop through output clusters
-  for (auto const& out_clus : out_clusters) {
-
-    Cluster_v->emplace_back( FillClusterProperties(out_clus,Cluster_v->size()) );
-    art::Ptr<recob::Cluster> const ClusPtr = ClusPtrMaker(Cluster_v->size()-1);
-
-    // create association to hits
-    for (auto const& hit : out_clus.GetHits()) {
-      auto key = hit._idx;
-      art::Ptr<recob::Hit> HitPtr(_hitptr.id(),key,_hitptr.productGetter());
-      Cluster_Hit_assn_v->addSingle(ClusPtr,HitPtr);
-    }// for all hits associated to the cluster
-    std::cout << "new cluster w/ " << out_clus.GetHits().size() << " hits" << std::endl;
-    
-  }// for all output clsters
-  */
-  
   e.put(std::move(Cluster_v));
   e.put(std::move(Cluster_Hit_assn_v));
   
