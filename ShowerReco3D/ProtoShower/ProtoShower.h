@@ -26,7 +26,7 @@ public:
   ProtoShower() {};
   ~ProtoShower() {};
 
-  Double_t* vertex() const { return _vertex; }
+  TVector3 vertex() const { return _vertex; }
   const std::vector<::cluster2d::Cluster2D> & clusters() const { return _clusters; }
 
   // getters
@@ -39,7 +39,7 @@ public:
   void hasVertex   (bool on) { _hasVertex    = on; }
 
   // 3D vertex associated to this protoshower
-  Double_t*  _vertex;
+  TVector3  _vertex;
   
   // list 2D clusters
   std::vector<::cluster2d::Cluster2D> _clusters;

@@ -34,8 +34,6 @@ namespace protoshower {
     
     for (auto const hit : hit_v) {
 
-      std::cout << "\t\t\t new hit!" << std::endl;
-
       // create PxHit
       ::util::PxHit hit2d( clus->Plane().Plane,
 			   hit->WireID().Wire * _wire2cm,

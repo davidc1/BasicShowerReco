@@ -107,6 +107,9 @@ namespace showerreco {
 	geomH.Get3DaxisN((int)cl1._plane, (int)cl2._plane,
 			 cl1._angle_2d, cl2._angle_2d,
 			 phi, theta);
+
+	theta *= (3.1415/180.);
+	phi   *= (3.1415/180.);
 	
 	if (_verbose)
 	  std::cout << "return angle 3D : phi -> " << phi << ", theta -> " << theta << std::endl;

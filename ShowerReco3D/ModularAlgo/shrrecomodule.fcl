@@ -15,7 +15,7 @@ angle3dformula:
 
 filterpfpart:
 {
-    tool_tyoe: FilterPFPart
+    tool_type: FilterPFPart
     min_nhits_absolute: 5
     min_nhits_largest: 10
 }
@@ -23,6 +23,7 @@ filterpfpart:
 angle3dfromvtxqweighted:
 {
     tool_type: Angle3DFromVtxQweighted
+    verbose: true
 }
 
 yplanestartpoint3d:
@@ -30,11 +31,17 @@ yplanestartpoint3d:
     tool_type: YPlaneStartPoint3D
 }
 
+filllength:
+{
+    tool_type: FillLength
+}
+
 linearenergy:
 {
     tool_type: LinearEnergy
     recomb: 0.596
     ADC_to_e: 243.0
+    verbose: true
 }
 
 dqdxmodule:
@@ -49,7 +56,11 @@ dedxfromdqdx:
     use_pitch: true
 }
 
-
+filtershowers:
+{
+    tool_type: FilterShowers
+    anglecut: 25.
+}
 
 
 END_PROLOG

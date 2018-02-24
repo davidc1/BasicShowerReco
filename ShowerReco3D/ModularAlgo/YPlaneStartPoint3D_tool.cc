@@ -23,12 +23,21 @@ namespace showerreco {
     
     /// Inherited/overloaded function from ShowerRecoModuleBase
     void do_reconstruction(const ::protoshower::ProtoShower &, Shower_t &);
+
+  private:
+
+    double _wire2cm, _time2cm;
     
   };
   
   YPlaneStartPoint3D::YPlaneStartPoint3D(const fhicl::ParameterSet& pset)
   {
     _name = "YPlaneStartPoint3D"; 
+    auto const* geom = ::lar::providerFrom<geo::Geometry>();
+    auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
+    _wire2cm = geom->WirePitch(0,1,0);
+    _time2cm = detp->SamplingRate() / 1000.0 * detp->DriftVelocity( detp->Efield(), detp->Temperature() );
+
   }
 
   void YPlaneStartPoint3D::do_reconstruction( const ::protoshower::ProtoShower & proto_shower,
@@ -74,7 +83,11 @@ namespace showerreco {
       if (pl != 2) continue;
       
       // project vertex onto this plane
-      auto const& vtx2D = geomH->Get2DPointProjection(vtx,pl);
+      //auto const& vtx2D = util::PxPoint(pl,0,0);//geomH->Get2DPointProjection(vtx,pl);
+      auto const* geom = ::lar::providerFrom<geo::Geometry>();
+      auto wire = geom->WireCoordinate(vtx[1],vtx[2],geo::PlaneID(0,0,pl)) * _wire2cm;
+      auto time = vtx[0];
+      util::PxPoint vtx2D(pl,wire,time);
 
       auto const& start = clus._start;
 
@@ -99,7 +112,12 @@ namespace showerreco {
       if (p != pl0) {
 
 	// project reconstructed 3D direction and vertex to this plane
-	auto const& vtx2D   = geomH->Get2DPointProjection(vtx,p);
+
+	auto const* geom = ::lar::providerFrom<geo::Geometry>();
+	auto wire = geom->WireCoordinate(vtx[1],vtx[2],geo::PlaneID(0,0,p)) * _wire2cm;
+	auto time = vtx[0];
+	util::PxPoint vtx2D(p,wire,time);
+	//auto const& vtx2D   = geomH->Get2DPointProjection(vtx,p);
 	auto const& dir3D   = resultShower.fDCosStart;
 	auto const& slope2D = geomH->Get2DangleFrom3D(p,dir3D);
 

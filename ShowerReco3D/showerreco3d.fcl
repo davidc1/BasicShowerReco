@@ -4,9 +4,9 @@ BEGIN_PROLOG
 
 ShrReco3D: {
  module_type  : "ShrReco3D"  
- PFPproducer  : "pandoraNu"
- Clusproducer : "pandoraNu"
- Vtxproducer  : "pandoraNu"
+ PFPproducer  : "cmatcher"
+ Clusproducer : "cmerger"
+ Vtxproducer  : "ccvertex"
  ShowerRecoTools:
      {
         Algo0: @local::filterpfpart
@@ -14,7 +14,8 @@ ShrReco3D: {
         Algo2: @local::yplanestartpoint3d
         Algo3: @local::linearenergy
         Algo4: @local::dqdxmodule
-        Algo5: @local::filtershowers
+        Algo5: @local::filllength
+        #Algo5: @local::filtershowers
      }
 }
 

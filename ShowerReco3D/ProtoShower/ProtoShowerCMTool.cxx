@@ -68,8 +68,10 @@ namespace protoshower {
 	auto const vtx = vertex_h->at(0);
 	Double_t xyz[3] = {};
 	vtx.XYZ(xyz);
-	proto_shower._vertex = xyz;//TVector3(xyz[0],xyz[1],xyz[2]);
+	proto_shower._vertex = TVector3(xyz[0],xyz[1],xyz[2]);
 	proto_shower.hasVertex(true);
+
+	std::cout << "\t\t DD VTX @ [ " << xyz[0] << ", " << xyz[1] << ", " << xyz[2] << " ]" << std::endl;
 	
       }// if there is only one vertex
       

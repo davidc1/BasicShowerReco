@@ -13,6 +13,11 @@
 #include <sstream>
 #include <algorithm>
 
+#include "larcore/Geometry/Geometry.h"
+#include "larcorealg/Geometry/GeometryCore.h"
+#include "lardata/Utilities/GeometryUtilities.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+
 namespace showerreco {
   
   class Angle3DFromVtxQweighted : public ShowerRecoModuleBase {
@@ -31,12 +36,20 @@ namespace showerreco {
     
   private:
     
+    double _wire2cm, _time2cm;
+    
   };
   
   Angle3DFromVtxQweighted::Angle3DFromVtxQweighted(const fhicl::ParameterSet& pset)
   {
     configure(pset);
     _name = "Angle3DFromVtxQweighted";
+
+    auto const* geom = ::lar::providerFrom<geo::Geometry>();
+    auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
+    _wire2cm = geom->WirePitch(0,1,0);
+    _time2cm = detp->SamplingRate() / 1000.0 * detp->DriftVelocity( detp->Efield(), detp->Temperature() );
+
   }
 
   void Angle3DFromVtxQweighted::configure(const fhicl::ParameterSet& pset)
@@ -79,6 +92,9 @@ namespace showerreco {
     // planes with largest number of hits used to get 3D direction
     std::vector<int> planeHits(3,0);
     std::vector<::util::PxPoint> planeDir(3);
+
+    // keep track of minimum 2D distance
+    double dmin2d = 1e6;
     
     // we want an energy for each plane
     for (size_t n = 0; n < clusters.size(); n++) {
@@ -90,17 +106,38 @@ namespace showerreco {
       auto const& pl = clusters.at(n)._plane;
 
       // project vertex onto this plane
-      auto const& vtx2D = geomH->Get2DPointProjection(vtx,pl);
+      //auto const& vtx2D = geomH->Get2DPointProjectionCM(vtx,pl);
+      // get wire for yz pointx
+      auto const* geom = ::lar::providerFrom<geo::Geometry>();
+      auto wire = geom->WireCoordinate(vtx[1],vtx[2],geo::PlaneID(0,0,pl)) * _wire2cm;
+      auto time = vtx[0];
+      util::PxPoint vtx2D(pl,wire,time);
+
+      if (_verbose){
+	std::cout << "3D vertex : [ " << vtx[0] << ", " << vtx[1] << ", " << vtx[2] << " ]" << std::endl;
+	std::cout << "2D projection of vtx on plane " << pl << " @ [w,t] -> [ " << vtx2D.w << ", " << vtx2D.t << "]" <<  std::endl;
+      }
 
       // get the charge-averaged 2D vector pointing from vtx in shower direction
       ::util::PxPoint weightedDir;
+      ::util::PxPoint ptmin;
       weightedDir.w = 0;
       weightedDir.t = 0;
       double Qtot = 0;
       for (auto const& hit : hits){
 	weightedDir.w += (hit.w - vtx2D.w) * hit.charge;
 	weightedDir.t += (hit.t - vtx2D.t) * hit.charge;
+	double dd = sqrt( (hit.w - vtx2D.w) * (hit.w - vtx2D.w) + (hit.t - vtx2D.t) * (hit.t - vtx2D.t) );
+	if (dd < dmin2d) {
+	  dmin2d = dd;
+	  ptmin = hit;
+	}
 	Qtot += hit.charge;
+      }
+
+      if (_verbose){
+	std::cout << "Closest pt @ [w,t] -> [ " << ptmin.w << ", " << ptmin.t << " ]" << std::endl;
+	std::cout << "Cluster on plane " << pl << " w/ " << hits.size() << " hits has 2d dist min : " << dmin2d << " in cm" << std::endl;
       }
 
       weightedDir.w /= Qtot;
@@ -145,6 +182,12 @@ namespace showerreco {
     geomH->Get3DaxisN(pl_max, pl_mid,
 		      angle_max, angle_mid,
 		      phi, theta);
+
+    theta *= (3.1415/180.);
+    phi   *= (3.1415/180.);
+
+    if (_verbose)
+      std::cout << "theta : " << theta << " \t phi : " << phi << std::endl;
     
     resultShower.fDCosStart[1] = sin(theta);
     resultShower.fDCosStart[0] = cos(theta) * sin(phi);

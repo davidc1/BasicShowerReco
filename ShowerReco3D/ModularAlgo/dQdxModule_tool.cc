@@ -69,15 +69,6 @@ namespace showerreco {
   void dQdxModule::initialize()
   {
     
-    // degbugging tree
-    if (_tree) delete _tree;
-    _tree = new TTree(_name.c_str(),"dQdx tree");
-    _tree->Branch("_pitch",&_pitch,"pitch/D");
-    _tree->Branch("_dqdx",&_dqdx,"dqdx/D");
-    _tree->Branch("_dqdx_v","std::vector<double>",&_dqdx_v);
-    _tree->Branch("_dmax",&_dmax,"dmax/D");
-    _tree->Branch("_nhits",&_nhits,"nhits/I");
-    _tree->Branch("_ntot",&_ntot,"ntot/I");
     return;
   }
   
@@ -170,8 +161,6 @@ namespace showerreco {
       resultShower.fBestdQdx   = _dqdx;
       
     }// for all clusters (planes)
-    
-    _tree->Fill();
     
     return;
   }

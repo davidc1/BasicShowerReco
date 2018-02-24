@@ -64,10 +64,10 @@ void FilterShowers::do_reconstruction(const ::protoshower::ProtoShower & proto_s
   // take the vtx -> start point direction as the 3D direction
   auto const& vtx = proto_shower.vertex();
   
-  auto const& geomH = ::util::GeometryUtilities::GetME();
+  //auto const& geomH = ::util::GeometryUtilities::GetME();
   
   // project vertex onto this plane
-  auto const& vtx2D = geomH->Get2DPointProjection(vtx,2);
+  auto const& vtx2D = util::PxPoint(2,0,0);// geomH->Get2DPointProjection(vtx,2);
   
   auto & clusters = proto_shower.clusters();
   
