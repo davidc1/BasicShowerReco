@@ -33,6 +33,8 @@
 
 #include "art/Utilities/make_tool.h"
 
+#include "art/Persistency/Common/PtrMaker.h"
+
 #include <memory>
 
 class ShrReco3D;
@@ -71,10 +73,27 @@ private:
   ::protoshower::ProtoShowerAlgBase* _psalg;
   
   /**
-     Save output showers produced by reconstruction algorithms
+     @brief Save output showers produced by reconstruction algorithms
+     @input s : index in output shower vector, to associate back to PFP index
+     @input shower : reconstructed shower to be translated to recob:: object
+     @input Shower_v : vector of recob::Showers. This will be placed in the art::Event
+     @input pfp_h : handle to input pfparticles
+     @input pfp_clus_assn_v : input pfp -> clus assn vector
+     @input pfp_hit_assn_v  : input pfp -> hit assn vector
+     @input Shower_PFP_assn_v     : output shower -> pfp assn vector
+     @input Shower_Cluster_assn_v : output shower -> cluster assn vector
+     @input Shower_Hit_assn_v     : output shower -> hit assn vector
   */
-  void SaveShower(const showerreco::Shower_t& shower,
-		  std::unique_ptr< std::vector<recob::Shower> >& Shower_v);
+  void SaveShower(const size_t idx,
+		  const showerreco::Shower_t& shower,
+		  std::unique_ptr< std::vector<recob::Shower> >& Shower_v,
+		  const art::PtrMaker<recob::Shower> ShowerPtrMaker,
+		  const art::ValidHandle<std::vector<recob::PFParticle> > pfp_h,
+		  const art::FindManyP<recob::Cluster> pfp_clus_assn_v,
+		  const std::vector<std::vector<art::Ptr<recob::Hit> > > pfp_hit_assn_v,
+		  std::unique_ptr< art::Assns <recob::Shower, recob::PFParticle> >& Shower_PFP_assn_v,
+		  std::unique_ptr< art::Assns <recob::Shower, recob::Cluster>    >& Shower_Cluster_assn_v,
+		  std::unique_ptr< art::Assns <recob::Shower, recob::Hit>        >& Shower_Hit_assn_v );
   
   // Declare member data here.
   
@@ -112,8 +131,6 @@ ShrReco3D::ShrReco3D(fhicl::ParameterSet const & p)
   produces<art::Assns <recob::Shower, recob::Cluster>    >();
   produces<art::Assns <recob::Shower, recob::Hit>        >();
 
-
-
   _manager->Initialize();
 
 }
@@ -126,6 +143,9 @@ void ShrReco3D::produce(art::Event & e)
   std::unique_ptr< art::Assns <recob::Shower, recob::PFParticle> > Shower_PFP_assn_v    ( new art::Assns<recob::Shower, recob::PFParticle>);
   std::unique_ptr< art::Assns <recob::Shower, recob::Cluster>    > Shower_Cluster_assn_v( new art::Assns<recob::Shower, recob::Cluster>   );
   std::unique_ptr< art::Assns <recob::Shower, recob::Hit>        > Shower_Hit_assn_v    ( new art::Assns<recob::Shower, recob::Hit>       );
+
+  // shower pointer maker for later to create associations
+  art::PtrMaker<recob::Shower> ShowerPtrMaker(e, *this);
 
   // pass event to ProtoShowerAlgBase to create ProtoShower objects
   // which will then be fed to shower reco algorithm chain
@@ -140,10 +160,21 @@ void ShrReco3D::produce(art::Event & e)
   _manager->Reconstruct(output_shower_v);
 
 
+  // load PFP, clus, hit so that associations to showers can be stored
+  // grab PFParticles in event
+  auto const& pfp_h = e.getValidHandle<std::vector<recob::PFParticle> >(fPFPproducer);
+  // grab clusters associated with PFParticles
+  art::FindManyP<recob::Cluster> pfp_clus_assn_v(pfp_h, e, fPFPproducer);
+  // ADDITION FROM PETRILLO
+  e.getValidHandle<std::vector<recob::Cluster>>(fClusproducer);
+  // grab the hits associated to the PFParticles
+  auto pfp_hit_assn_v = lar::FindManyInChainP<recob::Hit, recob::Cluster>::find(pfp_h, e, fPFPproducer);
 
   // save output showers
   for (size_t s=0; s < output_shower_v.size(); s++) {
-    SaveShower(output_shower_v.at(s), Shower_v);
+    SaveShower(s, output_shower_v.at(s), Shower_v, ShowerPtrMaker,
+	       pfp_h, pfp_clus_assn_v, pfp_hit_assn_v,
+	       Shower_PFP_assn_v, Shower_Cluster_assn_v, Shower_Hit_assn_v);
   }// for all output reconstructed showers
 
   e.put(std::move(Shower_v));
@@ -160,44 +191,70 @@ void ShrReco3D::beginJob()
 
 void ShrReco3D::endJob()
 {
-  // Implementation of optional member function here.
+  _manager->Finalize();
 }
 
 
-void ShrReco3D::SaveShower(const showerreco::Shower_t& shower,
-			   std::unique_ptr< std::vector<recob::Shower> >& Shower_v) 
+void ShrReco3D::SaveShower(const size_t idx,
+			   const showerreco::Shower_t& shower,
+			   std::unique_ptr< std::vector<recob::Shower> >& Shower_v,
+			   const art::PtrMaker<recob::Shower> ShowerPtrMaker,
+			   const art::ValidHandle<std::vector<recob::PFParticle> > pfp_h,
+			   const art::FindManyP<recob::Cluster> pfp_clus_assn_v,
+			   const std::vector<std::vector<art::Ptr<recob::Hit> > > pfp_hit_assn_v,
+			   std::unique_ptr< art::Assns <recob::Shower, recob::PFParticle> >& Shower_PFP_assn_v,
+			   std::unique_ptr< art::Assns <recob::Shower, recob::Cluster> >& Shower_Cluster_assn_v,
+			   std::unique_ptr< art::Assns <recob::Shower, recob::Hit> >& Shower_Hit_assn_v)
+  
 {
   
-    if (shower.fPassedReconstruction == false) {
-      return;
-    }
-
-    // filter out showers with garbage values
-    if (shower.fXYZStart.Mag2()  == 0) {
-      return;
-    }
-    if (shower.fDCosStart.Mag2() == 0) {
-      return;
-    }
-
-
-    recob::Shower s;
-    s.set_id ( Shower_v->size() );
-    s.set_total_energy          ( shower.fTotalEnergy_v         );
-    s.set_total_energy_err      ( shower.fSigmaTotalEnergy_v    );
-    s.set_total_best_plane      ( shower.fBestPlane.Plane       );
-    s.set_direction             ( shower.fDCosStart             );
-    s.set_direction_err         ( shower.fSigmaDCosStart        );
-    s.set_start_point           ( shower.fXYZStart              );
-    s.set_start_point_err       ( shower.fSigmaXYZStart         );
-    s.set_dedx                  ( shower.fdEdx_v                );
-    s.set_dedx_err              ( shower.fSigmadEdx_v           );
-    s.set_length                ( shower.fLength                );
-    s.set_open_angle            ( shower.fOpeningAngle          );
-
-    Shower_v->emplace_back(s);
-
+  if (shower.fPassedReconstruction == false) {
     return;
+  }
+  
+  // filter out showers with garbage values
+  if (shower.fXYZStart.Mag2()  == 0) {
+    return;
+  }
+  if (shower.fDCosStart.Mag2() == 0) {
+    return;
+  }
+
+  recob::Shower s;
+  s.set_id ( Shower_v->size() );
+  s.set_total_energy          ( shower.fTotalEnergy_v         );
+  s.set_total_energy_err      ( shower.fSigmaTotalEnergy_v    );
+  s.set_total_best_plane      ( shower.fBestPlane.Plane       );
+  s.set_direction             ( shower.fDCosStart             );
+  s.set_direction_err         ( shower.fSigmaDCosStart        );
+  s.set_start_point           ( shower.fXYZStart              );
+  s.set_start_point_err       ( shower.fSigmaXYZStart         );
+  s.set_dedx                  ( shower.fdEdx_v                );
+  s.set_dedx_err              ( shower.fSigmadEdx_v           );
+  s.set_length                ( shower.fLength                );
+  s.set_open_angle            ( shower.fOpeningAngle          );
+  
+  Shower_v->emplace_back(s);
+
+  art::Ptr<recob::Shower> const ShrPtr = ShowerPtrMaker(Shower_v->size()-1);
+
+  // now take care of associations
+  
+  // step 1 : pfp
+  const art::Ptr<recob::PFParticle> PFPPtr(pfp_h, idx);
+  Shower_PFP_assn_v->addSingle( ShrPtr, PFPPtr );
+
+  // step 2 : clusters
+  std::vector<art::Ptr<recob::Cluster> > clus_v = pfp_clus_assn_v.at(idx);
+  for (size_t c=0; c < clus_v.size(); c++)
+    Shower_Cluster_assn_v->addSingle( ShrPtr, clus_v.at(c) );
+
+  // step 3 : hits
+  std::vector<art::Ptr<recob::Hit> > hit_v = pfp_hit_assn_v.at(idx);
+  for (size_t h=0; h < hit_v.size(); h++)
+    Shower_Hit_assn_v->addSingle( ShrPtr, hit_v.at(h) );
+  
+  return;
 }
 
 DEFINE_ART_MODULE(ShrReco3D)
