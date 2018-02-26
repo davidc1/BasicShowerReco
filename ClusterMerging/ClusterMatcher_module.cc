@@ -90,21 +90,15 @@ ClusterMatcher::ClusterMatcher(fhicl::ParameterSet const & pset)
   _time2cm = detp->SamplingRate() / 1000.0 * detp->DriftVelocity( detp->Efield(), detp->Temperature() );
 
   // Call appropriate produces<>() functions here.
-  std::cout << "DD calling constructor" << std::endl;
-
   _mgr = new ::cmtool::CMatchManager(geom->Nplanes());
-
-  std::cout << "DD reset Merge manager" << std::endl;
   _mgr->Reset();
-  std::cout << "DD done with reset" << std::endl;
+  _mgr->DebugMode(cmtool::CMManagerBase::kPerIteration);
 
   _CMaker = new ::cluster::ClusterMaker();
   
   fClusterProducer = pset.get<std::string>("ClusterProducer");
   fVertexProducer  = pset.get<std::string>("VertexProducer" );
 
-  std::cout << "DD setting up algos" << std::endl;
-  
   // grab algorithm for pirority
   const fhicl::ParameterSet& priorityTool = pset.get<fhicl::ParameterSet>("PriorityTool");
   _mgr->AddPriorityAlgo(art::make_tool<cmtool::CPriorityAlgoBase>(priorityTool));
@@ -112,14 +106,11 @@ ClusterMatcher::ClusterMatcher(fhicl::ParameterSet const & pset)
   // grab algorithm for matching
   const fhicl::ParameterSet& matchTool = pset.get<fhicl::ParameterSet>("MatchTool");
   _mgr->AddMatchAlgo(art::make_tool<cmtool::CFloatAlgoBase>(matchTool));
-  std::cout << "DD \t done adding algo" << std::endl;
 
   _mgr->ReportAlgoChain();
 
   produces<std::vector<recob::PFParticle> >();
   produces<art::Assns <recob::PFParticle, recob::Cluster> >();
-
-  std::cout << "DD done with constructor" << std::endl;
 
 }
 
@@ -141,7 +132,6 @@ void ClusterMatcher::produce(art::Event & e)
     auto clus = clus_h->at(c);
     if (clus.NHits() > 10) { nabove += 1; }
   }
-  std::cout << "DD \t\t There are " << nabove << " clusters with more than 10 hits" << std::endl;
 
   // load associated hits
   art::FindManyP<recob::Hit> clus_hit_assn_v(clus_h, e, fClusterProducer);

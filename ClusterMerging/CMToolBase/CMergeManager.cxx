@@ -128,11 +128,6 @@ namespace cmtool {
 
     while (algo_idx < _merge_algo_v.size() ) {
 
-      // verbosity to debug mysterious algorithm call malfunction
-      std::cout << "\t\t DD Calling ALGO IDX : " << algo_idx << std::endl;
-      std::cout << "\t\t DD " << typeid(*(_merge_algo_v[algo_idx].get())).name() << std::endl;    
-      std::cout << "\t\t DD " << _merge_algo_v[algo_idx]->Name() << std::endl;    
-
       if(!iter_ctr) _tmp_merged_clusters = _in_clusters;
       else _tmp_merged_clusters = _out_clusters;
       _out_clusters.clear();
@@ -147,9 +142,7 @@ namespace cmtool {
 	  
 	  merge_switch.at(i) = false;
       
-      std::cout << "Computing priority over " << _tmp_merged_clusters.size() << " input clusters" << std::endl;
       ComputePriority(_tmp_merged_clusters);
-      std::cout << "there are " << _priority.size() << " pairs" << std::endl;
       
       // Run merging algorithm
       RunMerge(algo_idx,_tmp_merged_clusters, merge_switch, bk);
@@ -230,7 +223,8 @@ namespace cmtool {
 
     }
 
-    std::cout << "    \033[093m priority pairs : \033[00m  "  << _priority.size()  << std::endl;
+    if (_debug_mode <= kPerIteration)
+      std::cout << "    \033[093m priority pairs : \033[00m  "  << _priority.size()  << std::endl;
 
     //
     // Merging
@@ -241,8 +235,6 @@ namespace cmtool {
     int ndiffpl = 0;
     int nflag   = 0;
     int nmerge  = 0;
-
-    std::cout << "pair-wise mode? " << _merge_algo_v[algo_idx]->PairWiseMode() << std::endl;
 
     // which mode? pair-wise:
     if (_merge_algo_v[algo_idx]->PairWiseMode() == true) {

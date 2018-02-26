@@ -86,11 +86,8 @@ ClusterMerger::ClusterMerger(fhicl::ParameterSet const & pset)
 // Initialize member data here.
 {
 
-  std::cout << "DD calling constructor" << std::endl;
-
   _merge_helper = new ::cmtool::CMergeHelper();
 
-  std::cout << "DD reset Merge manager" << std::endl;
   _merge_helper->GetManager().Reset();
   _merge_helper->GetManager().DebugMode(cmtool::CMManagerBase::kPerIteration);
   _merge_helper->GetManager().MergeTillConverge(false);
@@ -98,8 +95,6 @@ ClusterMerger::ClusterMerger(fhicl::ParameterSet const & pset)
   //const fhicl::ParameterSet& priorityTool = pset.get<fhicl::ParameterSet>("PriorityTool");
   //_merge_helper->GetManager().AddPriorityAlgo(art::make_tool<cmtool::CPriorityAlgoBase>(priorityTool));
   
-  std::cout << "DD done with reset" << std::endl;
-
   _CMaker = new ::cluster::ClusterMaker();
   
   // get detector specific properties
@@ -111,17 +106,11 @@ ClusterMerger::ClusterMerger(fhicl::ParameterSet const & pset)
   fClusterProducer = pset.get<std::string>("ClusterProducer");
   fVertexProducer  = pset.get<std::string>("VertexProducer" );
 
-  std::cout << "DD setting up algos" << std::endl;
-  
   // grab algorithms for merging
   const fhicl::ParameterSet& mergeTools = pset.get<fhicl::ParameterSet>("MergeTools");
-  std::cout << "DD got parameter set. start loop..." << std::endl;
   for (const std::string& mergeTool : mergeTools.get_pset_names()) {
-    std::cout << "DD \t in loop..." << std::endl;
     const fhicl::ParameterSet& merge_pset = mergeTools.get<fhicl::ParameterSet>(mergeTool);
-    std::cout << "DD \t add merge algor..." << std::endl;
     _merge_helper->GetManager().AddMergeAlgo(art::make_tool<cmtool::CBoolAlgoBase>(merge_pset));
-    std::cout << "DD \t done adding algo" << std::endl;
   }// for all algorithms to be added
 
   _merge_helper->GetManager().ReportAlgoChain();
@@ -129,15 +118,11 @@ ClusterMerger::ClusterMerger(fhicl::ParameterSet const & pset)
   produces<std::vector<recob::Cluster> >();
   produces<art::Assns <recob::Cluster, recob::Hit> >();
 
-  std::cout << "DD done with constructor" << std::endl;
-
 }
 
 void ClusterMerger::produce(art::Event & e)
 {
   // Implementation of required member function here.
-
-  std::cout << "DD entering producer" << std::endl;
 
   std::unique_ptr< std::vector<recob::Cluster> > Cluster_v(new std::vector<recob::Cluster>);
   std::unique_ptr< art::Assns <recob::Cluster, recob::Hit> > Cluster_Hit_assn_v(new art::Assns<recob::Cluster,recob::Hit>);
@@ -145,19 +130,13 @@ void ClusterMerger::produce(art::Event & e)
   // cluster pointer maker for later to create associations
   art::PtrMaker<recob::Cluster> ClusPtrMaker(e, *this);
 
-  std::cout << "DD created empty container storer for product objects" << std::endl;
-
   // load data products needed
 
   // load input clusters
   auto const& clus_h = e.getValidHandle<std::vector<recob::Cluster>>(fClusterProducer);
 
-   std::cout << "DD loaded " << clus_h->size() << " clusters..." << std::endl;
-  
   // load associated hits
   art::FindManyP<recob::Hit> clus_hit_assn_v(clus_h, e, fClusterProducer);
-
-  std::cout << "DD and associations..." << std::endl;
 
   // get generic hit art::Ptr
   // from it get id() and productGetter()
@@ -166,18 +145,12 @@ void ClusterMerger::produce(art::Event & e)
   // to make art::Ptr for the hit I want to associate.
   GetHitPointer(clus_hit_assn_v);
 
-  std::cout << "DD got hit pointer to create output associations..." << std::endl;
-
   // load vertices
   auto const& vtx_h = e.getValidHandle<std::vector<recob::Vertex>>(fVertexProducer);
-
-  std::cout << "DD vertex loaded" << std::endl;
 
   // create cluster::Clusters
   std::vector<::cluster::Cluster> event_clusters;
   _CMaker->MakeClusters(clus_h, clus_hit_assn_v, vtx_h, event_clusters);
-
-  std::cout << "DD Make clusters called" << std::endl;
 
   _merge_helper->Process(event_clusters);
 
@@ -244,12 +217,6 @@ const recob::Cluster ClusterMerger::FillClusterProperties(const ::cluster::Clust
 
   
   auto planeid = geo::PlaneID(0,0,CMCluster._plane);
-
-  if (CMCluster.GetHits().size() > 30) {
-    std::cout << "Cluster start in cm : " << CMCluster._start_pt._w << ", " << CMCluster._start_pt._t << std::endl;
-    std::cout << "Creating new cluster @ start w, t [ " << startW << ", " << startT
-	      << " ] with " << CMCluster.GetHits().size() << " hits" << std::endl;
-  }
 
   recob::Cluster clus(startW, 0., startT, 0., 0., CMCluster._angle, 0., 
 		      endW,   0., endT,   0., 0., 0., 0., 

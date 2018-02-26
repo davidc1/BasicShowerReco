@@ -183,6 +183,9 @@ namespace cmtool {
       seed.push_back(clusters_per_plane.size());
     
     auto const& combinations = PlaneClusterCombinations(seed);
+
+    if(_debug_mode <= kPerIteration) 
+      std::cout << "\033[93m checking through " << combinations.size() << " combinations \033[00m" << std::endl;
     
     // Loop over combinations and call algorithm
     for(auto const& comb : combinations) {
