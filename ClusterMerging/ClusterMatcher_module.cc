@@ -111,6 +111,7 @@ ClusterMatcher::ClusterMatcher(fhicl::ParameterSet const & pset)
 
   produces<std::vector<recob::PFParticle> >();
   produces<art::Assns <recob::PFParticle, recob::Cluster> >();
+  produces<art::Assns <recob::PFParticle, recob::Hit    > >();
 
 }
 
@@ -119,7 +120,8 @@ void ClusterMatcher::produce(art::Event & e)
   // Implementation of required member function here.
 
   std::unique_ptr< std::vector<recob::PFParticle> > PFP_v(new std::vector<recob::PFParticle>);
-  std::unique_ptr< art::Assns <recob::PFParticle, recob::Cluster> > PFP_Hit_assn_v(new art::Assns<recob::PFParticle,recob::Cluster>);
+  std::unique_ptr< art::Assns <recob::PFParticle, recob::Cluster> > PFP_Clus_assn_v(new art::Assns<recob::PFParticle,recob::Cluster>);
+  std::unique_ptr< art::Assns <recob::PFParticle, recob::Hit    > > PFP_Hit_assn_v (new art::Assns<recob::PFParticle,recob::Hit>    );
 
   // cluster pointer maker for later to create associations
   art::PtrMaker<recob::PFParticle> PFPPtrMaker(e, *this);
@@ -164,11 +166,16 @@ void ClusterMatcher::produce(art::Event & e)
     for (auto const& clus_idx : result) {
       const art::Ptr<recob::Cluster> ClusPtr(clus_h, clus_idx);
       std::cout << "\t\t DD \t\t pl : " << ClusPtr->Plane() << "\t Nhits : " << ClusPtr->NHits() << "\t start [ " << ClusPtr->StartWire() << ", " << ClusPtr->StartTick() << " ]" << std::endl;
-      PFP_Hit_assn_v->addSingle(PFPPtr,ClusPtr);
+      PFP_Clus_assn_v->addSingle(PFPPtr,ClusPtr);
+      // next load cluster -> hit association to save pfp -> hit associations
+      const std::vector<art::Ptr<recob::Hit> > HitPtr_v = clus_hit_assn_v.at(clus_idx);
+      for (size_t h=0; h < HitPtr_v.size(); h++) 
+	PFP_Hit_assn_v->addSingle(PFPPtr, HitPtr_v.at(h) );
     }// for all associated clusters
   }// for all PFParticles creates
 
   e.put(std::move(PFP_v));
+  e.put(std::move(PFP_Clus_assn_v));
   e.put(std::move(PFP_Hit_assn_v));
 }
 
