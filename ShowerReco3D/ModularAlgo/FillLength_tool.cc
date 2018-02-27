@@ -60,6 +60,9 @@ namespace showerreco {
       
       resultShower.fLength = dLY / fabs(resultShower.fDCosStart[2]) ;
       
+      // require a minimum length of 20 cm
+      if (resultShower.fLength < 20) resultShower.fLength = 20.;
+      
       resultShower.fOpeningAngle = clus._opening_angle;
       
       filled = true;
