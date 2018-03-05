@@ -68,12 +68,21 @@ public:
 
 
   std::string name() { return _name; }
+  
+  /**
+     Set calorimetry conversion for ADC to MeV
+     ADC refers to Hit Integral()
+   */
+  void setCalorimetry(double c) { _ADC_to_MeV = c; }
 
 protected:
 
   std::string _name;
 
   double _wire2cm, _time2cm;
+
+  // conversion from ADC to MeV
+  double _ADC_to_MeV;
 
 };
 

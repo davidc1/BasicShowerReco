@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
 // Class:       Showerreco
 // Plugin Type: producer (art v2_09_06)
 // File:        ShrReco3D_module.cc
@@ -34,6 +34,7 @@
 #include "art/Utilities/make_tool.h"
 
 #include "art/Persistency/Common/PtrMaker.h"
+
 
 #include <memory>
 
@@ -71,7 +72,7 @@ private:
   
   // ProtoShowerAlgBase to make protoshowers
   ::protoshower::ProtoShowerAlgBase* _psalg;
-  
+
   /**
      @brief Save output showers produced by reconstruction algorithms
      @input s : index in output shower vector, to associate back to PFP index
@@ -132,6 +133,12 @@ ShrReco3D::ShrReco3D(fhicl::ParameterSet const & p)
   produces<art::Assns <recob::Shower, recob::Hit>        >();
 
   _manager->Initialize();
+
+  auto recomb = p.get<double>("recombination");
+  auto adctoe = p.get<double>("ADCtoE");
+  auto calib = adctoe * 0.0000236 / recomb;
+  std::cout << "Calibration constant : " << calib << std::endl;
+  _psalg->setCalorimetry(calib);
 
 }
 

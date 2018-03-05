@@ -64,11 +64,16 @@ physics:
   rns:                 { module_type: RandomNumberSaver }
 
   ### gamma catcher
+
+  proximity : @local::ProximityClustering
+  cosmicfilter : @local::CosmicFilter
+ }
+
+ filters:
+ {
   ccvertex: { module_type: CCVertex
               AssnProducer: "NuMuCCSelectionII"
             }
-  proximity : @local::ProximityClustering
-  cosmicfilter : @local::CosmicFilter
  }
 
  #reco: [ rns, ophit, opflash, simpleFlash, opflashfilter ]
@@ -90,7 +95,7 @@ physics:
 physics.producers.cosmicfilter.VtxProducer: "ccvertex"
 physics.producers.proximity.VtxProducer: "ccvertex"
 #physics.producers.proximity.HitProducer: "ssnethitmaker:shrhit90"
-physics.producers.proximity.HitProducer: "ssnethitmaker:shrhitvariable"
+physics.producers.proximity.HitProducer: "cosmicfilter"
 
 #block to define where the output goes.  if you defined a filter in the physics
 #block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
@@ -103,6 +108,7 @@ outputs:
    fileName:    "proximity.root"
    dataTier:    "reco"
    compressionLevel: 1
+   SelectEvents: [reco]
    }
 }
 

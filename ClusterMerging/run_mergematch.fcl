@@ -1,14 +1,15 @@
 #include "services_microboone.fcl"
 #include "triggeralgo_service.fcl"
-#include "showerreco3d.fcl"
+#include "clustermerger.fcl"
+#include "clustermatcher.fcl"
 
-process_name: ShrReco3Dbis
+process_name: ClusterMerger
 
 services:
 {
   scheduler:               { defaultExceptions: false }    # Make all uncaught exceptions fatal.
   # Load the service that manages root files for histograms.
-  TFileService:            { fileName: "showerreco3d_ana.root" }
+  TFileService:            { fileName: "clustermerger_ana.root" }
   TimeTracker:             {}
   ExptGeoHelperInterface:         @local::microboone_geometry_helper
   Geometry:                       @local::microboone_geo
@@ -50,14 +51,15 @@ physics:
   rns:                 { module_type: RandomNumberSaver }
 
   ### gamma catcher
-  showerreco3dbis : @local::ShrReco3D
+  cmerger  : @local::ClusterMerger
+  cmatcher : @local::ClusterMatcher
  }
  analyzers:
  { 
 }
 
  #reco: [ rns, ophit, opflash, simpleFlash, opflashfilter ]
- reco: [ rns, showerreco3dbis ]
+ reco: [ rns, cmerger, cmatcher ]
  ana: [ ]
 
  #define the output stream, there could be more than one if using filters 
@@ -81,7 +83,7 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   fileName:    "showerreco3d.root"
+   fileName:    "clustermerger.root"
    dataTier:    "reco"
    compressionLevel: 1
    }

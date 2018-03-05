@@ -15,8 +15,10 @@ ShrReco3D: {
         Algo3: @local::linearenergy
         Algo4: @local::dqdxmodule
         Algo5: @local::filllength
-        #Algo5: @local::filtershowers
+        Algo6: @local::filtershowers
      }
+ recombination : 0.6
+ ADCtoE : 243.
 }
 
 END_PROLOG

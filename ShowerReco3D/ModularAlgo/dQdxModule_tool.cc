@@ -112,6 +112,11 @@ namespace showerreco {
       double phi   = asin(dir3D[1] / cos(theta) );
 
       _pitch = geomH.PitchInView(pl, phi, theta);
+
+      double costhetaz = fabs( dir3D[2] / dir3D.Mag() );
+      _pitch = 0.3 * 1./costhetaz;
+
+      std::cout << " dQdx Module : pitch = " << _pitch << std::endl;
       
       _dmax = 0.;
 
@@ -142,9 +147,12 @@ namespace showerreco {
       }// loop over all hits
 
       std::vector<double> _dqdx_nonzero_v;
-      for (auto const& dqdx : _dqdx_v)
-	if (dqdx != 0) { _dqdx_nonzero_v.push_back(dqdx); }
-      
+      for (auto const& dqdx : _dqdx_v) {
+	if (dqdx != 0) {
+	  _dqdx_nonzero_v.push_back(dqdx); 
+	  std::cout << "dQdx Module : \t dQdx = " << dqdx / _pitch << std::endl;
+	}
+      }// for all dQdx values
 
       if (_dqdx_nonzero_v.size() == 0)
 	_dqdx = 0.;
@@ -153,6 +161,8 @@ namespace showerreco {
 	std::nth_element(_dqdx_nonzero_v.begin(), _dqdx_nonzero_v.end(), _dqdx_nonzero_v.end() );
 	_dqdx = _dqdx_nonzero_v[ _dqdx_nonzero_v.size()/2.] / _pitch;
       }
+
+      std::cout << "dQdx Module : Final dQdx = " << _dqdx << std::endl;
 
       _ntot = hits.size();
 
