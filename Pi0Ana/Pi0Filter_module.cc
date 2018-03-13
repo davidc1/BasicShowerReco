@@ -56,6 +56,8 @@ private:
   TTree* _tree;
   float  _e1;
   float  _e2;
+  float  _dedx1;
+  float  _dedx2;
   float  _angle;
   float  _mass;
   int    _nshr;
@@ -151,6 +153,9 @@ bool Pi0Filter::filter(art::Event & e)
   // get opening angle
   auto dir1 = shr1.Direction();
   auto dir2 = shr2.Direction();
+  
+  _dedx1 = shr1.dEdx()[2];
+  _dedx2 = shr2.dEdx()[2];
 
   _angle = dir1.Angle(dir2);
 
@@ -172,8 +177,10 @@ void Pi0Filter::beginJob()
   _tree->Branch("_nshr",&_nshr,"nshr/I");
   _tree->Branch("_e1",&_e1,"e1/F");  
   _tree->Branch("_e2",&_e2,"e2/F");
+  _tree->Branch("_dedx1",&_dedx1,"dedx1/F");
+  _tree->Branch("_dedx2",&_dedx2,"dedx2/F");
   _tree->Branch("_angle",&_angle,"angle/F");
-  _tree->Branch("_mass",&_mass,"mass/F");
+  _tree->Branch("_mass" ,&_mass ,"mass/F" );
 
   _trkangle_tree = tfs->make<TTree>("_trkangle_tree","Track Angle TTree");
   _trkangle_tree->Branch("_trkangle",&_trkangle,"trkangle/F");
