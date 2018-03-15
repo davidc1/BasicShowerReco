@@ -13,6 +13,7 @@ art_make(
 			lardata_Utilities
 			lardataobj_RecoBase
 			lardataobj_Simulation	
+			lardataobj_MCBase
 			larcore_Geometry_Geometry_service
           MODULE_LIBRARIES 
 		   	larpandora_LArPandoraInterface	
@@ -21,6 +22,7 @@ art_make(
 			lardataobj_RecoBase
 			lardataobj_Simulation	
 			lardataobj_AnalysisBase	
+			lardataobj_MCBase
 			lardata_RecoObjects larreco_Deprecated  
 			larreco_RecoAlg
 			lardata_Utilities

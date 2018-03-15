@@ -61,6 +61,7 @@ private:
   float  _angle;
   float  _mass;
   int    _nshr;
+  int _run,_sub,_evt;
 
   TTree* _trkangle_tree;
   float  _trkangle;
@@ -77,6 +78,10 @@ Pi0Filter::Pi0Filter(fhicl::ParameterSet const & p)
 
 bool Pi0Filter::filter(art::Event & e)
 {
+
+  _run = e.run();
+  _sub = e.subRun();
+  _evt = e.event();
 
   // load input showers
   auto const& shr_h = e.getValidHandle<std::vector<recob::Shower>>("showerreco3d");
@@ -113,7 +118,7 @@ bool Pi0Filter::filter(art::Event & e)
 
   _trkangle_tree->Fill();
 
-  if (_trkangle > 2.9) return false;
+
 
   _nshr = shr_h->size();
 
@@ -146,17 +151,12 @@ bool Pi0Filter::filter(art::Event & e)
     }
   }// for all showers
 
-  if (_e2 < 35.) return false;
-  
-  std::cout << "Showers of energy " << _e1 << " and " << _e2 << std::endl;
-  
-  // get opening angle
-  auto dir1 = shr1.Direction();
-  auto dir2 = shr2.Direction();
-  
   _dedx1 = shr1.dEdx()[2];
   _dedx2 = shr2.dEdx()[2];
 
+  // get opening angle
+  auto dir1 = shr1.Direction();
+  auto dir2 = shr2.Direction();
   _angle = dir1.Angle(dir2);
 
   std::cout << "\t opening angle : " << _angle << std::endl;
@@ -166,6 +166,13 @@ bool Pi0Filter::filter(art::Event & e)
   std::cout << "\t mass          : " << _mass << std::endl << std::endl;
 
   _tree->Fill();
+
+
+  if (_trkangle > 2.9) return false;
+
+  if (_e2 < 35.) return false;
+  
+  std::cout << "Showers of energy " << _e1 << " and " << _e2 << std::endl;
   
   return true;
 }
@@ -174,6 +181,9 @@ void Pi0Filter::beginJob()
 {
   art::ServiceHandle<art::TFileService> tfs;
   _tree = tfs->make<TTree>("_tree","Pi0 Tree TTree");
+  _tree->Branch("_run",&_run,"run/I");
+  _tree->Branch("_sub",&_sub,"sub/I");
+  _tree->Branch("_evt",&_evt,"evt/I");
   _tree->Branch("_nshr",&_nshr,"nshr/I");
   _tree->Branch("_e1",&_e1,"e1/F");  
   _tree->Branch("_e2",&_e2,"e2/F");
