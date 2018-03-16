@@ -87,9 +87,11 @@ private:
   double _mc_shr1_x,  _mc_shr1_y,  _mc_shr1_z;
   double _mc_shr1_px, _mc_shr1_py, _mc_shr1_pz;
   double _mc_shr1_e;
+  double _mc_shr1_cont;
   double _mc_shr2_x,  _mc_shr2_y,  _mc_shr2_z;
   double _mc_shr2_px, _mc_shr2_py, _mc_shr2_pz;
   double _mc_shr2_e;
+  double _mc_shr2_cont;
   double _mcradlen1, _mcradlen2;
 
   double _rc_shr_x,  _rc_shr_y,  _rc_shr_z;
@@ -214,33 +216,33 @@ void Pi0Analyzer::analyze(art::Event const & e)
 
   _pi0_e  = mcshr1.MotherEnd().E();
 
-  _mc_shr1_e  = mcshr1.DetProfile().E();
-  _mc_shr1_x  = mcshr1.DetProfile().X();
-  _mc_shr1_y  = mcshr1.DetProfile().Y();
-  _mc_shr1_z  = mcshr1.DetProfile().Z();
-  double mom1 = sqrt ( ( mcshr1.DetProfile().Px() * mcshr1.DetProfile().Px() ) +
-		       ( mcshr1.DetProfile().Py() * mcshr1.DetProfile().Py() ) +
-		       ( mcshr1.DetProfile().Pz() * mcshr1.DetProfile().Pz() ) );
+  _mc_shr1_e  = mcshr1.Start().E();
+  _mc_shr1_x  = mcshr1.Start().X();
+  _mc_shr1_y  = mcshr1.Start().Y();
+  _mc_shr1_z  = mcshr1.Start().Z();
+  double mom1 = sqrt ( ( mcshr1.Start().Px() * mcshr1.Start().Px() ) +
+		       ( mcshr1.Start().Py() * mcshr1.Start().Py() ) +
+		       ( mcshr1.Start().Pz() * mcshr1.Start().Pz() ) );
 
-  _mc_shr1_px = mcshr1.DetProfile().Px() / mom1;
-  _mc_shr1_py = mcshr1.DetProfile().Py() / mom1;
-  _mc_shr1_pz = mcshr1.DetProfile().Pz() / mom1;
+  _mc_shr1_px = mcshr1.Start().Px() / mom1;
+  _mc_shr1_py = mcshr1.Start().Py() / mom1;
+  _mc_shr1_pz = mcshr1.Start().Pz() / mom1;
 
-  _mc_shr2_e  = mcshr2.DetProfile().E();
-  _mc_shr2_x  = mcshr2.DetProfile().X();
-  _mc_shr2_y  = mcshr2.DetProfile().Y();
-  _mc_shr2_z  = mcshr2.DetProfile().Z();
-  double mom2 = sqrt ( ( mcshr2.DetProfile().Px() * mcshr2.DetProfile().Px() ) +
-		       ( mcshr2.DetProfile().Py() * mcshr2.DetProfile().Py() ) +
-		       ( mcshr2.DetProfile().Pz() * mcshr2.DetProfile().Pz() ) );
+  _mc_shr2_e  = mcshr2.Start().E();
+  _mc_shr2_x  = mcshr2.Start().X();
+  _mc_shr2_y  = mcshr2.Start().Y();
+  _mc_shr2_z  = mcshr2.Start().Z();
+  double mom2 = sqrt ( ( mcshr2.Start().Px() * mcshr2.Start().Px() ) +
+		       ( mcshr2.Start().Py() * mcshr2.Start().Py() ) +
+		       ( mcshr2.Start().Pz() * mcshr2.Start().Pz() ) );
 
-  _mc_shr2_px = mcshr2.DetProfile().Px() / mom2;
-  _mc_shr2_py = mcshr2.DetProfile().Py() / mom2;
-  _mc_shr2_pz = mcshr2.DetProfile().Pz() / mom2;
+  _mc_shr2_px = mcshr2.Start().Px() / mom2;
+  _mc_shr2_py = mcshr2.Start().Py() / mom2;
+  _mc_shr2_pz = mcshr2.Start().Pz() / mom2;
 
-  _mc_oangle  = mcshr1.DetProfile().Momentum().Vect().Dot( mcshr2.DetProfile().Momentum().Vect() );
-  _mc_oangle /= mcshr1.DetProfile().Momentum().Vect().Mag();
-  _mc_oangle /= mcshr2.DetProfile().Momentum().Vect().Mag();
+  _mc_oangle  = mcshr1.Start().Momentum().Vect().Dot( mcshr2.Start().Momentum().Vect() );
+  _mc_oangle /= mcshr1.Start().Momentum().Vect().Mag();
+  _mc_oangle /= mcshr2.Start().Momentum().Vect().Mag();
 
   _mcradlen1 = sqrt( ( (_mc_shr1_x - _mc_vtx_x) * (_mc_shr1_x - _mc_vtx_x) ) +
 		     ( (_mc_shr1_y - _mc_vtx_y) * (_mc_shr1_y - _mc_vtx_y) ) +
@@ -311,13 +313,13 @@ void Pi0Analyzer::analyze(art::Event const & e)
 		    ( (_rc_shr_z - _rc_vtx_z) * (_rc_shr_z - _rc_vtx_z) ) );
   
   
-  _dot  = rcshr.Direction().Dot( mcshr.DetProfile().Momentum().Vect() );
-  _dot /= mcshr.DetProfile().Momentum().Vect().Mag();
+  _dot  = rcshr.Direction().Dot( mcshr.Start().Momentum().Vect() );
+  _dot /= mcshr.Start().Momentum().Vect().Mag();
   _dot /= rcshr.Direction().Mag();
   
-  _emc = mcshr.DetProfile().E();
+  _emc = mcshr.Start().E();
   
-  _strt = (rcshr.ShowerStart() - mcshr.DetProfile().Position().Vect()).Mag();
+  _strt = (rcshr.ShowerStart() - mcshr.Start().DetProfile().Vect()).Mag();
   
   _tree->Fill();
   
@@ -383,8 +385,8 @@ std::vector<int> Pi0Analyzer::Match(const std::vector<sim::MCShower>& pi0_shower
     for (size_t i=0; i < shr_v.size(); i++){
       auto const& rcshr = shr_v.at(i);
       
-      double dot = rcshr.Direction().Dot( mcshr.DetProfile().Momentum().Vect() );
-      dot /= mcshr.DetProfile().Momentum().Vect().Mag();
+      double dot = rcshr.Direction().Dot( mcshr.Start().Momentum().Vect() );
+      dot /= mcshr.Start().Momentum().Vect().Mag();
       dot /= rcshr.Direction().Mag();
       
       if (dot > dotmax) { dotmax = dot; idxmax = i; }
@@ -402,8 +404,8 @@ std::vector<int> Pi0Analyzer::Match(const std::vector<sim::MCShower>& pi0_shower
   for (size_t i=0; i < shr_v.size(); i++){
     auto const& rcshr = shr_v.at(i);
     
-    double dot = rcshr.Direction().Dot( mcs2.DetProfile().Momentum().Vect() );
-    dot /= mcs2.DetProfile().Momentum().Vect().Mag();
+    double dot = rcshr.Direction().Dot( mcs2.Start().Momentum().Vect() );
+    dot /= mcs2.Start().Momentum().Vect().Mag();
     dot /= rcshr.Direction().Mag();
     
     if (dot > dotmax) { dotmax = dot; idxmax = i; }
@@ -440,6 +442,7 @@ void Pi0Analyzer::SetTTree() {
   _tree->Branch("_mc_shr1_y",&_mc_shr1_y,"mc_shr1_y/D");
   _tree->Branch("_mc_shr1_z",&_mc_shr1_z,"mc_shr1_z/D");
   _tree->Branch("_mc_shr1_e",&_mc_shr1_e,"mc_shr1_e/D");
+  _tree->Branch("_mc_shr1_cont",&_mc_shr1_cont,"mc_shr1_cont/D");
   _tree->Branch("_mc_shr1_px",&_mc_shr1_px,"mc_shr1_px/D");
   _tree->Branch("_mc_shr1_py",&_mc_shr1_py,"mc_shr1_py/D");
   _tree->Branch("_mc_shr1_pz",&_mc_shr1_pz,"mc_shr1_pz/D");
@@ -447,6 +450,7 @@ void Pi0Analyzer::SetTTree() {
   _tree->Branch("_mc_shr2_y",&_mc_shr2_y,"mc_shr2_y/D");
   _tree->Branch("_mc_shr2_z",&_mc_shr2_z,"mc_shr2_z/D");
   _tree->Branch("_mc_shr2_e",&_mc_shr2_e,"mc_shr2_e/D");
+  _tree->Branch("_mc_shr2_cont",&_mc_shr2_cont,"mc_shr2_cont/D");
   _tree->Branch("_mc_shr2_px",&_mc_shr2_px,"mc_shr2_px/D");
   _tree->Branch("_mc_shr2_py",&_mc_shr2_py,"mc_shr2_py/D");
   _tree->Branch("_mc_shr2_pz",&_mc_shr2_pz,"mc_shr2_pz/D");

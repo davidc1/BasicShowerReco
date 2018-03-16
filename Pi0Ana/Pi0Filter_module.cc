@@ -53,6 +53,11 @@ private:
 
   // Declare member data here.
 
+  TTree* _shr_tree;
+  float _e;
+  float _dedx;
+  float _radlen;
+
   TTree* _tree;
   float  _e1;
   float  _e2;
@@ -118,9 +123,15 @@ bool Pi0Filter::filter(art::Event & e)
 
   _trkangle_tree->Fill();
 
-
-
   _nshr = shr_h->size();
+
+  for (size_t s=0; s < shr_h->size(); s++) {
+    auto const& shr = shr_h->at(s);
+    _e = shr.Energy()[2];
+    _dedx = shr.dEdx()[2];
+    _radlen = (shr.ShowerStart()-vtxpt).Mag();
+    _shr_tree->Fill();
+  }
 
   // if less then two showers -> exit
   if (shr_h->size() < 2){
@@ -191,6 +202,15 @@ void Pi0Filter::beginJob()
   _tree->Branch("_dedx2",&_dedx2,"dedx2/F");
   _tree->Branch("_angle",&_angle,"angle/F");
   _tree->Branch("_mass" ,&_mass ,"mass/F" );
+
+  _shr_tree = tfs->make<TTree>("_shr_tree","Shower Tree TTree");
+  _shr_tree->Branch("_run",&_run,"run/I");
+  _shr_tree->Branch("_sub",&_sub,"sub/I");
+  _shr_tree->Branch("_evt",&_evt,"evt/I");
+  _shr_tree->Branch("_nshr",&_nshr,"nshr/I");
+  _shr_tree->Branch("_e",&_e,"e/F");  
+  _shr_tree->Branch("_dedx",&_dedx,"dedx/F");
+  _shr_tree->Branch("_radlen",&_radlen,"radlen/F");
 
   _trkangle_tree = tfs->make<TTree>("_trkangle_tree","Track Angle TTree");
   _trkangle_tree->Branch("_trkangle",&_trkangle,"trkangle/F");
