@@ -32,12 +32,18 @@ namespace showerreco {
   private:
     
     double _anglecut;
+
+    double _wire2cm, _time2cm;
     
   };
 
   FilterShowers::FilterShowers(const fhicl::ParameterSet& pset)
   {
     _name = "FilterShowers";
+    auto const* geom = ::lar::providerFrom<geo::Geometry>();
+    auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
+    _wire2cm = geom->WirePitch(0,1,0);
+    _time2cm = detp->SamplingRate() / 1000.0 * detp->DriftVelocity( detp->Efield(), detp->Temperature() );
     configure(pset);
   }
 
@@ -66,8 +72,7 @@ void FilterShowers::do_reconstruction(const ::protoshower::ProtoShower & proto_s
   
   //auto const& geomH = ::util::GeometryUtilities::GetME();
   
-  // project vertex onto this plane
-  auto const& vtx2D = util::PxPoint(2,0,0);// geomH->Get2DPointProjection(vtx,2);
+
   
   auto & clusters = proto_shower.clusters();
   
@@ -88,6 +93,13 @@ void FilterShowers::do_reconstruction(const ::protoshower::ProtoShower & proto_s
 
     if (clus._plane != 2) continue;
 
+
+    // project vertex onto this plane
+    auto const* geom = ::lar::providerFrom<geo::Geometry>();
+    auto wire = geom->WireCoordinate(vtx[1],vtx[2],geo::PlaneID(0,0,clus._plane)) * _wire2cm;
+    auto time = vtx[0];
+    auto const& vtx2D = util::PxPoint(2,wire,time);// geomH->Get2DPointProjection(vtx,2);
+    
     // get hits and start-point, calculate average angle of hits w.r.t. projected
     // shower direction
 
@@ -142,8 +154,8 @@ void FilterShowers::do_reconstruction(const ::protoshower::ProtoShower & proto_s
     std::cout << "Opening Angle = " << resultShower.fOpeningAngle * 180 / 3.14 << std::endl;
   }
 
-  //if (clusterhitangle > _anglecut) {
-  if ( (clusterhitangle > (resultShower.fOpeningAngle * 180 / 3.14)) and (clusterhitangle > _anglecut) ) {
+  if (clusterhitangle > _anglecut) {
+  //if ( (clusterhitangle > (resultShower.fOpeningAngle * 180 / 3.14)) and (clusterhitangle > _anglecut) ) {
     std::stringstream ss;
     ss << "Fail @ algo " << this->name() << " Hit angle w.r.t. 3D dir on Y plane is too large : " << clusterhitangle;
     throw ShowerRecoException(ss.str());
