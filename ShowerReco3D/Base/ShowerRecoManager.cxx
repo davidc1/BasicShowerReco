@@ -190,10 +190,10 @@ void ShowerRecoManager::PrintModuleList() {
               << " to "  << result.fLength << std::endl;
   }
 
-  // BestdQdx
-  if (localCopy.fBestdQdx != result.fBestdQdx) {
-    std::cout << "\tfBestdQdx has changed from " << localCopy.fBestdQdx
-              << " to "  << result.fBestdQdx << std::endl;
+  // BestdEdx
+  if (localCopy.fBestdEdx != result.fBestdEdx) {
+    std::cout << "\tfBestdEdx has changed from " << localCopy.fBestdEdx
+              << " to "  << result.fBestdEdx << std::endl;
   }
 
   // Opening Angle

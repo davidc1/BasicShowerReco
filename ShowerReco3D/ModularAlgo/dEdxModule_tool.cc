@@ -1,12 +1,12 @@
 #ifndef DQDXMODULE_CXX
-#define DQDXMODULE_CXX
+#define DEDXMODULE_CXX
 
 #include <iostream>
 #include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 
 /**
-   \class dQdxModule : ShowerRecoModuleBase
-   This is meant to compute the 2D dQdx along the start of the shower.
+   \class dedxModule : ShowerRecoModuleBase
+   This is meant to compute the 2D dedx along the start of the shower.
 */
 
 #include "math.h"
@@ -15,15 +15,15 @@
 
 namespace showerreco {
 
-  class dQdxModule : public ShowerRecoModuleBase {
+  class dEdxModule : public ShowerRecoModuleBase {
     
   public:
     
     /// Default constructor
-    dQdxModule(const fhicl::ParameterSet& pset);
+    dEdxModule(const fhicl::ParameterSet& pset);
     
     /// Default destructor
-    ~dQdxModule(){};
+    ~dEdxModule(){};
 
     void configure(const fhicl::ParameterSet& pset);
     
@@ -39,8 +39,8 @@ namespace showerreco {
     double _dtrunk;
     
     // debugging tree
-    double _dqdx;
-    std::vector<double> _dqdx_v;
+    double _dedx;
+    std::vector<double> _dedx_v;
     std::vector<double> _dist_v;
     double _pitch;
     double _dmax;
@@ -54,25 +54,25 @@ namespace showerreco {
     
   };
   
-  dQdxModule::dQdxModule(const fhicl::ParameterSet& pset)
+  dEdxModule::dEdxModule(const fhicl::ParameterSet& pset)
   {
-    _name = "dQdxModule";
+    _name = "dEdxModule";
     configure(pset);
   }
 
-  void dQdxModule::configure(const fhicl::ParameterSet& pset)
+  void dEdxModule::configure(const fhicl::ParameterSet& pset)
   {
     _dtrunk = pset.get<double>("dtrunk");
     _verbose   = pset.get<bool>("verbose",false);
   }
   
-  void dQdxModule::initialize()
+  void dEdxModule::initialize()
   {
     
     return;
   }
   
-  void dQdxModule::do_reconstruction(const ::protoshower::ProtoShower & proto_shower, Shower_t & resultShower) {
+  void dEdxModule::do_reconstruction(const ::protoshower::ProtoShower & proto_shower, Shower_t & resultShower) {
     
     //if the module does not have 2D cluster info -> fail the reconstruction
     if (!proto_shower.hasCluster2D()){
@@ -116,15 +116,15 @@ namespace showerreco {
       double costhetaz = fabs( dir3D[2] / dir3D.Mag() );
       _pitch = 0.3 * 1./costhetaz;
 
-      std::cout << " dQdx Module : pitch = " << _pitch << std::endl;
+      std::cout << " dEdx Module : pitch = " << _pitch << std::endl;
       
       _dmax = 0.;
 
       _nhits = 0;
       
-      _dqdx_v.clear();
+      _dedx_v.clear();
 
-      _dqdx_v = std::vector<double>(3 * _dtrunk, 0.);
+      _dedx_v = std::vector<double>(3 * _dtrunk, 0.);
       
       // loop through hits and find those within some radial distance of the start point
       
@@ -140,42 +140,42 @@ namespace showerreco {
 	double qcorr = h.charge;
 
 	
-	_dqdx_v[ d3D * 3 ] += qcorr;
+	_dedx_v[ d3D * 3 ] += qcorr;
 	
 	_nhits += 1;
 	
       }// loop over all hits
 
-      std::vector<double> _dqdx_nonzero_v;
-      for (auto const& dqdx : _dqdx_v) {
-	if (dqdx != 0) {
-	  _dqdx_nonzero_v.push_back(dqdx); 
-	  std::cout << "dQdx Module : \t dQdx = " << dqdx / _pitch << std::endl;
+      std::vector<double> _dedx_nonzero_v;
+      for (auto const& dedx : _dedx_v) {
+	if (dedx != 0) {
+	  _dedx_nonzero_v.push_back(dedx); 
+	  std::cout << "dedx Module : \t dedx = " << dedx / _pitch << std::endl;
 	}
-      }// for all dQdx values
+      }// for all dedx values
 
-      if (_dqdx_nonzero_v.size() == 0)
-	_dqdx = 0.;
+      if (_dedx_nonzero_v.size() == 0)
+	_dedx = 0.;
 
       else {
-	std::nth_element(_dqdx_nonzero_v.begin(), _dqdx_nonzero_v.end(), _dqdx_nonzero_v.end() );
-	_dqdx = _dqdx_nonzero_v[ _dqdx_nonzero_v.size()/2.] / _pitch;
+	std::nth_element(_dedx_nonzero_v.begin(), _dedx_nonzero_v.end(), _dedx_nonzero_v.end() );
+	_dedx = _dedx_nonzero_v[ _dedx_nonzero_v.size()/2.] / _pitch;
       }
 
-      std::cout << "dQdx Module : Final dQdx = " << _dqdx << std::endl;
+      std::cout << "dedx Module : Final dEdx = " << _dedx << std::endl;
 
       _ntot = hits.size();
 
-      resultShower.fBestdQdxPlane = pl;
-      resultShower.fdQdx_v[pl] = _dqdx;
-      resultShower.fBestdQdx   = _dqdx;
+      resultShower.fBestdEdxPlane = pl;
+      resultShower.fdEdx_v[pl] = _dedx;
+      resultShower.fBestdEdx   = _dedx;
       
     }// for all clusters (planes)
     
     return;
   }
 
-  DEFINE_ART_CLASS_TOOL(dQdxModule)
+  DEFINE_ART_CLASS_TOOL(dEdxModule)
 } //showerreco
 
 #endif

@@ -59,9 +59,9 @@ struct Shower_t {
   double fSigmadQdx;                          ///< Calculated dWdx uncertainty [fC/cm]
   std::vector< double > fdQdx_v;              ///< Calculated dQdx per each plane [fC/cm]
   std::vector< double > fSigmadQdx_v;         ///< Calculated dQdx per each plane
-  size_t fBestdQdxPlane;                      ///< Best plane for dQdx calculation
+  size_t fBestdEdxPlane;                      ///< Best plane for dQdx calculation
   std::vector< std::vector < double > > fHitdQdx_v;      ///< Hit-by-hit dQdx per each plane [ADC/cm]
-  double fBestdQdx;                           ///< Selects dQdx with the longest ShoweringLength [ADC/cm]
+  double fBestdEdx;                           ///< Selects dQdx with the longest ShoweringLength [ADC/cm]
 
   std::vector< double > fShoweringLength;     ///< Calculates the distance from start to shower points [in cm]
 
