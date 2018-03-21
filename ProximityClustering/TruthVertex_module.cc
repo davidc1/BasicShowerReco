@@ -19,11 +19,18 @@
 
 #include <memory>
 
+#include "larevt/SpaceChargeServices/SpaceChargeService.h"
+
 #include "art/Framework/Services/Optional/TFileService.h"
 
 #include "lardataobj/RecoBase/Vertex.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "lardata/Utilities/AssociationUtil.h"
+
+#include "larcore/Geometry/Geometry.h"
+#include "larcorealg/Geometry/GeometryCore.h"
+#include "lardata/Utilities/GeometryUtilities.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 class TruthVertex;
 
@@ -54,6 +61,8 @@ private:
   // producers
   std::string fMCTruthProducer;
 
+  double _time2cm, _wire2cm;
+
 };
 
 
@@ -63,6 +72,11 @@ TruthVertex::TruthVertex(fhicl::ParameterSet const & p)
 {
   produces< std::vector< recob::Vertex > >();
   fMCTruthProducer = p.get<std::string>("MCTruthProducer");
+
+  auto const* geom = ::lar::providerFrom<geo::Geometry>();
+  auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
+  _wire2cm = geom->WirePitch(0,1,0);
+  _time2cm = detp->SamplingRate() / 1000.0 * detp->DriftVelocity( detp->Efield(), detp->Temperature() );
 }
 
 bool TruthVertex::filter(art::Event & e)
@@ -71,7 +85,11 @@ bool TruthVertex::filter(art::Event & e)
   // produce vertex
   std::unique_ptr< std::vector<recob::Vertex> > Vtx_v(new std::vector<recob::Vertex>);
 
+  // space charge
+  auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
+
   Double_t xyz[3] = {};
+  double tvtx;
 
   auto const& mct_h = e.getValidHandle<std::vector<simb::MCTruth> >(fMCTruthProducer);
   auto mct = mct_h->at(0);
@@ -85,13 +103,34 @@ bool TruthVertex::filter(art::Event & e)
       xyz[0] = part.Trajectory().X(0);
       xyz[1] = part.Trajectory().Y(0);
       xyz[2] = part.Trajectory().Z(0);
+      tvtx   = part.Trajectory().T(0);
       foundPi0 = true;
       break;
     }
   }
-  
-  
+
   if (foundPi0 == false) {
+    e.put(std::move(Vtx_v));
+    return false;
+  }
+
+  std::cout << "truth vertex @ [" << xyz[0] << ", " << xyz[1] << ", " << xyz[2] << " ]" << std::endl;
+  
+  // get position offsets:
+  auto offset = SCE->GetPosOffsets(geo::Point_t(xyz[0],xyz[1],xyz[2]));
+  xyz[0] += (-offset.X() + 0.7);
+  xyz[1] += offset.Y();
+  xyz[2] += offset.Z();
+  std::cout << "Offset. X : " << offset.X() << ", Y : " << offset.Y() << ", Z : " << offset.Z() << std::endl;
+  
+  auto vtxtick   = (tvtx/1000.) * 2.;
+  auto vtxtimecm = vtxtick * _time2cm;
+
+  xyz[0] += vtxtimecm;
+
+  std::cout << "truth vertex @ [" << xyz[0] << ", " << xyz[1] << ", " << xyz[2] << " ]" << std::endl;
+
+  if ( (xyz[0] < 1) || (xyz[0] > 249) || (xyz[1] < -115) || (xyz[1] > 115) || (xyz[2] < 1) || (xyz[2] > 1035) ) {
     e.put(std::move(Vtx_v));
     return false;
   }
