@@ -20,6 +20,7 @@
 #include <memory>
 
 // larsoft data-products
+#include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/Cluster.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
@@ -74,13 +75,21 @@ PerfectClustering::PerfectClustering(fhicl::ParameterSet const & p)
   fHitProducer = p.get<std::string>("HitProducer");
 
   produces<std::vector<recob::Cluster> >();
+  produces<std::vector<recob::PFParticle> >();
   produces<art::Assns <recob::Cluster, recob::Hit> >();
+  produces<art::Assns <recob::PFParticle, recob::Cluster> >();
+  produces<art::Assns <recob::PFParticle, recob::Hit    > >();
+
 }
 
 void PerfectClustering::produce(art::Event & e)
 {
-  std::unique_ptr< std::vector<recob::Cluster> > Cluster_v(new std::vector<recob::Cluster>);
-  std::unique_ptr< art::Assns <recob::Cluster, recob::Hit> > Cluster_Hit_assn_v(new art::Assns<recob::Cluster,recob::Hit>);
+
+  std::unique_ptr< std::vector<recob::Cluster> >                    Cluster_v                (new std::vector<recob::Cluster>                 );
+  std::unique_ptr< art::Assns <recob::Cluster, recob::Hit> >        Cluster_Hit_assn_v       (new art::Assns<recob::Cluster,recob::Hit>       );
+  std::unique_ptr< std::vector<recob::PFParticle> >                 PFParticle_v             (new std::vector<recob::PFParticle>              );
+  std::unique_ptr< art::Assns <recob::PFParticle, recob::Cluster> > PFParticle_Cluster_assn_v(new art::Assns<recob::PFParticle,recob::Cluster>);
+  std::unique_ptr< art::Assns <recob::PFParticle, recob::Hit> >     PFParticle_Hit_assn_v    (new art::Assns<recob::PFParticle,recob::Hit>    );
 
   // load mcshowers & mctruth
   auto const& mcs_h = e.getValidHandle<std::vector<sim::MCShower>>("mcreco");
@@ -116,6 +125,9 @@ void PerfectClustering::produce(art::Event & e)
   std::cout << "pi0 track id : " << pi0trkId << std::endl;
 
   if (npi0 != 1){
+    e.put(std::move(PFParticle_v));
+    e.put(std::move(PFParticle_Cluster_assn_v));
+    e.put(std::move(PFParticle_Hit_assn_v));
     e.put(std::move(Cluster_v));
     e.put(std::move(Cluster_Hit_assn_v));
     return;
@@ -177,8 +189,17 @@ void PerfectClustering::produce(art::Event & e)
   auto const* geom = ::lar::providerFrom<geo::Geometry>();
   // cluster pointer maker for later to create associations
   art::PtrMaker<recob::Cluster> ClusPtrMaker(e, *this);
+  // pfp pointer maker
+  art::PtrMaker<recob::PFParticle> PFPPtrMaker(e, *this);
 
   for (size_t j=0; j < shower_cluster_v.size(); j++){
+
+    // count how many clusters added?
+    // if 2+ then save a pfp as well
+    int nclus = 0;
+    // and index list of associated clusters
+    std::vector<size_t> ass_clusters;
+
     for (size_t pl=0; pl < 3; pl++) {
       auto const& hit_idx_v = shower_cluster_v.at(j).at(pl);
       if (hit_idx_v.size() == 0) continue;
@@ -192,7 +213,10 @@ void PerfectClustering::produce(art::Event & e)
 			  planeid);
       Cluster_v->emplace_back( clus );
 
+      nclus += 1;
+
       art::Ptr<recob::Cluster> const ClusPtr = ClusPtrMaker(Cluster_v->size()-1);
+      ass_clusters.push_back( Cluster_v->size() - 1);
 
       for (size_t h=0; h < shower_cluster_v.at(j).at(pl).size(); h++) {
 	const art::Ptr<recob::Hit> HitPtr(hit_h, shower_cluster_v.at(j).at(pl).at(h) );
@@ -200,8 +224,36 @@ void PerfectClustering::produce(art::Event & e)
       }
 
     }// for all planes
+
+    // if 2 or more clusters, save pfp as well
+    if (nclus >= 2) {
+
+      recob::PFParticle pfp(11,0,0,std::vector<size_t>());
+      PFParticle_v->emplace_back(pfp);
+
+      art::Ptr<recob::PFParticle> const PFPPtr = PFPPtrMaker(PFParticle_v->size()-1);
+
+      // PFP -> Cluster associations
+      for (auto const& clusidx : ass_clusters) {
+	art::Ptr<recob::Cluster> const ClusPtr = ClusPtrMaker(clusidx);
+	PFParticle_Cluster_assn_v->addSingle(PFPPtr,ClusPtr);
+      }
+      // PFP -> Hit associations
+      for (size_t pl=0; pl < 3; pl++) {
+	auto const& hit_idx_v = shower_cluster_v.at(j).at(pl);
+	for (auto const& hit_idx : hit_idx_v) {
+	  const art::Ptr<recob::Hit> HitPtr(hit_h, hit_idx );
+	  PFParticle_Hit_assn_v->addSingle(PFPPtr, HitPtr );
+	}
+      }
+
+    }// if 2 or more clusters
+
   }// for all MCShowers
 
+  e.put(std::move(PFParticle_v));
+  e.put(std::move(PFParticle_Cluster_assn_v));
+  e.put(std::move(PFParticle_Hit_assn_v));
   e.put(std::move(Cluster_v));
   e.put(std::move(Cluster_Hit_assn_v));
 
