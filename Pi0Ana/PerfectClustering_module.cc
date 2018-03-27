@@ -59,6 +59,10 @@ private:
   // Declare member data here.
   std::string fHitProducer;
 
+  std::vector<size_t> AssociatedMCShowers(const size_t& h,
+					  const art::FindManyP<simb::MCParticle>& hit_mcp_assn_v,
+					  const std::map<size_t, std::vector<unsigned int> >& event_shower_map);
+
 };
 
 
@@ -118,7 +122,11 @@ void PerfectClustering::produce(art::Event & e)
   }
 
   // loop through MCShowers and identify those originating from the pi0
+  // map connecting mcshower index to track ID vector for all e+/e- in MCShower
   std::map<size_t, std::vector<unsigned int> > event_shower_map;
+  // map connecting e+/e- trackID in mcshower to mcshower index
+  //std::map<unsigned int, size_t> event_mcpart_map;
+
   for (size_t i=0; i < mcs_h->size(); i++) {
     auto const& mcs = mcs_h->at(i);
 
@@ -149,35 +157,17 @@ void PerfectClustering::produce(art::Event & e)
 
   // loop through hits, save them in a cluster if they are associated to one of the found showers
   for (size_t h=0; h < hit_h->size(); h++) {
-    int plane = hit_h->at(h).WireID().Plane;
-    // grab mcparticle associated
-    auto ass_mcp_v = hit_mcp_assn_v.at(h);
-    if (ass_mcp_v.size() != 1) {
-      //std::cout << "more then one MCP associated!" << std::endl;
-      continue;
-    }
-    //std::cout << "made it this far..." << std::endl;
-    auto mcp = ass_mcp_v.at(0);
     
-    // does this trackID match any shower?
-    bool matched = false;
-    int nshrmatch = 0;
-    size_t ctr = 0;
-    for (auto const& mcsinfo : event_shower_map){
-      for (auto const& trkid : mcsinfo.second)
-	if ((unsigned int)mcp->TrackId() == trkid) {
-	  matched = true;
-	  nshrmatch = ctr;
-	  break;
-	}// if we found a matching mcshower for the hit!
-      ctr += 1;
-    }// for all mcshowers associated to pi0
+    int plane = hit_h->at(h).WireID().Plane;
 
-    if (matched == true)
-      shower_cluster_v[nshrmatch][plane].push_back( h );
+    // figure out which MCShower(s) this hit is associated to
+    auto ass_mcs_v = AssociatedMCShowers(h,hit_mcp_assn_v,event_shower_map);
 
+    if (ass_mcs_v.size() == 1)
+      shower_cluster_v[ass_mcs_v.at(0)][plane].push_back( h );
+    
   }// for all mcparticles
-
+  
   for (size_t j=0; j < shower_cluster_v.size(); j++){
     for (size_t pl=0; pl < 3; pl++) 
       std::cout << "shower j on plane " << pl << " has " << shower_cluster_v.at(j).at(pl).size() << " hits" << std::endl;
@@ -215,6 +205,47 @@ void PerfectClustering::produce(art::Event & e)
   e.put(std::move(Cluster_v));
   e.put(std::move(Cluster_Hit_assn_v));
 
+}
+
+std::vector<size_t> PerfectClustering::AssociatedMCShowers(const size_t& h,
+							   const art::FindManyP<simb::MCParticle>& hit_mcp_assn_v,
+							   const std::map<size_t, std::vector<unsigned int> >& event_shower_map) {
+  
+  std::vector<size_t> associated_mcshowers;
+
+  // grab mcparticle associated to the hit
+  auto ass_mcp_v = hit_mcp_assn_v.at(h);
+  if (ass_mcp_v.size() == 0) 
+    return associated_mcshowers;
+
+  for (auto const& mcp : ass_mcp_v) {
+
+    // does this trackID match any shower?
+    bool matched = false;
+    int nshrmatch = 0;
+    size_t ctr = 0;
+    for (auto const& mcsinfo : event_shower_map){
+      for (auto const& trkid : mcsinfo.second)
+	if ((unsigned int)mcp->TrackId() == trkid) {
+	  matched = true;
+	  nshrmatch = ctr;
+	  break;
+	}// if we found a matching mcshower for the hit!
+      ctr += 1;
+    }// for all mcshowers associated to pi0
+
+    if (matched == false) continue;
+
+    // add to vector of associated mcshowers if this mcshower had not been added yet
+    bool alreadyadded = false;
+    for (auto const& mcshidx : associated_mcshowers)
+      if (nshrmatch == (int)mcshidx) { alreadyadded = true; break; }
+    
+    if (alreadyadded == false) { associated_mcshowers.push_back( nshrmatch ); }
+    
+  }// for all associated mcparticles to hit    
+
+  return associated_mcshowers;
 }
 
 void PerfectClustering::beginJob()
