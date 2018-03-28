@@ -16,6 +16,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 
 #include <memory>
 
@@ -32,6 +33,9 @@
 
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/GeometryCore.h"
+
+// ROOT
+#include <TTree.h>
 
 class PerfectClustering;
 
@@ -64,6 +68,13 @@ private:
 					  const art::FindManyP<simb::MCParticle>& hit_mcp_assn_v,
 					  const std::map<size_t, std::vector<unsigned int> >& event_shower_map);
 
+  TTree* _tree;
+  double _shr_etot;
+  double _shr_edep;
+  double _pl2_integral;
+  double _pl1_integral;
+  double _pl0_integral;
+
 };
 
 
@@ -77,6 +88,7 @@ PerfectClustering::PerfectClustering(fhicl::ParameterSet const & p)
   produces<std::vector<recob::Cluster> >();
   produces<std::vector<recob::PFParticle> >();
   produces<art::Assns <recob::Cluster, recob::Hit> >();
+  //produces<art::Assns <recob::Cluster, sim::MCShower> >();
   produces<art::Assns <recob::PFParticle, recob::Cluster> >();
   produces<art::Assns <recob::PFParticle, recob::Hit    > >();
 
@@ -87,6 +99,7 @@ void PerfectClustering::produce(art::Event & e)
 
   std::unique_ptr< std::vector<recob::Cluster> >                    Cluster_v                (new std::vector<recob::Cluster>                 );
   std::unique_ptr< art::Assns <recob::Cluster, recob::Hit> >        Cluster_Hit_assn_v       (new art::Assns<recob::Cluster,recob::Hit>       );
+  //std::unique_ptr< art::Assns <recob::Cluster, sim::MCShower> >     Cluster_MCShower_assn_v  (new art::Assns<recob::Cluster,sim::MCShower>    );
   std::unique_ptr< std::vector<recob::PFParticle> >                 PFParticle_v             (new std::vector<recob::PFParticle>              );
   std::unique_ptr< art::Assns <recob::PFParticle, recob::Cluster> > PFParticle_Cluster_assn_v(new art::Assns<recob::PFParticle,recob::Cluster>);
   std::unique_ptr< art::Assns <recob::PFParticle, recob::Hit> >     PFParticle_Hit_assn_v    (new art::Assns<recob::PFParticle,recob::Hit>    );
@@ -96,10 +109,38 @@ void PerfectClustering::produce(art::Event & e)
   auto const& mct_h = e.getValidHandle<std::vector<simb::MCTruth> >("generator");
   // load hits and mcparticles which are associated
   auto const& hit_h = e.getValidHandle<std::vector<recob::Hit> >(fHitProducer);
+  // we will need the gaushits no matter what
+  auto const& hit_g = e.getValidHandle<std::vector<recob::Hit> >("gaushit");
   // and associated mcparticles
-  art::FindManyP<simb::MCParticle> hit_mcp_assn_v(hit_h, e, "gaushitTruthMatch");
+  art::FindManyP<simb::MCParticle> hit_mcp_assn_v(hit_g, e, "gaushitTruthMatch");
+
+  std::cout << "building hit to gaushit map " << std::endl;
+
+  //if the hits are not gaushit, create a map connecting the hit index to the gaushit hit index.
+  std::map<size_t,size_t> HitHitMap;
+  if (fHitProducer != "gaushit") {
+    for (size_t h0=0; h0 < hit_h->size(); h0++){
+      auto const& hit0 = hit_h->at(h0);
+      bool foundmatch = false;
+      for (size_t h1=0; h1 < hit_g->size(); h1++){
+	auto const& hit1 = hit_g->at(h1);
+	if ( (hit0.PeakTime() == hit1.PeakTime()) && (hit1.WireID().Wire == hit0.WireID().Wire) ){
+	  HitHitMap[h0] = h1;
+	  foundmatch = true;
+	  break;
+	}
+      }
+      if (foundmatch == false)
+	std::cout << "\t ERROR no match found!" << std::endl;
+    }
+  }
+  else {
+    for (size_t h0=0; h0 < hit_h->size(); h0++)
+      HitHitMap[h0] = h0;
+  }
 
   std::cout << "there are " << hit_h->size() << " hits and " << hit_mcp_assn_v.size() << " hit <-> mcp associations" << std::endl;
+  std::cout << "there are " << HitHitMap.size() << " map elements" << std::endl;
 
   auto mct = mct_h->at(0);
   size_t npart = mct.NParticles();
@@ -130,6 +171,7 @@ void PerfectClustering::produce(art::Event & e)
     e.put(std::move(PFParticle_Hit_assn_v));
     e.put(std::move(Cluster_v));
     e.put(std::move(Cluster_Hit_assn_v));
+    //e.put(std::move(Cluster_MCShower_assn_v));
     return;
   }
 
@@ -159,13 +201,16 @@ void PerfectClustering::produce(art::Event & e)
 
   // save vector of clusters, one per shower, one per plane
   // for now only hit indices will go in
-  std::vector< std::vector< std::vector<size_t> > > shower_cluster_v;
-  shower_cluster_v.resize(event_shower_map.size());
-  for (size_t j=0; j < shower_cluster_v.size(); j++) {
-    shower_cluster_v.at(j).resize(3);
+  // map connects MCShower index to vector of vector of clusters, one per plane.
+  std::map< size_t, std::vector< std::vector<size_t> > > shower_cluster_v;
+  for (auto const& showerinfo : event_shower_map) {
+    shower_cluster_v[ showerinfo.first ] = std::vector<std::vector<size_t> >();
+    shower_cluster_v[ showerinfo.first ].resize(3);
     for (size_t pl=0; pl < 3; pl++)
-      shower_cluster_v.at(j).at(pl).clear();
-  }      
+      shower_cluster_v[ showerinfo.first ].at(pl).clear();
+  } 
+  // shower -> mcshower index vector
+  std::vector<size_t> shower_mcshower_v;
 
   // loop through hits, save them in a cluster if they are associated to one of the found showers
   for (size_t h=0; h < hit_h->size(); h++) {
@@ -173,16 +218,16 @@ void PerfectClustering::produce(art::Event & e)
     int plane = hit_h->at(h).WireID().Plane;
 
     // figure out which MCShower(s) this hit is associated to
-    auto ass_mcs_v = AssociatedMCShowers(h,hit_mcp_assn_v,event_shower_map);
+    auto ass_mcs_v = AssociatedMCShowers(HitHitMap[h],hit_mcp_assn_v,event_shower_map);
 
     if (ass_mcs_v.size() == 1)
       shower_cluster_v[ass_mcs_v.at(0)][plane].push_back( h );
     
   }// for all mcparticles
   
-  for (size_t j=0; j < shower_cluster_v.size(); j++){
+  for (auto const& showerinfo : shower_cluster_v){
     for (size_t pl=0; pl < 3; pl++) 
-      std::cout << "shower j on plane " << pl << " has " << shower_cluster_v.at(j).at(pl).size() << " hits" << std::endl;
+      std::cout << "shower j on plane " << pl << " has " << showerinfo.second.at(pl).size() << " hits" << std::endl;
   }
 
   // now lets create some actual clusters
@@ -192,7 +237,9 @@ void PerfectClustering::produce(art::Event & e)
   // pfp pointer maker
   art::PtrMaker<recob::PFParticle> PFPPtrMaker(e, *this);
 
-  for (size_t j=0; j < shower_cluster_v.size(); j++){
+  int ctr = 0;
+  for (auto const& showerinfo : shower_cluster_v) {
+    //for (size_t j=0; j < shower_cluster_v.size(); j++){
 
     // count how many clusters added?
     // if 2+ then save a pfp as well
@@ -201,14 +248,14 @@ void PerfectClustering::produce(art::Event & e)
     std::vector<size_t> ass_clusters;
 
     for (size_t pl=0; pl < 3; pl++) {
-      auto const& hit_idx_v = shower_cluster_v.at(j).at(pl);
+      auto const& hit_idx_v = showerinfo.second.at(pl);
       if (hit_idx_v.size() == 0) continue;
 
       auto planeid = geo::PlaneID(0,0,pl);
       recob::Cluster clus(0., 0., 0., 0., 0., 0., 0., 
 			  0., 0., 0., 0., 0., 0., 0., 
 			  0., 0., 0., 0., 
-			  hit_idx_v.size(), 0., 0., j*3+pl,
+			  hit_idx_v.size(), 0., 0., ctr*3+pl,
 			  geom->View(planeid),
 			  planeid);
       Cluster_v->emplace_back( clus );
@@ -218,12 +265,29 @@ void PerfectClustering::produce(art::Event & e)
       art::Ptr<recob::Cluster> const ClusPtr = ClusPtrMaker(Cluster_v->size()-1);
       ass_clusters.push_back( Cluster_v->size() - 1);
 
-      for (size_t h=0; h < shower_cluster_v.at(j).at(pl).size(); h++) {
-	const art::Ptr<recob::Hit> HitPtr(hit_h, shower_cluster_v.at(j).at(pl).at(h) );
+      _shr_etot = mcs_h->at(showerinfo.first).Start().E();
+      _shr_edep = mcs_h->at(showerinfo.first).DetProfile().E();
+      _pl0_integral = 0.;
+      _pl1_integral = 0.;
+      _pl2_integral = 0.;
+
+      //const art::Ptr<sim::MCShower> MCSPtr(mcs_h, showerinfo.first );
+      //Cluster_MCShower_assn_v->addSingle(ClusPtr, MCSPtr);
+
+      for (size_t h=0; h < showerinfo.second.at(pl).size(); h++) {
+	const art::Ptr<recob::Hit> HitPtr(hit_h, showerinfo.second.at(pl).at(h) );
 	Cluster_Hit_assn_v->addSingle(ClusPtr, HitPtr );
+	if (HitPtr->WireID().Plane == 0)
+	  _pl0_integral += HitPtr->Integral();
+	if (HitPtr->WireID().Plane == 1)
+	  _pl1_integral += HitPtr->Integral();
+	if (HitPtr->WireID().Plane == 2)
+	  _pl2_integral += HitPtr->Integral();
       }
 
     }// for all planes
+
+    _tree->Fill();
 
     // if 2 or more clusters, save pfp as well
     if (nclus >= 2) {
@@ -240,7 +304,7 @@ void PerfectClustering::produce(art::Event & e)
       }
       // PFP -> Hit associations
       for (size_t pl=0; pl < 3; pl++) {
-	auto const& hit_idx_v = shower_cluster_v.at(j).at(pl);
+	auto const& hit_idx_v = showerinfo.second.at(pl);
 	for (auto const& hit_idx : hit_idx_v) {
 	  const art::Ptr<recob::Hit> HitPtr(hit_h, hit_idx );
 	  PFParticle_Hit_assn_v->addSingle(PFPPtr, HitPtr );
@@ -248,7 +312,8 @@ void PerfectClustering::produce(art::Event & e)
       }
 
     }// if 2 or more clusters
-
+    
+    ctr += 1;
   }// for all MCShowers
 
   e.put(std::move(PFParticle_v));
@@ -256,6 +321,7 @@ void PerfectClustering::produce(art::Event & e)
   e.put(std::move(PFParticle_Hit_assn_v));
   e.put(std::move(Cluster_v));
   e.put(std::move(Cluster_Hit_assn_v));
+  //e.put(std::move(Cluster_MCShower_assn_v));
 
 }
 
@@ -280,7 +346,7 @@ std::vector<size_t> PerfectClustering::AssociatedMCShowers(const size_t& h,
       for (auto const& trkid : mcsinfo.second)
 	if ((unsigned int)mcp->TrackId() == trkid) {
 	  matched = true;
-	  nshrmatch = ctr;
+	  nshrmatch = mcsinfo.first;
 	  break;
 	}// if we found a matching mcshower for the hit!
       ctr += 1;
@@ -302,6 +368,15 @@ std::vector<size_t> PerfectClustering::AssociatedMCShowers(const size_t& h,
 
 void PerfectClustering::beginJob()
 {
+
+  art::ServiceHandle<art::TFileService> tfs;
+  _tree = tfs->make<TTree>("_tree","Perfect clustering performance");
+  _tree->Branch("_shr_etot",&_shr_etot,"shr_etot/D");
+  _tree->Branch("_shr_edep",&_shr_edep,"shr_edep/D");
+  _tree->Branch("_pl0_integral",&_pl0_integral,"pl0_integral/D");
+  _tree->Branch("_pl1_integral",&_pl1_integral,"pl1_integral/D");
+  _tree->Branch("_pl2_integral",&_pl2_integral,"pl2_integral/D");
+
 }
 
 void PerfectClustering::endJob()
