@@ -298,9 +298,25 @@ void Pi0Analyzer::analyze(art::Event const & e)
       ClearMCRC();
       
       auto mcshr = pi0_shower_v.at(mcidx);
+
+      _mc_shr_e  = mcshr.Start().E();
+      _mc_shr_edep  = mcshr.DetProfile().E();
+      _mc_shr_x  = mcshr.DetProfile().X();
+      _mc_shr_y  = mcshr.DetProfile().Y();
+      _mc_shr_z  = mcshr.DetProfile().Z();
+
+      double mommc = mcshr.Start().Momentum().Vect().Mag();
+      _mc_shr_px = mcshr.Start().Px() / mommc;
+      _mc_shr_py = mcshr.Start().Py() / mommc;
+      _mc_shr_pz = mcshr.Start().Pz() / mommc;
+
+      _mcradlen = sqrt( ( (_mc_shr_x - _mc_vtx_x) * (_mc_shr_x - _mc_vtx_x) ) +
+			( (_mc_shr_y - _mc_vtx_y) * (_mc_shr_y - _mc_vtx_y) ) +
+			( (_mc_shr_z - _mc_vtx_z) * (_mc_shr_z - _mc_vtx_z) ) );
       
       if (MCRCmatch_v.at(mcidx) == -1) {
 	_rc_shr_e = 0;
+	_angle    = -5;
 	_mcshr_tree->Fill();
 	continue;
       }
@@ -321,16 +337,6 @@ void Pi0Analyzer::analyze(art::Event const & e)
       _rcradlen = sqrt( ( (_rc_shr_x - _rc_vtx_x) * (_rc_shr_x - _rc_vtx_x) ) +
 			( (_rc_shr_y - _rc_vtx_y) * (_rc_shr_y - _rc_vtx_y) ) +
 			( (_rc_shr_z - _rc_vtx_z) * (_rc_shr_z - _rc_vtx_z) ) );
-      
-      _mc_shr_e  = mcshr.Start().E();
-      _mc_shr_x  = mcshr.DetProfile().X();
-      _mc_shr_y  = mcshr.DetProfile().Y();
-      _mc_shr_z  = mcshr.DetProfile().Z();
-
-      double mommc = mcshr.Start().Momentum().Vect().Mag();
-      _mc_shr_px = mcshr.Start().Px() / mommc;
-      _mc_shr_py = mcshr.Start().Py() / mommc;
-      _mc_shr_pz = mcshr.Start().Pz() / mommc;
       
       _angle  = rcshr.Direction().Angle( mcshr.Start().Momentum().Vect() );
       
@@ -379,6 +385,7 @@ void Pi0Analyzer::analyze(art::Event const & e)
     
     if (RCMCmatch_v.at(rcidx) == -1) {
       _mc_shr_e = 0;
+      _angle    = -5;
       _rcshr_tree->Fill();
       continue;
     }
@@ -390,6 +397,10 @@ void Pi0Analyzer::analyze(art::Event const & e)
     _mc_shr_x  = mcshr.DetProfile().X();
     _mc_shr_y  = mcshr.DetProfile().Y();
     _mc_shr_z  = mcshr.DetProfile().Z();
+
+    _mcradlen = sqrt( ( (_mc_shr_x - _mc_vtx_x) * (_mc_shr_x - _mc_vtx_x) ) +
+		      ( (_mc_shr_y - _mc_vtx_y) * (_mc_shr_y - _mc_vtx_y) ) +
+		      ( (_mc_shr_z - _mc_vtx_z) * (_mc_shr_z - _mc_vtx_z) ) );
     
     double mommc = mcshr.Start().Momentum().Vect().Mag();
     _mc_shr_px = mcshr.Start().Px() / mommc;
@@ -628,7 +639,7 @@ void Pi0Analyzer::SetTTree() {
 
   // pi0 related MC information                                  
   _mcshr_tree->Branch("_nu_e",&_nu_e,"nu_e/D");
-  _mcshr_tree->Branch("_pi_e",&_pi0_e,"pi0_e/D");
+  _mcshr_tree->Branch("_pi0_e",&_pi0_e,"pi0_e/D");
   _mcshr_tree->Branch("_mcangle",&_mcangle,"mcangle/D");
   _mcshr_tree->Branch("_mcmass"  ,&_mcmass  ,"mcmass/D" );
   _mcshr_tree->Branch("_mcmass_edep"  ,&_mcmass_edep  ,"mcmass_edep/D" );
@@ -698,7 +709,7 @@ void Pi0Analyzer::SetTTree() {
 
   // pi0 related MC information                                  
   _rcshr_tree->Branch("_nu_e",&_nu_e,"nu_e/D");
-  _rcshr_tree->Branch("_pi_e",&_pi0_e,"pi0_e/D");
+  _rcshr_tree->Branch("_pi0_e",&_pi0_e,"pi0_e/D");
   _rcshr_tree->Branch("_mcangle",&_mcangle,"mcangle/D");
   _rcshr_tree->Branch("_mcmass"  ,&_mcmass  ,"mcmass/D" );
   _rcshr_tree->Branch("_mcmass_edep"  ,&_mcmass_edep  ,"mcmass_edep/D" );
@@ -776,7 +787,7 @@ void Pi0Analyzer::SetTTree() {
 
   // pi0 related MC information                                  
   _pi0_tree->Branch("_nu_e",&_nu_e,"nu_e/D");
-  _pi0_tree->Branch("_pi_e",&_pi0_e,"pi0_e/D");
+  _pi0_tree->Branch("_pi0_e",&_pi0_e,"pi0_e/D");
   _pi0_tree->Branch("_mcangle",&_mcangle,"mcangle/D");
   _pi0_tree->Branch("_mcmass"  ,&_mcmass  ,"mcmass/D" );
   _pi0_tree->Branch("_mcmass_edep"  ,&_mcmass_edep  ,"mcmass_edep/D" );
