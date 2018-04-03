@@ -7,6 +7,8 @@ ProximityClustering: {
  CellSize      : 2.0
  ClusterRadius : 0.8
  ROI           : 150
+ BeamDriftTickMin : 780
+ BeamDriftTickMax : 5500
 }
 
 END_PROLOG

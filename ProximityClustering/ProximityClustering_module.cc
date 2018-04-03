@@ -78,6 +78,10 @@ private:
   double fClusterRadius;
   // vertex producer when ROI is requested
   std::string fVtxProducer;
+  // minimum tick-value for beam-related drift-window
+  float fBeamDriftTickMin;
+  // maximum tick-value for beam-related drift-window
+  float fBeamDriftTickMax;
   double fROI; // in cm, spherical region around vertex to use for clustering
 
   // Proximity clusterer class
@@ -105,6 +109,8 @@ ProximityClustering::ProximityClustering(fhicl::ParameterSet const & p)
   fVtxProducer      = p.get<std::string>("VtxProducer"  );
   fCellSize         = p.get<double>     ("CellSize"     );
   fClusterRadius    = p.get<double>     ("ClusterRadius");
+  fBeamDriftTickMin = p.get<float>      ("BeamDriftTickMin");
+  fBeamDriftTickMax = p.get<float>      ("BeamDriftTickMax");
   fROI              = p.get<double>     ("ROI"          );
 
 }
@@ -198,6 +204,11 @@ void ProximityClustering::MakeClusters(const art::ValidHandle<std::vector<recob:
       if (w < w_min) w_min = w;
       integral += hit.Integral();
     }// for all hits
+
+    // if cluster goes out of range in tick -> do not save!
+    if ( (t_min < fBeamDriftTickMin) || (t_max > fBeamDriftTickMax) )
+      continue;
+
     recob::Cluster clus(w_min, 0., t_min, 0., 0., 0., 0., 
 			w_max, 0., t_max, 0., 0., 0., 0., 
 			integral, 0., integral, 0., 
