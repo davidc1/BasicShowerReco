@@ -14,6 +14,7 @@ art_make(
 			larcorealg_Geometry
 			larcore_Geometry_Geometry_service
 			lardataobj_RecoBase
+			lardataobj_MCBase
 			lardataobj_AnalysisBase	
 			lardata_RecoObjects larreco_Deprecated  
 			larreco_RecoAlg
@@ -46,6 +47,7 @@ add_subdirectory(TwoDimTools)
 add_subdirectory(ShowerReco3D)
 add_subdirectory(ClusterMerging)
 add_subdirectory(ProximityClustering)
+add_subdirectory(ReCluster)
 add_subdirectory(Pi0Ana)
 
 install_headers()
