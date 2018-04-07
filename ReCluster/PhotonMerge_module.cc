@@ -32,6 +32,11 @@
 #include "uboone/BasicShowerReco/TwoDimTools/Linearity.h"
 #include "uboone/BasicShowerReco/TwoDimTools/Poly2D.h"
 
+#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/Cluster.h"
+#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/ClusterMaker.h"
+
+#include "art/Persistency/Common/PtrMaker.h"
+
 class PhotonMerge;
 
 
@@ -74,6 +79,8 @@ private:
   // maximum slope difference between shower cluster and to-be merged cluster
   double fMaxSlopeAngle;
 
+  ::cluster::ClusterMaker _clusterMaker;
+
   // map connecting photon cluster index to linearity object
   std::map< size_t, twodimtools::Linearity > _photon_lin_map; 
   // map connecting photon cluster index to poly2d object
@@ -86,6 +93,8 @@ private:
 
   bool photonCrossesShower(const twodimtools::Poly2D& shr,
 			   const twodimtools::Poly2D& photon);
+
+  void MergeHits(std::vector< art::Ptr<recob::Hit> >& shrhits, const std::vector< art::Ptr<recob::Hit> >& gammahits);
   
 };
 
@@ -95,8 +104,10 @@ PhotonMerge::PhotonMerge(fhicl::ParameterSet const & p)
 // Initialize member data here.
 {
   produces<std::vector<recob::PFParticle> >();
-  produces<std::vector<recob::Cluster> >();
+  produces<std::vector<recob::Cluster>    >();
+  produces<std::vector<recob::Hit>        >();
   produces<art::Assns <recob::PFParticle, recob::Cluster>    >();
+  produces<art::Assns <recob::PFParticle, recob::Hit>        >();
   produces<art::Assns <recob::PFParticle, recob::Hit>        >();
 
   fShrProducer    = p.get<std::string>("fShrProducer");
@@ -105,7 +116,7 @@ PhotonMerge::PhotonMerge(fhicl::ParameterSet const & p)
   fWidth          = p.get<double>     ("Width");
   fShrLen         = p.get<double>     ("ShrLen");
   fFracShrQ       = p.get<double>     ("FracShrQ");
-  fMaxSlopeANgle  = p.get<double>     ("MaxSlopeAngle");
+  fMaxSlopeAngle  = p.get<double>     ("MaxSlopeAngle");
   
   // get detector specific properties
   auto const* geom = ::lar::providerFrom<geo::Geometry>();
@@ -120,9 +131,16 @@ void PhotonMerge::produce(art::Event & e)
   // produce recob::PFParticles
   std::unique_ptr< std::vector<recob::PFParticle> > PFParticle_v(new std::vector<recob::PFParticle> );
   std::unique_ptr< std::vector<recob::Cluster>    > Cluster_v   (new std::vector<recob::Cluster>    );
-  std::unique_ptr< art::Assns <recob::PFParticle, recob::Cluster>    > PFParticle_Cluster_assn_v( new art::Assns<recob::PFParticle, recob::Cluster>   );
-  std::unique_ptr< art::Assns <recob::PFParticle, recob::Hit>        > PFParticle_Hit_assn_v    ( new art::Assns<recob::PFParticle, recob::Hit>       );
+  std::unique_ptr< std::vector<recob::Hit>        > Hit_v       (new std::vector<recob::Hit>        );
+  std::unique_ptr< art::Assns <recob::PFParticle, recob::Cluster> > PFParticle_Cluster_assn_v( new art::Assns<recob::PFParticle, recob::Cluster>   );
+  std::unique_ptr< art::Assns <recob::Cluster  , recob::Hit>      > Cluster_Hit_assn_v       ( new art::Assns<recob::Cluster   , recob::Hit>       );
 
+  // pfparticle pointer maker for later to create associations
+  art::PtrMaker<recob::PFParticle> PFPartPtrMaker(e, *this);
+  // cluster pointer maker for later to create associations
+  art::PtrMaker<recob::Cluster>    ClusPtrMaker  (e, *this);
+  // hit pointer maker for later to create associations
+  art::PtrMaker<recob::Hit>        HitPtrMaker   (e, *this);
 
   // load input showers
   auto const& shr_h = e.getValidHandle<std::vector<recob::Shower>>(fShrProducer);
@@ -130,9 +148,13 @@ void PhotonMerge::produce(art::Event & e)
   auto const& vtx_h = e.getValidHandle<std::vector<recob::Vertex>>(fVtxProducer);
   // load input photon clusters
   auto const& photon_h = e.getValidHandle<std::vector<recob::Cluster>>(fPhotonProducer);
+
   // grab hits associated associated with photon clusters
   art::FindManyP<recob::Hit> photon_hit_assn_v(photon_h, e, fPhotonProducer);
 
+  // grab pfparticles associated with shower
+  art::FindManyP<recob::PFParticle> shr_pfp_assn_v(shr_h, e, fShrProducer);
+  
   // grab clusters associated with shower
   art::FindManyP<recob::Cluster> shr_clus_assn_v(shr_h, e, fShrProducer);
   // grab the hits associated to the showers
@@ -189,7 +211,7 @@ void PhotonMerge::produce(art::Event & e)
   // loop through reconstructed showers.                                         
   for (size_t s=0; s < shr_h->size(); s++) {
     
-    auto const& shr = shr_h->at(s);    
+    //auto const& shr = shr_h->at(s);    
     if (_debug) { std::cout << "new shower" << std::endl; }
     
     // grab collection-plane hits and cluster associated with this shower
@@ -202,26 +224,28 @@ void PhotonMerge::produce(art::Event & e)
       }
     }
     std::vector< art::Ptr<recob::Hit> > shr_hit_v = shr_hit_assn_v.at(s);
-    std::vector< art::Ptr<recob::Hit> > shr_hit_pl2_v;
+    std::vector< std::vector< art::Ptr<recob::Hit> > > shr_hit_plv_v;
+    shr_hit_plv_v.resize(3);
     for (auto const& shr_hit : shr_hit_v)
-      if (shr_hit->WireID().Plane == 2) { shr_hit_pl2_v.push_back( shr_hit ); } 
+      shr_hit_plv_v.at(shr_hit->WireID().Plane).push_back( shr_hit ); 
     
     auto shrPoly = projectShower(shr_clus_v.at(collidx));
     
-    if (_debug) { std::cout << "hits on plane before merging : " << shr_hit_pl2_v.size() << std::endl; }
+    if (_debug) { std::cout << "hits on Y plane before merging : " << shr_hit_plv_v[2].size() << std::endl; }
     
     if (_debug) { std::cout << "polygon has size : " << shrPoly.Size() << std::endl; }
 
       // if no hits associated on this plane -> skip
-    if (shr_hit_pl2_v.size() == 0) continue;
+    if (shr_hit_plv_v[2].size() == 0) continue;
     
     // loop over photons for this plane
     for (std::map<size_t,twodimtools::Poly2D>::iterator it = _photon_poly_map.begin(); it != _photon_poly_map.end(); ++it) {
       
       auto const& photonPoly = it->second;
+      auto const& photonIdx  = it->first;
       
       // check the number of hits in the cluster
-      auto nhits = photon_hit_assn_v.at(it->first).size();
+      auto nhits = photon_hit_assn_v.at(photonIdx).size();
       
       if (_debug) { std::cout << "\n\n\t\t new photon with " << nhits << " hits" << std::endl; }
       
@@ -229,7 +253,7 @@ void PhotonMerge::produce(art::Event & e)
       if (nhits > (shr_clus_v.at(collidx)->NHits() * fFracShrQ) ) continue;
       
       // get linearity
-      auto photonLin = _photon_lin_map[ it->first ];
+      auto photonLin = _photon_lin_map[ photonIdx ];
       
       // do the polygons overlap?
       bool overlap = ( shrPoly.Overlap(photonPoly) || shrPoly.Contained(photonPoly) );
@@ -251,18 +275,71 @@ void PhotonMerge::produce(art::Event & e)
       }// if cluster is large
 	
       // made it this far -> merge the photon with the shower
-      // get set of hits to add (removing potential duplicates)                              
-    }// compatible showers     
+      // get set of hits to add (removing potential duplicates)
+      if (_debug) std::cout << "Merge photon. Photon hits : " << photon_hit_assn_v.at(photonIdx).size() 
+			    << "\t shr hits : " << shr_hit_plv_v[2].size() << std::endl;
+      
+      std::vector< art::Ptr<recob::Hit> > photon_hit_v = photon_hit_assn_v.at( photonIdx );
+      
+      MergeHits(shr_hit_plv_v[2],photon_hit_v);
+      
+      if (_debug) { std::cout << "\t after merging -> " << shr_hit_plv_v[2].size() << " hits" << std::endl; }
+      
+    }// for all gamma polygons
+
+    // create a new PFParticle
+    recob::PFParticle newpfpart(*(shr_pfp_assn_v.at(s).at(0)));
+    PFParticle_v->emplace_back(newpfpart);
+    art::Ptr<recob::PFParticle> const PFPPtrAssn = PFPartPtrMaker(PFParticle_v->size()-1);
+
+    // save clusters/hits
+    for (size_t pl=0; pl < 3; pl++) {
+
+      auto const& plane_hits = shr_hit_plv_v.at(pl);
+
+      // zero hits? skip...
+      if (plane_hits.size() == 0) continue;
+
+      // make cluster from which to extract start/end wire/tick
+      ::cluster::Cluster CMCluster;
+      _clusterMaker.MakeCluster(plane_hits,CMCluster);
+
+      float startW = CMCluster._start_pt._w / _wire2cm;
+      float startT = CMCluster._start_pt._t / _time2cm;// + detp->TriggerOffset();
+      
+      float endW   = CMCluster._end_pt._w / _wire2cm;
+      float endT   = CMCluster._end_pt._t / _time2cm;// + detp->TriggerOffset();
+      
+      auto planeid = geo::PlaneID(0,0,pl);
+      
+      recob::Cluster clus(startW, 0., startT, 0., 0., CMCluster._angle, 0., 
+			  endW,   0., endT,   0., 0., 0., 0., 
+			  CMCluster._sum_charge, 0., CMCluster._sum_charge, 0., 
+			  CMCluster.GetHits().size(), 0., 0., (s*3)+pl,
+			  geom->View(planeid),
+			  planeid);
+
+      Cluster_v->emplace_back(clus);
+      art::Ptr<recob::Cluster> const ClusPtrAssn = ClusPtrMaker(Cluster_v->size()-1);
+      PFParticle_Cluster_assn_v->addSingle(PFPPtrAssn,ClusPtrAssn);
+      
+      for (auto hitPtr : plane_hits) {
+	Hit_v->emplace_back( *hitPtr );
+	art::Ptr<recob::Hit> const HitPtrAssn = HitPtrMaker(Hit_v->size()-1);
+	Cluster_Hit_assn_v->addSingle(ClusPtrAssn,HitPtrAssn);
+      }
+    }
     
   }// for all showers
   
   e.put(std::move(PFParticle_v));
   e.put(std::move(Cluster_v));
+  e.put(std::move(Hit_v));
   e.put(std::move(PFParticle_Cluster_assn_v));
-  e.put(std::move(PFParticle_Hit_assn_v));
-
-}
+  e.put(std::move(Cluster_Hit_assn_v));
   
+  }
+
 twodimtools::Poly2D PhotonMerge::projectShower(const art::Ptr<recob::Cluster> clus) {
   
   auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
@@ -398,6 +475,29 @@ bool PhotonMerge::photonCrossesShower(const twodimtools::Poly2D& shr,
   return false;
 }
 
+
+void PhotonMerge::MergeHits(std::vector< art::Ptr<recob::Hit> >& shrhits, const std::vector< art::Ptr<recob::Hit> >& gammahits) {
+
+  auto shrhitcopy = shrhits;
+
+  for (auto const& gammahit : gammahits) {
+
+    bool duplicate = false;
+
+    for (auto const& shrhit : shrhitcopy) {
+      if ( (shrhit->WireID().Wire == gammahit->WireID().Wire) && (shrhit->PeakTime() == gammahit->PeakTime() ) ) {
+	duplicate = true;
+	break; 
+      }// if duplicate
+    }// for hits in gamma hits
+    
+    if (duplicate == false)
+      shrhits.push_back(gammahit);
+    
+  }// for hits in shower hit
+	
+  return;
+}
 
 void PhotonMerge::beginJob()
 {
