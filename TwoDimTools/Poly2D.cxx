@@ -13,6 +13,7 @@ namespace twodimtools {
     auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
     _wire2cm = geom->WirePitch(0,1,0);
     _time2cm = detp->SamplingRate() / 1000.0 * detp->DriftVelocity( detp->Efield(), detp->Temperature() );
+    _trigoff = detp->TriggerOffset();
   }
 
   Poly2D::Poly2D(const std::vector< art::Ptr<recob::Hit> >& hit_v)
@@ -518,7 +519,9 @@ namespace twodimtools {
     for (auto hiter = hitmap.rbegin(); qintegral <= qtotal * frac && hiter != hitmap.rend(); ++hiter) {
       qintegral += (*hiter).first;
       auto hit = hit_v.at( (*hiter).second );
-      auto hitpt = std::make_pair( (float)(hit->WireID().Wire * _wire2cm), (float)(hit->PeakTime() * _time2cm) );
+      float w = (float)(hit->WireID().Wire * _wire2cm);
+      float t = (float)((hit->PeakTime() - _trigoff) * _time2cm + hit->WireID().Plane * 0.3);
+      auto hitpt = std::make_pair(w, t);
       ordered_hits.push_back( hitpt );
     }
     

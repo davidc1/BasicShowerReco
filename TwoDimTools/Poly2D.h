@@ -91,7 +91,7 @@ namespace twodimtools {
     
   private:
     
-    float _wire2cm, _time2cm;
+    float _wire2cm, _time2cm, _trigoff;
 
     /// vector listing the polygon edges
     std::vector< std::pair<float,float> > vertices;
