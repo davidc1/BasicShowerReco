@@ -66,7 +66,7 @@ private:
 
   bool fDebug;
 
-  double _wire2cm, _time2cm;
+  double _wire2cm, _time2cm, _trigoff;
   
   double _vtxW, _vtxT;
 
@@ -91,13 +91,17 @@ private:
 
   twodimtools::Poly2D projectShower(const art::Ptr<recob::Cluster> clus);
 
+  double PhotonShowerAngle(const twodimtools::Poly2D& shr,
+			   const twodimtools::Linearity& photon);
+
   double slopeCompat(const twodimtools::Poly2D& shr,
 		     const twodimtools::Linearity& photon);
 
   bool photonCrossesShower(const twodimtools::Poly2D& shr,
 			   const twodimtools::Poly2D& photon);
 
-  void MergeHits(std::vector< art::Ptr<recob::Hit> >& shrhits, const std::vector< art::Ptr<recob::Hit> >& gammahits);
+  // return number of hits actually merged
+  int MergeHits(std::vector< art::Ptr<recob::Hit> >& shrhits, const std::vector< art::Ptr<recob::Hit> >& gammahits);
   
 };
 
@@ -126,6 +130,7 @@ PhotonMerge::PhotonMerge(fhicl::ParameterSet const & p)
   auto const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
   _wire2cm = geom->WirePitch(0,1,0);
   _time2cm = detp->SamplingRate() / 1000.0 * detp->DriftVelocity( detp->Efield(), detp->Temperature() );
+  _trigoff = detp->TriggerOffset();
 }
 
 void PhotonMerge::produce(art::Event & e)
@@ -210,7 +215,7 @@ void PhotonMerge::produce(art::Event & e)
 
     for (auto hitptr : photon_hit_v){
       hit_w_v.push_back( hitptr->WireID().Wire * _wire2cm );
-      hit_t_v.push_back( hitptr->PeakTime() * _time2cm);
+      hit_t_v.push_back( (hitptr->PeakTime() - _trigoff) * _time2cm + 0.6);
     }// for all hits in photon cluster                          
 
     twodimtools::Linearity clusLin(hit_w_v, hit_t_v);
@@ -230,6 +235,12 @@ void PhotonMerge::produce(art::Event & e)
       if (hitPtr->WireID().Plane == 2) { _allshr_hit_v.push_back( hitPtr ); }
     }// for all hits
   }// for all showers
+
+  // save photons to be added to each shower if found compatible
+  // first index is photon cluster index
+  // pair is < shower index, angle compatibility >
+  // if more then one shower the one with the best angle compatibility is chosen
+  std::map< size_t, std::vector< std::pair<size_t, double> > > Photon_Shower_Map;
   
   // loop through reconstructed showers.                                         
   for (size_t s=0; s < shr_h->size(); s++) {
@@ -266,13 +277,15 @@ void PhotonMerge::produce(art::Event & e)
       
       auto const& photonPoly = it->second;
       auto const& photonIdx  = it->first;
+      // get linearity
+      auto const& photonLin = _photon_lin_map[ photonIdx ];
 
       if (fDebug) { std::cout << "\n\n new photon "; }
 
       // check the number of hits in the cluster
       auto nhits = photon_hit_assn_v.at(photonIdx).size();
       
-      if (fDebug) { std::cout << "with " << nhits << " hits. index " << photonIdx << " of " << photon_h->size()-1 << std::endl; }
+      if (fDebug) { std::cout << "with " << nhits << " hits and COM [" << photonLin._meanx << ", " << photonLin._meany << "]. index " << photonIdx << " of " << photon_h->size()-1 << std::endl; }
       
       // apply cut on fraction of photon charge (# of hits here) that can be added to existing shower
       if (nhits > (shr_clus_v.at(collidx)->NHits() * fFracShrQ) ) {
@@ -280,8 +293,7 @@ void PhotonMerge::produce(art::Event & e)
 	continue;
       }
       
-      // get linearity
-      auto photonLin = _photon_lin_map[ photonIdx ];
+
       
       // do the polygons overlap?
       bool overlap = ( shrPoly.Overlap(photonPoly) || shrPoly.Contained(photonPoly) );
@@ -312,17 +324,75 @@ void PhotonMerge::produce(art::Event & e)
       // get set of hits to add (removing potential duplicates)
       if (fDebug) std::cout << "Merge photon. Photon hits : " << photon_hit_assn_v.at(photonIdx).size() 
 			    << "\t shr hits : " << shr_hit_plv_v[2].size() << std::endl;
-      
+
+      // if photon not yet found compatible with any shower
+      if (Photon_Shower_Map.find( photonIdx ) == Photon_Shower_Map.end() ) {
+	Photon_Shower_Map[ photonIdx ] = { std::make_pair(s, PhotonShowerAngle(shrPoly,photonLin)) };
+      }
+      // else, if already compatible
+      else {
+      	Photon_Shower_Map[ photonIdx ].push_back( std::make_pair(s, PhotonShowerAngle(shrPoly,photonLin) ) );
+      }
+
+    }// for all gammas
+  }// for all showers
+
+  // now loop through showers, create new PFParticles and save new clusters which have merged hits from Y plane
+  for (size_t s=0; s < shr_h->size(); s++) {
+
+    if (fDebug) { std::cout << std::endl << std::endl << "New shower index " << s << std::endl << std::endl; }
+
+    // split shower hits by plane
+    std::vector< art::Ptr<recob::Hit> > shr_hit_v = shr_hit_assn_v.at(s);
+    std::vector< std::vector< art::Ptr<recob::Hit> > > shr_hit_plv_v;
+    shr_hit_plv_v.resize(3);
+    for (auto const& shr_hit : shr_hit_v)
+      shr_hit_plv_v.at(shr_hit->WireID().Plane).push_back( shr_hit ); 
+
+    // loop through all merged photons, if merged to this shower, and this shower is "the best merge"
+    // then add hits
+    for (std::map<size_t,std::vector< std::pair<size_t,double> > >::iterator it = Photon_Shower_Map.begin(); it != Photon_Shower_Map.end(); ++it) {    
+
+      // photon index
+      auto photonIdx = it->first;
+      // vector of showers to merge with?
+      auto showerV = it->second;
+
       std::vector< art::Ptr<recob::Hit> > photon_hit_v = photon_hit_assn_v.at( photonIdx );
+
+      if (fDebug && (showerV.size() > 0) ) { 
+	auto photonlin = _photon_lin_map[photonIdx];
+	std::cout << "cluster with COM [w, t] -> ["  << photonlin._meanx << ", " << photonlin._meany << "] and with " << photon_hit_v.size() << " hits" << std::endl; 
+      }
       
-      MergeHits(shr_hit_plv_v[2],photon_hit_v);
+      // merged with this shower?
+      bool   mergeshower = false;
+      double bestangle   = 1e6; // angle with best match shower
+      double thisangle   = 1e6; // angle with the shower we are interested in
+      for (auto const& shrinfo : showerV) {
+	if (fDebug) { std::cout << "photon idx : " << photonIdx << " associated to shr " << shrinfo.first << " with angle " << shrinfo.second << std::endl; }
+	if (shrinfo.first == s) { 
+	  mergeshower = true; 
+	  if (shrinfo.second < thisangle) { thisangle = shrinfo.second; }
+	}
+	if (shrinfo.second < bestangle) { bestangle = shrinfo.second; }
+      }
+
+      if (mergeshower == false) continue;
+      if (thisangle > bestangle) continue;
+
+      if (fDebug) { std::cout << "shower index " << s << " is the best match! add!" << std::endl; }
       
-      if (fDebug) { std::cout << "\t after merging -> " << shr_hit_plv_v[2].size() << " hits" << std::endl; }
+
+      // ok -> made it this far! merge
+      auto nhitsmerged = MergeHits(shr_hit_plv_v[2],photon_hit_v);
+      
+      if (fDebug) { std::cout << "\t after merging -> " << shr_hit_plv_v[2].size() << " hits. Merged " << nhitsmerged << "/" << photon_hit_v.size() << " hits." << std::endl; }
       
     }// for all gamma polygons
-
+    
     if (fDebug) std::cout << "\n\n Creating new PFParticles..." << std::endl;
-
+    
     // create a new PFParticle
     recob::PFParticle newpfpart(*(shr_pfp_assn_v.at(s).at(0)));
     PFParticle_v->emplace_back(newpfpart);
@@ -358,7 +428,7 @@ void PhotonMerge::produce(art::Event & e)
 			  CMCluster.GetHits().size(), 0., 0., (s*3)+pl,
 			  geom->View(planeid),
 			  planeid);
-
+      
       if (fDebug) std::cout << "\t creating cluster and hit in event record! " << std::endl;
 
       Cluster_v->emplace_back(clus);
@@ -446,6 +516,27 @@ twodimtools::Poly2D PhotonMerge::projectShower(const art::Ptr<recob::Cluster> cl
   return twodimtools::Poly2D(triangle_coordinates);
 }
 
+double PhotonMerge::PhotonShowerAngle(const twodimtools::Poly2D& shr,
+				      const twodimtools::Linearity& photon) {
+  
+  // get slope of photon (w.r.t. vertex)
+  double photonYdiff = ( photon._meany - _vtxT );
+  double photonXdiff = ( photon._meanx - _vtxW );
+  double photon_slope_val = photonYdiff / photonXdiff;
+  
+  // get shower slope
+  double shr_slope_val;
+  
+  double ydiff = ( (shr.Point(2).second + shr.Point(1).second) / 2. ) - shr.Point(0).second;
+  double xdiff = ( (shr.Point(2).first + shr.Point(1).first) / 2. ) - shr.Point(0).first;
+  
+  shr_slope_val = ydiff/xdiff;
+
+  double angle = fabs ( atan( ( shr_slope_val - photon_slope_val ) / ( 1 + photon_slope_val * shr_slope_val ) ) );
+  
+  return angle;
+}
+
 double PhotonMerge::slopeCompat(const twodimtools::Poly2D& shr,
 				const twodimtools::Linearity& photon) {
   
@@ -519,7 +610,9 @@ bool PhotonMerge::photonCrossesShower(const twodimtools::Poly2D& shr,
 }
 
 
-void PhotonMerge::MergeHits(std::vector< art::Ptr<recob::Hit> >& shrhits, const std::vector< art::Ptr<recob::Hit> >& gammahits) {
+int PhotonMerge::MergeHits(std::vector< art::Ptr<recob::Hit> >& shrhits, const std::vector< art::Ptr<recob::Hit> >& gammahits) {
+
+  int nhitsmerged = 0;
 
   for (auto const& gammahit : gammahits) {
 
@@ -532,12 +625,14 @@ void PhotonMerge::MergeHits(std::vector< art::Ptr<recob::Hit> >& shrhits, const 
       }// if duplicate
     }// for hits in gamma hits
     
-    if (duplicate == false)
+    if (duplicate == false) {
+      nhitsmerged +=1;
       shrhits.push_back(gammahit);
+    }
     
   }// for hits in shower hit
 	
-  return;
+  return nhitsmerged;
 }
 
 void PhotonMerge::beginJob()
