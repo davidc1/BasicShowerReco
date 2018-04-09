@@ -38,12 +38,12 @@ namespace twodimtools {
     
     auto meanx = mean(datax);
     auto meany = mean(datay);
-    
+
     if (save){
       _meanx = meanx;
       _meany = meany;
     }
-    
+
     for(size_t i = 0; i < datax.size(); ++i)
       result += (datax[i] - meanx)*(datay[i] - meany);
     
@@ -84,14 +84,16 @@ namespace twodimtools {
       return 1.;
     
     auto covxy = cov(datax,datay,save);
-    auto covxx = cov(datax,datax,save);
-    auto covyy = cov(datay,datay,save);
+    auto covxx = cov(datax,datax,false);
+    auto covyy = cov(datay,datay,false);
     
     if (save){
       _covxy = covxy;
       _covxx = covxx;
       _covyy = covyy;
     }
+
+    //std::cout << "LIN meanx : " << _meanx << ", meany : " << _meany << std::endl;
     
     double r_num = covxy;
     double r_den = sqrt( covxx * covyy );
