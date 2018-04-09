@@ -81,6 +81,9 @@ private:
 
   ::cluster::ClusterMaker _clusterMaker;
 
+  // vector of all collection-plane hits for all showers in the event
+  std::vector< art::Ptr<recob::Hit> > _allshr_hit_v;
+
   // map connecting photon cluster index to linearity object
   std::map< size_t, twodimtools::Linearity > _photon_lin_map; 
   // map connecting photon cluster index to poly2d object
@@ -217,6 +220,16 @@ void PhotonMerge::produce(art::Event & e)
 
     std::cout << "cluster linearity = " << clusLin.linearity() << " with poly area : " << clusPoly.Area() << std::endl;
   }// for all clusters
+
+  // get full list of all hits associated to all showers on the collection plane
+  // these cannot be added to any cluster
+  _allshr_hit_v.clear();
+  for (size_t s=0; s < shr_h->size(); s++) {
+    std::vector< art::Ptr<recob::Hit> > shr_hit_v = shr_hit_assn_v.at(s);
+    for (auto hitPtr : shr_hit_v) {
+      if (hitPtr->WireID().Plane == 2) { _allshr_hit_v.push_back( hitPtr ); }
+    }// for all hits
+  }// for all showers
   
   // loop through reconstructed showers.                                         
   for (size_t s=0; s < shr_h->size(); s++) {
@@ -508,13 +521,11 @@ bool PhotonMerge::photonCrossesShower(const twodimtools::Poly2D& shr,
 
 void PhotonMerge::MergeHits(std::vector< art::Ptr<recob::Hit> >& shrhits, const std::vector< art::Ptr<recob::Hit> >& gammahits) {
 
-  auto shrhitcopy = shrhits;
-
   for (auto const& gammahit : gammahits) {
 
     bool duplicate = false;
 
-    for (auto const& shrhit : shrhitcopy) {
+    for (auto const& shrhit : _allshr_hit_v) {
       if ( (shrhit->WireID().Wire == gammahit->WireID().Wire) && (shrhit->PeakTime() == gammahit->PeakTime() ) ) {
 	duplicate = true;
 	break; 
