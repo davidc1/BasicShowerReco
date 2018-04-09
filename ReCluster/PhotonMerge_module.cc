@@ -64,7 +64,7 @@ private:
   // Declare member data here.
   std::string fShrProducer, fVtxProducer, fPhotonProducer;
 
-  bool _debug;
+  bool fDebug;
 
   double _wire2cm, _time2cm;
   
@@ -107,16 +107,16 @@ PhotonMerge::PhotonMerge(fhicl::ParameterSet const & p)
   produces<std::vector<recob::Cluster>    >();
   produces<std::vector<recob::Hit>        >();
   produces<art::Assns <recob::PFParticle, recob::Cluster>    >();
-  produces<art::Assns <recob::PFParticle, recob::Hit>        >();
-  produces<art::Assns <recob::PFParticle, recob::Hit>        >();
+  produces<art::Assns <recob::Cluster   , recob::Hit>        >();
 
-  fShrProducer    = p.get<std::string>("fShrProducer");
-  fVtxProducer    = p.get<std::string>("fVtxProducer");
-  fPhotonProducer = p.get<std::string>("fPhotonProducer");
+  fShrProducer    = p.get<std::string>("ShrProducer");
+  fVtxProducer    = p.get<std::string>("VtxProducer");
+  fPhotonProducer = p.get<std::string>("PhotonProducer");
   fWidth          = p.get<double>     ("Width");
   fShrLen         = p.get<double>     ("ShrLen");
   fFracShrQ       = p.get<double>     ("FracShrQ");
   fMaxSlopeAngle  = p.get<double>     ("MaxSlopeAngle");
+  fDebug          = p.get<bool>       ("Debug");
   
   // get detector specific properties
   auto const* geom = ::lar::providerFrom<geo::Geometry>();
@@ -135,13 +135,6 @@ void PhotonMerge::produce(art::Event & e)
   std::unique_ptr< art::Assns <recob::PFParticle, recob::Cluster> > PFParticle_Cluster_assn_v( new art::Assns<recob::PFParticle, recob::Cluster>   );
   std::unique_ptr< art::Assns <recob::Cluster  , recob::Hit>      > Cluster_Hit_assn_v       ( new art::Assns<recob::Cluster   , recob::Hit>       );
 
-  // pfparticle pointer maker for later to create associations
-  art::PtrMaker<recob::PFParticle> PFPartPtrMaker(e, *this);
-  // cluster pointer maker for later to create associations
-  art::PtrMaker<recob::Cluster>    ClusPtrMaker  (e, *this);
-  // hit pointer maker for later to create associations
-  art::PtrMaker<recob::Hit>        HitPtrMaker   (e, *this);
-
   // load input showers
   auto const& shr_h = e.getValidHandle<std::vector<recob::Shower>>(fShrProducer);
   // load input vertices
@@ -149,16 +142,32 @@ void PhotonMerge::produce(art::Event & e)
   // load input photon clusters
   auto const& photon_h = e.getValidHandle<std::vector<recob::Cluster>>(fPhotonProducer);
 
-  // grab hits associated associated with photon clusters
-  art::FindManyP<recob::Hit> photon_hit_assn_v(photon_h, e, fPhotonProducer);
-
   // grab pfparticles associated with shower
   art::FindManyP<recob::PFParticle> shr_pfp_assn_v(shr_h, e, fShrProducer);
   
   // grab clusters associated with shower
   art::FindManyP<recob::Cluster> shr_clus_assn_v(shr_h, e, fShrProducer);
+
+  // grab hits associated with shower
+  art::FindManyP<recob::Hit> shr_hit_assn_v(shr_h, e, fShrProducer);
+
+  // grab hits associated associated with photon clusters
+  art::FindManyP<recob::Hit> photon_hit_assn_v(photon_h, e, fPhotonProducer);
+
+
   // grab the hits associated to the showers
-  auto shr_hit_assn_v = lar::FindManyInChainP<recob::Hit, recob::Cluster>::find(shr_h, e, fShrProducer);
+  //auto shr_hit_assn_v = lar::FindManyInChainP<recob::Hit, recob::Cluster>::find(shr_h, e, fShrProducer);
+
+  // pfparticle pointer maker for later to create associations
+  art::PtrMaker<recob::PFParticle> PFPartPtrMaker(e, *this);
+  // cluster pointer maker for later to create associations
+  art::PtrMaker<recob::Cluster>    ClusPtrMaker  (e, *this);
+  // hit pointer maker for later to create associations
+  art::PtrMaker<recob::Hit>        HitPtrMaker   (e, *this);
+
+  _photon_poly_map.clear();
+  _photon_lin_map.clear();
+
 
   if (vtx_h->size() != 1)
     std::cout << "no vertex" << std::endl;
@@ -172,11 +181,10 @@ void PhotonMerge::produce(art::Event & e)
   auto const* geom = ::lar::providerFrom<geo::Geometry>();
   _vtxW = geom->WireCoordinate(xyz[1],xyz[2],geo::PlaneID(0,0,2)) * _wire2cm;
   _vtxT = xyz[0];
+  if (fDebug) std::cout << "\n\t Vertex @ Pl 2 : [w,t] -> [" << _vtxW << ", " << _vtxT << "]" << std::endl;
 
   // create polygon objects for each photon cluster.
   for (size_t p=0; p < photon_h->size(); p++){
-
-    if (_debug) { std::cout << "... new photon" << std::endl; }
 
     // get assciated hits
     std::vector< art::Ptr<recob::Hit> > photon_hit_v = photon_hit_assn_v.at(p);
@@ -186,7 +194,9 @@ void PhotonMerge::produce(art::Event & e)
     auto plane = photon_hit_v.at(0)->WireID().Plane;
 
     // we are re-clustering only on the collection-plane
-    if ( plane != 2) continue;
+    if (plane != 2) continue;
+
+    if (fDebug) { std::cout << "... new photon" << std::endl; }
     
     // create linearity objects   
     std::vector<double> hit_w_v;
@@ -212,7 +222,7 @@ void PhotonMerge::produce(art::Event & e)
   for (size_t s=0; s < shr_h->size(); s++) {
     
     //auto const& shr = shr_h->at(s);    
-    if (_debug) { std::cout << "new shower" << std::endl; }
+    if (fDebug) { std::cout << "new shower " << s << " of " << shr_h->size()-1 << std::endl; }
     
     // grab collection-plane hits and cluster associated with this shower
     std::vector< art::Ptr<recob::Cluster> > shr_clus_v = shr_clus_assn_v.at(s);
@@ -231,9 +241,9 @@ void PhotonMerge::produce(art::Event & e)
     
     auto shrPoly = projectShower(shr_clus_v.at(collidx));
     
-    if (_debug) { std::cout << "hits on Y plane before merging : " << shr_hit_plv_v[2].size() << std::endl; }
+    if (fDebug) { std::cout << "hits on Y plane before merging : " << shr_hit_plv_v[2].size() << std::endl; }
     
-    if (_debug) { std::cout << "polygon has size : " << shrPoly.Size() << std::endl; }
+    if (fDebug) { std::cout << "polygon has size : " << shrPoly.Size() << std::endl; }
 
       // if no hits associated on this plane -> skip
     if (shr_hit_plv_v[2].size() == 0) continue;
@@ -243,14 +253,19 @@ void PhotonMerge::produce(art::Event & e)
       
       auto const& photonPoly = it->second;
       auto const& photonIdx  = it->first;
-      
+
+      if (fDebug) { std::cout << "\n\n new photon "; }
+
       // check the number of hits in the cluster
       auto nhits = photon_hit_assn_v.at(photonIdx).size();
       
-      if (_debug) { std::cout << "\n\n\t\t new photon with " << nhits << " hits" << std::endl; }
+      if (fDebug) { std::cout << "with " << nhits << " hits. index " << photonIdx << " of " << photon_h->size()-1 << std::endl; }
       
       // apply cut on fraction of photon charge (# of hits here) that can be added to existing shower
-      if (nhits > (shr_clus_v.at(collidx)->NHits() * fFracShrQ) ) continue;
+      if (nhits > (shr_clus_v.at(collidx)->NHits() * fFracShrQ) ) {
+	if (fDebug) std::cout << "\t hit num too large... continue" << std::endl;
+	continue;
+      }
       
       // get linearity
       auto photonLin = _photon_lin_map[ photonIdx ];
@@ -259,7 +274,7 @@ void PhotonMerge::produce(art::Event & e)
       bool overlap = ( shrPoly.Overlap(photonPoly) || shrPoly.Contained(photonPoly) );
       
       if (overlap == false) {
-	if (_debug) std::cout << "\t no overlap w/ shower cone... continue" << std::endl;
+	if (fDebug) std::cout << "\t no overlap w/ shower cone... continue" << std::endl;
 	continue;
       }
       
@@ -267,25 +282,33 @@ void PhotonMerge::produce(art::Event & e)
       if (nhits > 8) {
 	
 	// apply cut on slope agreement
-	if (slopeCompat( shrPoly, photonLin) > fMaxSlopeAngle) continue;
+	if (slopeCompat( shrPoly, photonLin) > fMaxSlopeAngle) {
+	  if (fDebug) std::cout << "\t slope not compatible with shower... continue" << std::endl;
+	  continue;
+	}
 	
 	// make sure the photon doesn't extend on both sides of the shower cone
-	if (photonCrossesShower(shrPoly, photonPoly) == true) continue;
+	if (photonCrossesShower(shrPoly, photonPoly) == true) {
+	  if (fDebug) std::cout << "\t photon fully crosses shower... continue" << std::endl;
+	  continue;
+	}
 
       }// if cluster is large
 	
       // made it this far -> merge the photon with the shower
       // get set of hits to add (removing potential duplicates)
-      if (_debug) std::cout << "Merge photon. Photon hits : " << photon_hit_assn_v.at(photonIdx).size() 
+      if (fDebug) std::cout << "Merge photon. Photon hits : " << photon_hit_assn_v.at(photonIdx).size() 
 			    << "\t shr hits : " << shr_hit_plv_v[2].size() << std::endl;
       
       std::vector< art::Ptr<recob::Hit> > photon_hit_v = photon_hit_assn_v.at( photonIdx );
       
       MergeHits(shr_hit_plv_v[2],photon_hit_v);
       
-      if (_debug) { std::cout << "\t after merging -> " << shr_hit_plv_v[2].size() << " hits" << std::endl; }
+      if (fDebug) { std::cout << "\t after merging -> " << shr_hit_plv_v[2].size() << " hits" << std::endl; }
       
     }// for all gamma polygons
+
+    if (fDebug) std::cout << "\n\n Creating new PFParticles..." << std::endl;
 
     // create a new PFParticle
     recob::PFParticle newpfpart(*(shr_pfp_assn_v.at(s).at(0)));
@@ -295,10 +318,14 @@ void PhotonMerge::produce(art::Event & e)
     // save clusters/hits
     for (size_t pl=0; pl < 3; pl++) {
 
+      if (fDebug) std::cout << "\t plane " << pl << std::endl;
+
       auto const& plane_hits = shr_hit_plv_v.at(pl);
 
       // zero hits? skip...
       if (plane_hits.size() == 0) continue;
+
+      if (fDebug) std::cout << "\t has valid cluster! " << std::endl;
 
       // make cluster from which to extract start/end wire/tick
       ::cluster::Cluster CMCluster;
@@ -319,6 +346,8 @@ void PhotonMerge::produce(art::Event & e)
 			  geom->View(planeid),
 			  planeid);
 
+      if (fDebug) std::cout << "\t creating cluster and hit in event record! " << std::endl;
+
       Cluster_v->emplace_back(clus);
       art::Ptr<recob::Cluster> const ClusPtrAssn = ClusPtrMaker(Cluster_v->size()-1);
       PFParticle_Cluster_assn_v->addSingle(PFPPtrAssn,ClusPtrAssn);
@@ -337,7 +366,8 @@ void PhotonMerge::produce(art::Event & e)
   e.put(std::move(Hit_v));
   e.put(std::move(PFParticle_Cluster_assn_v));
   e.put(std::move(Cluster_Hit_assn_v));
-  
+
+  return;
   }
 
 twodimtools::Poly2D PhotonMerge::projectShower(const art::Ptr<recob::Cluster> clus) {
@@ -357,7 +387,7 @@ twodimtools::Poly2D PhotonMerge::projectShower(const art::Ptr<recob::Cluster> cl
   double oangle = 0.;
   if (fWidth > 0) oangle = fWidth * 3.14 / 180.;
   
-  if (_debug) { std::cout << "direction : dW " << dW << "\t dT : " << dT << std::endl; }
+  if (fDebug) { std::cout << "direction : dW " << dW << "\t dT : " << dT << std::endl; }
   
   double eW = sW + fShrLen * dW;
   double eT = sT + fShrLen * dT;
@@ -371,13 +401,13 @@ twodimtools::Poly2D PhotonMerge::projectShower(const art::Ptr<recob::Cluster> cl
   // figure out how far to go on each side.
   double shrWidth = fShrLen * fabs(tan(oangle)) * 0.5;
   
-  if (_debug) { std::cout << "width : " << shrWidth << std::endl; }
+  if (fDebug) { std::cout << "width : " << shrWidth << std::endl; }
   
   // unlike length, width is not stretched or compressed on projection.
   // extend end-point "left" and "right" by one width to complete triangle
   // extend in direction perpendicular to line connecting start_pl and end_pl
   double slope = -1. / ( (eT - sT) / (eW - sW) );
-  if (_debug)
+  if (fDebug)
     {
       std::cout << "\t End pt  = [ "  << eW << ", " << eT << " ]" << std::endl;
       std::cout << "\t SLOPE = " << slope << std::endl;
@@ -393,7 +423,7 @@ twodimtools::Poly2D PhotonMerge::projectShower(const art::Ptr<recob::Cluster> cl
   double pt2_t = eT - slope * shrWidth * sqrt( 1. / (1 + slope*slope) );
   triangle_coordinates.push_back( std::pair<float,float>( pt2_w, pt2_t) );
   
-  if (_debug){
+  if (fDebug){
     std::cout << "SHOWER COORDINATES : " << std::endl
 	      << "\t Vertex @ [ " << sW << ", " << sT << " ]" << std::endl
 	      << "\t Pt1    @ [ " << pt1_w      << ", " << pt1_t      << " ]" << std::endl
@@ -422,7 +452,7 @@ double PhotonMerge::slopeCompat(const twodimtools::Poly2D& shr,
 
   angle *= (180./3.14);
 
-  if (_debug) { std::cout << "\t photon slope angle = " << angle << std::endl; }
+  if (fDebug) { std::cout << "\t photon slope angle = " << angle << std::endl; }
 
   return angle;
 
@@ -468,7 +498,7 @@ bool PhotonMerge::photonCrossesShower(const twodimtools::Poly2D& shr,
   
   if ( (slope_left > 0) and (slope_right > 0) ){
 
-    if (_debug) std::cout << "\t photon crosses shower" << std::endl;
+    if (fDebug) std::cout << "\t photon crosses shower" << std::endl;
     return true;
   }
 

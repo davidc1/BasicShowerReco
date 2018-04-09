@@ -1,0 +1,15 @@
+BEGIN_PROLOG
+
+PhotonMerge: {
+ module_type    : "PhotonMerge"  
+ ShrProducer    : "showerreco3d"
+ VtxProducer    : "ccvertex"
+ PhotonProducer : "gaushitproximity"
+ Width          : 20.
+ ShrLen         : 150.
+ FracShrQ       : 0.5
+ MaxSlopeAngle  : 20.
+ Debug          : true
+}
+
+END_PROLOG
