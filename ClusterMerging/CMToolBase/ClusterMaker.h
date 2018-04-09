@@ -62,9 +62,9 @@ namespace cluster {
     void MakeCluster(const std::vector<art::Ptr<recob::Hit> >& hit_v,
 		     ::cluster::Cluster& cluster);
 
-  private:
-
     bool loadVertex(const art::ValidHandle<std::vector<::recob::Vertex> > vtx_h);
+
+  private:
 
     void GetClusterPts(const std::vector<art::Ptr<recob::Hit> >& hit_v,
 		       std::vector<::cluster::pt>& pt_v);

@@ -125,8 +125,8 @@ namespace cluster {
       _vtx_w_cm[pl] = geom->WireCoordinate(xyz[1],xyz[2],geo::PlaneID(0,0,pl)) * _wire2cm + 0.15;
       _vtx_t_cm[pl] = xyz[0] + (detp->TriggerOffset() * _time2cm) + pl*0.3;
 
-      //std::cout << "trigger offset [cm] : " << (detp->TriggerOffset() * _time2cm) << std::endl;
-      //std::cout << "Vtx @ pl " << pl << " [" << _vtx_w_cm[pl] << ", " << _vtx_t_cm[pl] << " ]" << std::endl;
+      std::cout << "trigger offset [cm] : " << (detp->TriggerOffset() * _time2cm) << std::endl;
+      std::cout << "Vtx @ pl " << pl << " [" << _vtx_w_cm[pl] << ", " << _vtx_t_cm[pl] << " ]" << std::endl;
 
       }
 
