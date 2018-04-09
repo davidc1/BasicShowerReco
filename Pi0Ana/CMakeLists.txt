@@ -12,17 +12,19 @@ art_make(
 			larcorealg_Geometry
 			lardata_Utilities
 			lardataobj_RecoBase
+			lardataobj_MCBase
 			lardataobj_Simulation	
 			lardataobj_MCBase
 			larcore_Geometry_Geometry_service
           MODULE_LIBRARIES 
+	  		uboone_BasicShowerReco_Pi0Ana_Selection
 		   	larpandora_LArPandoraInterface	
 			larcorealg_Geometry
 			larcore_Geometry_Geometry_service
 			lardataobj_RecoBase
+			lardataobj_MCBase
 			lardataobj_Simulation	
 			lardataobj_AnalysisBase	
-			lardataobj_MCBase
 			lardata_RecoObjects larreco_Deprecated  
 			larreco_RecoAlg
 			lardata_Utilities
@@ -49,6 +51,8 @@ art_make(
                         ${ROOT_GDML}
 			${ROOT_BASIC_LIB_LIST}
         )
+
+add_subdirectory(Selection)
 
 install_headers()
 install_fhicl()

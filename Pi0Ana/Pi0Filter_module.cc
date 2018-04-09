@@ -19,6 +19,8 @@
 
 #include "art/Framework/Services/Optional/TFileService.h"
 
+#include "Selection/SelectionAlg.h"
+
 #include <memory>
 
 #include "TTree.h"
@@ -51,8 +53,10 @@ public:
 
 private:
 
-  // Declare member data here.
-
+  // pi0 selection algorithm
+  selection::SelectionAlg _pi0selection;
+  
+  // output TTree
   TTree* _shr_tree;
   float _e;
   float _dedx;
@@ -70,6 +74,16 @@ private:
 
   TTree* _trkangle_tree;
   float  _trkangle;
+
+  // study shower-shower alignment
+  // to investigate split-shower
+  // occurrence
+  TTree* _shrdirection_tree;
+  float _rl1;
+  float _rl2;
+  float _en1;
+  float _en2;
+  float _anglediff;
 
 };
 
@@ -133,57 +147,47 @@ bool Pi0Filter::filter(art::Event & e)
     _shr_tree->Fill();
   }
 
-  // if less then two showers -> exit
-  if (shr_h->size() < 2){
+  // for each shower find the most aligned and fill angle difference
+  for (size_t s1=0; s1 < shr_h->size(); s1++) {
+    auto const& shr01 = shr_h->at(s1);
+    _anglediff = 180.;
+    _en1    = shr01.Energy()[2];
+    _rl1    = (shr01.ShowerStart()-vtxpt).Mag();
+    for (size_t s2=0; s2 < shr_h->size(); s2++) {
+      if (s1 == s2) continue;
+      auto const& shr02 = shr_h->at(s2);
+      float angle = (180./3.14) * acos( shr01.Direction().Dot ( shr02.Direction() ) );
+      if (angle < _anglediff) {
+	_anglediff = angle;
+	_en2    = shr02.Energy()[2];
+	_rl2    = (shr02.ShowerStart()-vtxpt).Mag();
+      }// if smallest angle
+    }// 2nd shower loop
+    _shrdirection_tree->Fill();
+  }// 1st shower loop
+
+
+  auto pi0candidate = _pi0selection.ApplySelection(shr_h);
+  
+  if (pi0candidate.mass < 0) {
     _tree->Fill();
     return false;
   }
 
-  // otherwise, check for pi0
-  // grab two showers with highest energy
-  recob::Shower shr1, shr2;
-  _e1 = 0.;
-  _e2 = 0.;
+  _e1 = pi0candidate.e1;
+  _e2 = pi0candidate.e2;
+  _angle = pi0candidate.angle;
+  _mass  = pi0candidate.mass;
+  _dedx1 = pi0candidate.dedx1;
+  _dedx2 = pi0candidate.dedx2;
   
-  // find largest energy shower
-  for (size_t s=0; s < shr_h->size(); s++) {
-    auto const& shr = shr_h->at(s);
-    if (shr.Energy()[2] > _e1) {
-      _e1  = shr.Energy()[2];
-      shr1 = shr;
-    }
-  }// for all showers
-  // find second largest energy shower
-  for (size_t s=0; s < shr_h->size(); s++) {
-    auto const& shr = shr_h->at(s);
-    if ( (shr.Energy()[2] > _e2) && ((float)shr.Energy()[2] != _e1) ) {
-      _e2  = shr.Energy()[2];
-      shr2 = shr;
-    }
-  }// for all showers
-
-  _dedx1 = shr1.dEdx()[2];
-  _dedx2 = shr2.dEdx()[2];
-
-  // get opening angle
-  auto dir1 = shr1.Direction();
-  auto dir2 = shr2.Direction();
-  _angle = dir1.Angle(dir2);
-
   std::cout << "\t opening angle : " << _angle << std::endl;
-
-  _mass = sqrt( 2 * _e1 * _e2 * ( 1 - cos(_angle) ) );
-
   std::cout << "\t mass          : " << _mass << std::endl << std::endl;
 
   _tree->Fill();
 
-
   if (_trkangle > 2.9) return false;
-
   if (_e2 < 35.) return false;
-  
-  std::cout << "Showers of energy " << _e1 << " and " << _e2 << std::endl;
   
   return true;
 }
@@ -215,6 +219,14 @@ void Pi0Filter::beginJob()
   _trkangle_tree = tfs->make<TTree>("_trkangle_tree","Track Angle TTree");
   _trkangle_tree->Branch("_trkangle",&_trkangle,"trkangle/F");
 
+  _shrdirection_tree = tfs->make<TTree>("_shrdirection_tree","shrdirection ttree");
+  _shrdirection_tree->Branch("_rl1",&_rl1,"rl1/F");
+  _shrdirection_tree->Branch("_rl2",&_rl2,"rl2/F");
+  _shrdirection_tree->Branch("_en1",&_en1,"en1/F");
+  _shrdirection_tree->Branch("_en2",&_en2,"en2/F");
+  _shrdirection_tree->Branch("_anglediff",&_anglediff,"anglediff/F");
+  
+  return;
 }
 
 void Pi0Filter::endJob()

@@ -54,9 +54,11 @@ physics:
  }
  analyzers:
 {  pi0analyzer: { module_type: Pi0Analyzer } }
+filters:
+{  pi0filter: { module_type: Pi0Filter } }
 
  #reco: [ rns, ophit, opflash, simpleFlash, opflashfilter ]
- reco: [ rns  ]
+ reco: [ rns, pi0filter  ]
  ana: [ pi0analyzer ]
 
  #define the output stream, there could be more than one if using filters 
@@ -83,7 +85,7 @@ outputs:
    fileName:    "pi0analyzer.root"
    dataTier:    "reco"
    compressionLevel: 1
-   #SelectEvents: [reco]
+   SelectEvents: [reco]
    }
 }
 

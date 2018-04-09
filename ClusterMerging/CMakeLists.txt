@@ -12,6 +12,7 @@ art_make(
 			larcorealg_Geometry
 			lardata_Utilities
 			lardataobj_RecoBase
+			lardataobj_MCBase
 			larcore_Geometry_Geometry_service
           MODULE_LIBRARIES 
 			uboone_BasicShowerReco_ClusterMerging_CMToolBase
@@ -20,6 +21,7 @@ art_make(
 			larcorealg_Geometry
 			larcore_Geometry_Geometry_service
 			lardataobj_RecoBase
+			lardataobj_MCBase
 			lardataobj_AnalysisBase	
 			lardata_RecoObjects larreco_Deprecated  
 			larreco_RecoAlg

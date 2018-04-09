@@ -48,8 +48,14 @@ physics:
 
   ### random number saver
   rns:                 { module_type: RandomNumberSaver }
-  perfectclustering:   { module_type: "PerfectClustering"
+  perfectclustering0:   { module_type: "PerfectClustering"
                          HitProducer: "gaushit"
+                         }
+  perfectclustering1:   { module_type: "PerfectClustering"
+                         HitProducer: "ssnethitmaker:shrhit90"
+                         }
+  perfectclustering2:   { module_type: "PerfectClustering"
+                         HitProducer: "ssnethitmaker:shrhit50"
                          }
   
   ### gamma catcher
@@ -60,7 +66,7 @@ physics:
  }
 
  #reco: [ rns, ophit, opflash, simpleFlash, opflashfilter ]
- reco: [ rns, perfectclustering ]
+ reco: [ rns, perfectclustering0, perfectclustering1, perfectclustering2 ]
  ana: [ ]
 
  #define the output stream, there could be more than one if using filters 
@@ -72,8 +78,8 @@ physics:
 
  #end_paths is a keyword and contains the paths that do not modify the art::Event, 
  #ie analyzers and output streams.  these all run simultaneously
- end_paths:     [stream1,ana]
- #end_paths:     [ana]
+ #end_paths:     [stream1,ana]
+ end_paths:     [ana]
 }
 
 #block to define where the output goes.  if you defined a filter in the physics
