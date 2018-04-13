@@ -7,6 +7,7 @@ art_make(
 		   	uboone_Geometry		
 			larcore_Geometry_Geometry_service
 			lardata_Utilities
+			larreco_Calorimetry
 			art_Utilities canvas
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}
@@ -21,6 +22,7 @@ art_make(
 			  SignalShapingServiceMicroBooNE_service
                           lardata_Utilities_LArFFT_service
                           larcorealg_Geometry
+			  larreco_Calorimetry
 			  larevt_CalibrationDBI_IOVData
 			  larevt_CalibrationDBI_Providers
 			  lardataobj_RecoBase

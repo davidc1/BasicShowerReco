@@ -182,6 +182,8 @@ void PhotonMerge::produce(art::Event & e)
   if (photon_h->size() == 0)
     std::cout << "no photons" << std::endl;
 
+  _clusterMaker.loadVertex(vtx_h);
+
   // load vertex and project on collection-plane
   auto const vtx = vtx_h->at(0);
   Double_t xyz[3] = {};
@@ -419,6 +421,9 @@ void PhotonMerge::produce(art::Event & e)
       
       float endW   = CMCluster._end_pt._w / _wire2cm;
       float endT   = CMCluster._end_pt._t / _time2cm;// + detp->TriggerOffset();
+
+      if (pl ==2 && fDebug)
+	std::cout << "\t new cluster: Shower Collection plane start wire/tick are @ " << startW << ", " << startT << std::endl;
       
       auto planeid = geo::PlaneID(0,0,pl);
       
@@ -459,6 +464,8 @@ twodimtools::Poly2D PhotonMerge::projectShower(const art::Ptr<recob::Cluster> cl
 
   double sW = clus->StartWire() * _wire2cm;
   double sT = ( clus->StartTick() - detp->TriggerOffset() ) * _time2cm;
+
+  std::cout << "Shower Collection plane start wire/tick are @ " << clus->StartWire() << ", " << clus->StartTick() << std::endl;
   
   double dW = (sW-_vtxW);
   double dT = (sT-_vtxT);

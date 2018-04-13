@@ -44,16 +44,10 @@ linearenergy:
     verbose: true
 }
 
-dqdxmodule:
+dedxmodule:
 {
-    tool_type: dQdxModule
+    tool_type: dEdxModule
     dtrunk: 4.
-}
-
-dedxfromdqdx:
-{
-    tool_type: dEdxfromdQdx
-    use_pitch: true
 }
 
 filtershowers:
