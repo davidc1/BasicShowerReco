@@ -2,12 +2,13 @@
 #define LINEARENERGY_CXX
 
 #include <iomanip>
-
 #include <iostream>
 
 #include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
-
 #include "uboone/BasicShowerReco/ShowerReco3D/Base/Calorimetry.h"
+
+//#include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibService.h"
+//#include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibProvider.h"
 
 /**
    \class ShowerRecoModuleBase

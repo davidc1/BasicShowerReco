@@ -149,7 +149,7 @@ private:
   double _rcmass;
   double _rcangle;
 
-  // Declare member data here.
+  std::string fShrProducer;
 
 };
 
@@ -159,6 +159,7 @@ Pi0Analyzer::Pi0Analyzer(fhicl::ParameterSet const & p)
   EDAnalyzer(p)  // ,
  // More initializers here.
 {
+  fShrProducer = p.get<std::string>("ShrProducer");
   SetTTree();
 }
 
@@ -170,7 +171,7 @@ void Pi0Analyzer::analyze(art::Event const & e)
   _evt = e.event();
 
   // load input showers
-  auto const& shr_h = e.getValidHandle<std::vector<recob::Shower>>("showerreco3d");
+  auto const& shr_h = e.getValidHandle<std::vector<recob::Shower>>(fShrProducer);
   // load input tracks
   //auto const& trk_h = e.getValidHandle<std::vector<recob::Track>>("pandoraCosmic");
   // load input vertices

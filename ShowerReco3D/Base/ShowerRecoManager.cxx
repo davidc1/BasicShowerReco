@@ -62,7 +62,8 @@ namespace showerreco {
       try {
 	_alg_v[n] -> do_reconstruction(proto_shower, result);
       }// if reco succeeds
-      catch (ShowerRecoException e) {
+      //catch (ShowerRecoExeption e) {
+      catch (std::exception e) {
 	result.fPassedReconstruction = false;
 	if (_debug)
 	  std::cout << e.what() << std::endl;
