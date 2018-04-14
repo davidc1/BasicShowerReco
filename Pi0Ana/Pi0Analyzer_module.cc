@@ -426,12 +426,41 @@ void Pi0Analyzer::analyze(art::Event const & e)
     _rcangle = -5;
   }
   else {
+
     _rcmass = pi0candidate.mass;
     _rcangle = pi0candidate.angle;
     _rc_shr1_e = pi0candidate.e1;
     _rc_shr2_e = pi0candidate.e2;
     _rc_shr1_dedx = pi0candidate.dedx1;
     _rc_shr2_dedx = pi0candidate.dedx2;
+
+    auto const& rcshr1 = shr_h->at(pi0candidate.idx1);
+    auto const& rcshr2 = shr_h->at(pi0candidate.idx2);
+
+    _rc_shr1_x = rcshr1.ShowerStart().X();
+    _rc_shr1_y = rcshr1.ShowerStart().Y();
+    _rc_shr1_z = rcshr1.ShowerStart().Z();
+    double momrc1 = rcshr1.Direction().Mag();      
+    _rc_shr1_px = rcshr1.Direction().X() / momrc1;
+    _rc_shr1_py = rcshr1.Direction().Y() / momrc1;
+    _rc_shr1_pz = rcshr1.Direction().Z() / momrc1;
+
+    _rc_shr2_x = rcshr2.ShowerStart().X();
+    _rc_shr2_y = rcshr2.ShowerStart().Y();
+    _rc_shr2_z = rcshr2.ShowerStart().Z();
+    double momrc2 = rcshr2.Direction().Mag();      
+    _rc_shr2_px = rcshr2.Direction().X() / momrc2;
+    _rc_shr2_py = rcshr2.Direction().Y() / momrc2;
+    _rc_shr2_pz = rcshr2.Direction().Z() / momrc2;
+
+    _rcradlen1 = sqrt( ( (_rc_shr1_x - _rc_vtx_x) * (_rc_shr1_x - _rc_vtx_x) ) +
+		       ( (_rc_shr1_y - _rc_vtx_y) * (_rc_shr1_y - _rc_vtx_y) ) +
+		       ( (_rc_shr1_z - _rc_vtx_z) * (_rc_shr1_z - _rc_vtx_z) ) );
+
+    _rcradlen2 = sqrt( ( (_rc_shr2_x - _rc_vtx_x) * (_rc_shr2_x - _rc_vtx_x) ) +
+		       ( (_rc_shr2_y - _rc_vtx_y) * (_rc_shr2_y - _rc_vtx_y) ) +
+		       ( (_rc_shr2_z - _rc_vtx_z) * (_rc_shr2_z - _rc_vtx_z) ) );
+
   }
 
   _pi0_tree->Fill();
