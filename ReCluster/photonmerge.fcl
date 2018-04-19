@@ -9,7 +9,7 @@ PhotonMerge: {
  ShrLen         : 150.
  FracShrQ       : 0.5
  MaxSlopeAngle  : 30.
- Debug          : true
+ Debug          : false
 }
 
 END_PROLOG

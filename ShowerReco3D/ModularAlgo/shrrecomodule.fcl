@@ -23,7 +23,7 @@ filterpfpart:
 angle3dfromvtxqweighted:
 {
     tool_type: Angle3DFromVtxQweighted
-    verbose: true
+    verbose: false
 }
 
 yplanestartpoint3d:
@@ -41,7 +41,7 @@ linearenergy:
     tool_type: LinearEnergy
     recomb: 0.596
     ADC_to_e: 243.0
-    verbose: true
+    verbose: false
 }
 
 dedxmodule:

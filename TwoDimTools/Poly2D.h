@@ -22,6 +22,7 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
+#include <exception>
 
 #include "lardataobj/RecoBase/Hit.h"
 

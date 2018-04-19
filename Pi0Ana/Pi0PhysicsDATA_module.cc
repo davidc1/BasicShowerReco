@@ -20,7 +20,6 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 
 // larsoft data-products
-#include "nusimdata/SimulationBase/MCTruth.h"
 #include "lardataobj/RecoBase/Vertex.h"
 #include "lardataobj/RecoBase/Track.h"
 #include "lardataobj/RecoBase/Shower.h"
@@ -64,26 +63,6 @@ private:
   void SetTTree();
 
   // Declare member data here.
-  TTree* _tree;
-  float _delta_px  = 0;
-  float _delta_py  = 0;
-  float _delta_pz  = 0;
-  float _pi0_px    = 0;
-  float _pi0_py    = 0;
-  float _pi0_pz    = 0;
-  float _proton0mc_px = 0;
-  float _proton0mc_py = 0;
-  float _proton0mc_pz = 0;
-  float _proton1mc_px = 0;
-  float _proton1mc_py = 0;
-  float _proton1mc_pz = 0;
-  float _proton2mc_px = 0;
-  float _proton2mc_py = 0;
-  float _proton2mc_pz = 0;
-  int   _npi0mc;
-  int   _nprotonmc;
-  int   _ndelta;
-
   TTree* _trk_tree;
   float _len, _tmean;
 
@@ -140,8 +119,6 @@ Pi0PhysicsDATA::Pi0PhysicsDATA(fhicl::ParameterSet const & p)
 void Pi0PhysicsDATA::analyze(art::Event const & e)
 {
 
-  auto const& mct_h = e.getValidHandle<std::vector<simb::MCTruth> >("generator");
-
   // load input showers
   auto const& shr_h = e.getValidHandle<std::vector<recob::Shower>>(fShrProducer);
   // load input tracks
@@ -151,51 +128,6 @@ void Pi0PhysicsDATA::analyze(art::Event const & e)
 
   // grab calorimetry objects associated to tracks
   art::FindMany<anab::Calorimetry> trk_calo_assn_v(trk_h, e, fCaloProducer);
-
-  auto mct = mct_h->at(0);
-  size_t npart = mct.NParticles();
-
-  _npi0mc    = 0;
-  _nprotonmc = 0;
-  _ndelta  = 0;
-
-  for (size_t i=0; i < npart; i++){
-    auto const& part = mct.GetParticle(i);
-    if ( (part.PdgCode() == 111) and (part.StatusCode() == 1) ){
-      _npi0mc += 1;
-      _pi0_px = part.Trajectory().Px(0);
-      _pi0_py = part.Trajectory().Py(0);
-      _pi0_pz = part.Trajectory().Pz(0);
-    }
-    if ( (part.PdgCode() == 2212) and (part.StatusCode() == 1) ){
-      if (_nprotonmc == 0){
-	_proton0mc_px = part.Trajectory().Px(0);
-	_proton0mc_py = part.Trajectory().Py(0);
-	_proton0mc_pz = part.Trajectory().Pz(0);
-      }
-      if (_nprotonmc == 1){
-	_proton1mc_px = part.Trajectory().Px(0);
-	_proton1mc_py = part.Trajectory().Py(0);
-	_proton1mc_pz = part.Trajectory().Pz(0);
-      }
-      if (_nprotonmc == 2){
-	_proton2mc_px = part.Trajectory().Px(0);
-	_proton2mc_py = part.Trajectory().Py(0);
-	_proton2mc_pz = part.Trajectory().Pz(0);
-      }
-      _nprotonmc += 1;
-    }
-    if ( part.PdgCode() == 2214){
-      _ndelta += 1;
-      _delta_px = part.Trajectory().Px(0);
-      _delta_py = part.Trajectory().Py(0);
-      _delta_pz = part.Trajectory().Pz(0);
-    }
-  }
-
-
-  if (_npi0mc==1)
-    _tree->Fill();
 
   // reconstruction section
   // find tracks near vertex
@@ -263,6 +195,9 @@ void Pi0PhysicsDATA::analyze(art::Event const & e)
       longesttrklen = trk.Length();
     }
 
+    // mc data scale factor
+    float f = 200./243.;
+
     if (dvtx < 2.0) {
 
       // fill calorimetry info for this track
@@ -291,7 +226,7 @@ void Pi0PhysicsDATA::analyze(art::Event const & e)
 
 	  _trk_tree->Fill();
 	  
-	  if( (_tmean < 450+600*exp(-_len/40.)) && (_tmean > 380+280*exp(-_len/30.)) ) {
+	  if( (_tmean < f * (450+600*exp(-_len/40.)) ) && (_tmean > f * (380+280*exp(-_len/30.)) ) ) {
 
 	    if (_nproton == 0){
 	      _proton0_len = _len;
@@ -348,26 +283,6 @@ void Pi0PhysicsDATA::endJob()
 void Pi0PhysicsDATA::SetTTree() {
 
   art::ServiceHandle<art::TFileService> tfs;
-
-  _tree = tfs->make<TTree>("_tree","TTree");
-  _tree->Branch("_delta_px",&_delta_px,"delta_px/F");
-  _tree->Branch("_delta_py",&_delta_py,"delta_py/F");
-  _tree->Branch("_delta_pz",&_delta_pz,"delta_pz/F");
-  _tree->Branch("_pi0_px",&_pi0_px,"pi0_px/F");
-  _tree->Branch("_pi0_py",&_pi0_py,"pi0_py/F");
-  _tree->Branch("_pi0_pz",&_pi0_pz,"pi0_pz/F");
-  _tree->Branch("_proton0mc_px",&_proton0mc_px,"proton0mc_px/F");
-  _tree->Branch("_proton0mc_py",&_proton0mc_py,"proton0mc_py/F");
-  _tree->Branch("_proton0mc_pz",&_proton0mc_pz,"proton0mc_pz/F");
-  _tree->Branch("_proton1mc_px",&_proton1mc_px,"proton1mc_px/F");
-  _tree->Branch("_proton1mc_py",&_proton1mc_py,"proton1mc_py/F");
-  _tree->Branch("_proton1mc_pz",&_proton1mc_pz,"proton1mc_pz/F");
-  _tree->Branch("_proton2mc_px",&_proton2mc_px,"proton2mc_px/F");
-  _tree->Branch("_proton2mc_py",&_proton2mc_py,"proton2mc_py/F");
-  _tree->Branch("_proton2mc_pz",&_proton2mc_pz,"proton2mc_pz/F");
-  _tree->Branch("_npi0mc",&_npi0mc,"npi0mc/I");
-  _tree->Branch("_nprotonmc",&_nprotonmc,"nprotonmc/I");
-  _tree->Branch("_ndelta",&_ndelta,"ndelta/I");
 
   _trk_tree = tfs->make<TTree>("_trk_tree","Track Tree");
   _trk_tree->Branch("_len",&_len,"len/F");

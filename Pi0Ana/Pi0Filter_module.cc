@@ -85,6 +85,8 @@ private:
   float _en2;
   float _anglediff;
 
+  std::string fShrProducer;
+
 };
 
 
@@ -92,7 +94,7 @@ Pi0Filter::Pi0Filter(fhicl::ParameterSet const & p)
 // :
 // Initialize member data here.
 {
-  
+  fShrProducer = p.get<std::string>("ShrProducer");  
 }
 
 bool Pi0Filter::filter(art::Event & e)
@@ -103,7 +105,7 @@ bool Pi0Filter::filter(art::Event & e)
   _evt = e.event();
 
   // load input showers
-  auto const& shr_h = e.getValidHandle<std::vector<recob::Shower>>("showerreco3d");
+  auto const& shr_h = e.getValidHandle<std::vector<recob::Shower>>(fShrProducer);
   // load input tracks
   auto const& trk_h = e.getValidHandle<std::vector<recob::Track>>("pandoraCosmic");
   // load input vertices
@@ -186,8 +188,7 @@ bool Pi0Filter::filter(art::Event & e)
 
   _tree->Fill();
 
-  if (_trkangle > 2.9) return false;
-  if (_e2 < 35.) return false;
+  if (pi0candidate.mass < 0) return false;
   
   return true;
 }

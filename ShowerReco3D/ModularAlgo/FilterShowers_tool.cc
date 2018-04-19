@@ -156,15 +156,12 @@ void FilterShowers::do_reconstruction(const ::protoshower::ProtoShower & proto_s
   }
   
   if (clusterhitangle > _anglecut) {
-    resultShower.fTotalEnergy_v[2] = 0.0;
-    /*
   //if ( (clusterhitangle > (resultShower.fOpeningAngle * 180 / 3.14)) and (clusterhitangle > _anglecut) ) {
     std::stringstream ss;
     //ss << "Fail @ algo " << this->name() << " Hit angle w.r.t. 3D dir on Y plane is too large : " << clusterhitangle;
     ss << "aaa";
-    throw std::exception();
-    //throw ShowerRecoException(ss.str());
-    */
+    //throw std::exception();
+    throw ShowerRecoException(ss.str());
   }
 }
 

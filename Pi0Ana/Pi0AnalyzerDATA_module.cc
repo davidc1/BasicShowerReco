@@ -82,6 +82,7 @@ private:
 
   // pi0-by-pi0 ttree
   TTree* _pi0_tree;
+  TTree* _rcshr_tree;
 
   // variables common to both ttrees
   int _run, _sub, _evt;
@@ -165,7 +166,29 @@ void Pi0AnalyzerDATA::analyze(art::Event const & e)
 
   // Store MC and RC showers in vectors
   _n_reco_showers = shr_h->size();
-  std::vector<recob::Shower> reco_shower_v;
+
+  for (size_t rcidx = 0; rcidx < shr_h->size(); rcidx++) {
+
+    auto const& rcshr = shr_h->at(rcidx);
+    
+    _rc_shr_e = rcshr.Energy()[2];
+    _rc_shr_x = rcshr.ShowerStart().X();
+    _rc_shr_y = rcshr.ShowerStart().Y();
+    _rc_shr_z = rcshr.ShowerStart().Z();
+    _rc_shr_dedx = rcshr.dEdx()[2];
+
+    double mom = rcshr.Direction().Mag();    
+    _rc_shr_px = rcshr.Direction().X() / mom;
+    _rc_shr_py = rcshr.Direction().Y() / mom;
+    _rc_shr_pz = rcshr.Direction().Z() / mom;
+    
+    _rcradlen = sqrt( ( (_rc_shr_x - _rc_vtx_x) * (_rc_shr_x - _rc_vtx_x) ) +
+		      ( (_rc_shr_y - _rc_vtx_y) * (_rc_shr_y - _rc_vtx_y) ) +
+		      ( (_rc_shr_z - _rc_vtx_z) * (_rc_shr_z - _rc_vtx_z) ) );
+
+    _rcshr_tree->Fill();
+
+  }
 
   // apply pi0 selection to event showers
   auto pi0candidate = _pi0selection.ApplySelection(shr_h);
@@ -331,6 +354,28 @@ void Pi0AnalyzerDATA::SetTTree() {
 
   art::ServiceHandle<art::TFileService> tfs;
 
+  // MC shower-by-shower TTree
+  _rcshr_tree = tfs->make<TTree>("_rcshr_tree","Pi0 Tree TTree");
+
+  _rcshr_tree->Branch("_run",&_run,"run/I");
+  _rcshr_tree->Branch("_sub",&_sub,"sub/I");
+  _rcshr_tree->Branch("_evt",&_evt,"evt/I");
+
+  _rcshr_tree->Branch("_n_reco_showers",&_n_reco_showers,"n_reco_showers/I");
+  // vertex info
+  _rcshr_tree->Branch("_rc_vtx_x",&_rc_vtx_x,"rc_vtx_x/D");
+  _rcshr_tree->Branch("_rc_vtx_y",&_rc_vtx_y,"rc_vtx_y/D");
+  _rcshr_tree->Branch("_rc_vtx_z",&_rc_vtx_z,"rc_vtx_z/D");
+  // reco shower info [rec] 
+  _rcshr_tree->Branch("_rc_shr_x",&_rc_shr_x,"rc_shr_x/D");
+  _rcshr_tree->Branch("_rc_shr_y",&_rc_shr_y,"rc_shr_y/D");
+  _rcshr_tree->Branch("_rc_shr_z",&_rc_shr_z,"rc_shr_z/D");
+  _rcshr_tree->Branch("_rc_shr_e",&_rc_shr_e,"rc_shr_e/D");
+  _rcshr_tree->Branch("_rc_shr_dedx",&_rc_shr_dedx,"rc_shr_dedx/D");
+  _rcshr_tree->Branch("_rc_shr_px",&_rc_shr_px,"rc_shr_px/D");
+  _rcshr_tree->Branch("_rc_shr_py",&_rc_shr_py,"rc_shr_py/D");
+  _rcshr_tree->Branch("_rc_shr_pz",&_rc_shr_pz,"rc_shr_pz/D");
+  _rcshr_tree->Branch("_rcradlen",&_rcradlen,"rcradlen/D");
 
   
   // pi0 ttree

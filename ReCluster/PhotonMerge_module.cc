@@ -214,6 +214,7 @@ void PhotonMerge::produce(art::Event & e)
 
     // get polygon   
     twodimtools::Poly2D clusPoly(photon_hit_v);
+    if (clusPoly.Size() == 0) continue;
 
     for (auto hitptr : photon_hit_v){
       hit_w_v.push_back( hitptr->WireID().Wire * _wire2cm );
@@ -225,7 +226,6 @@ void PhotonMerge::produce(art::Event & e)
     _photon_lin_map [ p ] = clusLin;
     _photon_poly_map[ p ] = clusPoly;
 
-    std::cout << "cluster linearity = " << clusLin.linearity() << " with poly area : " << clusPoly.Area() << std::endl;
   }// for all clusters
 
   // get full list of all hits associated to all showers on the collection plane
@@ -465,8 +465,6 @@ twodimtools::Poly2D PhotonMerge::projectShower(const art::Ptr<recob::Cluster> cl
   double sW = clus->StartWire() * _wire2cm;
   double sT = ( clus->StartTick() - detp->TriggerOffset() ) * _time2cm;
 
-  std::cout << "Shower Collection plane start wire/tick are @ " << clus->StartWire() << ", " << clus->StartTick() << std::endl;
-  
   double dW = (sW-_vtxW);
   double dT = (sT-_vtxT);
   

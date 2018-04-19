@@ -643,7 +643,16 @@ namespace twodimtools {
     }
     
     //Untangle Polygon
+    for (auto const& polyhit : candidate_polygon) {
+      if (polyhit >= ordered_hits.size()) {
+	std::cout << "out of range! quit..." << std::endl;
+	return;
+      }
+    }
+    if ( (ordered_hits.size() < 2) || (candidate_polygon.size() < 2) )
+      return;
     candidate_polygon = OrderPolygonEdges( ordered_hits, candidate_polygon);
+
     
     edgehits.clear();
     for ( unsigned int i = 0; i < (candidate_polygon.size() - 1); i++) {
