@@ -45,6 +45,7 @@ art_make(
 			  ${MF_UTILITIES}
 			  ${FHICLCPP}
 			  ${CETLIB}
+			  ${ROOT_GEOM}
 			  ${Boost_FILESYSTEM_LIBRARY}
 			  ${Boost_SYSTEM_LIBRARY}
                           ${CLHEP}
