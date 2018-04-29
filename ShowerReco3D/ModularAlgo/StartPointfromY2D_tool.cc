@@ -80,6 +80,24 @@ namespace showerreco {
     
     if (pl != 2) continue;
     
+    // 2D start cluster point on this plane
+    auto const& start = clus._start;
+    // 3D vertex coordinates
+    auto const& dir3D   = resultShower.fDCosStart;
+    
+    // Y coordinate of start point obtained by connecting
+    // vtx to X/Z start point with a 3D direction given
+    // by the reconstructed 3D direction
+    double Ydir = dir3D.Y();
+    double Yvtx = vtx.Y();
+    double Xvtx = vtx.X();
+    double Zvtx = vtx.Z();
+    double Xs   = start.t;
+    double Zs   = start.w;
+    
+    double startY = Yvtx + sqrt(  ( (Ydir*Ydir)/(1-Ydir*Ydir) ) * ( (Xs-Xvtx)*(Xs-Xvtx) + (Zs-Zvtx)*(Zs-Zvtx) ) );
+
+    /*
     // project vertex onto this plane
     //auto const& vtx2D = util::PxPoint(pl,0,0);//geomH->Get2DPointProjection(vtx,pl);
     auto const* geom = ::lar::providerFrom<geo::Geometry>();
@@ -87,7 +105,7 @@ namespace showerreco {
     auto time = vtx[0];
     util::PxPoint vtx2D(pl,wire,time);
     
-    auto const& start = clus._start;
+
     
     // 2d distance on this plane
     double d2D = sqrt( (start.w - vtx2D.w) * (start.w - vtx2D.w) + (start.t - vtx2D.t) * (start.t - vtx2D.t) );
@@ -99,8 +117,12 @@ namespace showerreco {
     
     // now move a distance d3D away from 3D vertex to get 3D start point
     auto strt3D = vtx + (d3D * dir3D);
-    
+
     resultShower.fXYZStart = { strt3D[0], strt3D[1], strt3D[2]} ;
+
+    */
+    
+    resultShower.fXYZStart = { start.t, startY, start.w} ;
     
     pl0 = pl;
     strtpt0 = start;

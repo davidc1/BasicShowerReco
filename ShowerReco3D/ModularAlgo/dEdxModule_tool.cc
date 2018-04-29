@@ -4,16 +4,13 @@
 #include <iostream>
 #include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 
+#include "TTree.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+
 /**
    \class dedxModule : ShowerRecoModuleBase
    This is meant to compute the 2D dedx along the start of the shower.
 */
-
-#include "math.h"
-#include <algorithm>
-#include <functional>
-
-#include "art/Framework/Services/Optional/TFileService.h"
 
 namespace showerreco {
 
@@ -35,13 +32,9 @@ namespace showerreco {
     
   protected:
 
-    void ResetTTree();
-    
-    double _timetick; // sampling size in usec
-    
     // distance along which to calculate dEdx
     double _dtrunk;
-    
+
     // debugging tree
     TTree* _dedx_tree;
     double _dedx0, _dedx1, _dedx2;
@@ -51,10 +44,6 @@ namespace showerreco {
     double _pitch0, _pitch1, _pitch2;
     int    _nhits0, _nhits1, _nhits2;
     int    _ntot0, _ntot1, _ntot2;
-
-    // position-dependent response map
-    std::vector< std::vector< std::vector< double > > >_responseMap;
-    double _responseStep;
     
   };
   
@@ -109,7 +98,7 @@ namespace showerreco {
     //if the module does not have 2D cluster info -> fail the reconstruction
     if (!proto_shower.hasCluster2D()){
       std::stringstream ss;
-      ss << "Fail @ algo " << this->name() << " due to missing 2D cluster";
+      ss << "aaa";
       throw ShowerRecoException(ss.str());
     }
     
@@ -122,8 +111,6 @@ namespace showerreco {
 
     auto const& geomH = ::util::GeometryUtilities();
 
-    ResetTTree();
-    
     // loop through planes
     for (size_t n = 0; n < clusters.size(); n++) {
       
@@ -134,26 +121,29 @@ namespace showerreco {
       
       // get the plane associated with this cluster
       auto const& pl = clus._plane;
-      
+
       // get start point on pllane
       auto& start2D = clus._start;
       
       std::cout << std::endl << "PLANE : " << pl << std::endl;
 
-      art::ServiceHandle<geo::Geometry> geom;
+      auto const* geom = ::lar::providerFrom<geo::Geometry>();
       const geo::WireGeo& wire = geom->TPC().Plane(pl).MiddleWire();
-
       TVector3 wireunitperp = wire.Direction();//(wire.GetStart()-wire.GetEnd()).Unit();
       // rotate by 90 degrees around x
       TVector3 wireunit = {wireunitperp[0], -wireunitperp[2], wireunitperp[1]}; 
       std::cout << "wire unit on plane : " << pl << " is " << wireunit[0] << ", " << wireunit[1] << ", " << wireunit[2] << std::endl;
-      double cosPlane = cos(wireunit.Angle(dir3D));
+      double cosPlane = fabs(cos(wireunit.Angle(dir3D)));
 
       std::vector<double> dedx_v;
-      double dedx;
+      std::cout << "dtrunk is " << _dtrunk << std::endl;
+      dedx_v.resize(3 * _dtrunk);
+      for (size_t jj=0; jj < dedx_v.size(); jj++) 
+	dedx_v.at(jj) = 0.;
+      std::cout << "dedx_v size is " << dedx_v.size() << std::endl;
+      //double dedx;
       int nhits = 0;
-      double pitch = 0.3 / fabs(cosPlane);
-      dedx_v = std::vector<double>(3 * _dtrunk, 0.);      
+      double pitch = 0.3 / cosPlane;
       std::cout << " dEdx Module : pitch = " << pitch << " from function" <<  std::endl;      
 
       // loop through hits and find those within some radial distance of the start point
@@ -161,37 +151,47 @@ namespace showerreco {
       for (auto const &h : hits) {
 	
 	double d2D = sqrt( pow(h.w - start2D.w, 2) + pow(h.t - start2D.t, 2) );
-	
 	double d3D = d2D / cosPlane;
-	
-	if (d3D >= _dtrunk) continue;
-	
-	double qcorr = h.charge;
+	size_t d3Delement = (size_t)(d3D * 3);
+	double dEdx = h.charge / pitch;
 
-	dedx_v[ d3D * 3 ] += qcorr;
+	if (d3Delement >= dedx_v.size()) continue;
+
+	std::cout << "\t d2D : " << d2D << "\t d3D : " << d3D << " \t d3D int : " << d3Delement 
+		  << "\t dEdx : " << dEdx
+		  << std::endl;
+
+	dedx_v.at( d3Delement ) += dEdx;
 	nhits += 1;
-	
 	
       }// loop over all hits
 
-      std::vector<double> _dedx_nonzero_v;
-      for (auto const& dedx : dedx_v) {
-	if (dedx != 0) {
-	  _dedx_nonzero_v.push_back(dedx); 
-	  std::cout << "dedx Module : \t dedx = " << dedx / pitch << std::endl;
+      std::vector<double> dedx_empty_v;
+      double dedx;
+
+      for (size_t n=0; n < dedx_v.size(); n++) {
+	if (dedx_v.at(n) != 0){
+	  std::cout << "\t adding an element..." << std::endl;
+	  dedx_empty_v.push_back(dedx_v.at(n));
+	  std::cout << "\t added..." << std::endl;
 	}
       }// for all dedx values
-
-      if (_dedx_nonzero_v.size() == 0)
+      std::cout << "done erasing" << std::endl;
+      
+      std::cout << "number of dedx points :  " << dedx_empty_v.size() << std::endl;
+      
+      if (dedx_empty_v.size() == 0)
 	dedx = 0.;
 
       else {
-	std::nth_element(_dedx_nonzero_v.begin(), _dedx_nonzero_v.end(), _dedx_nonzero_v.end() );
-	dedx = _dedx_nonzero_v[ _dedx_nonzero_v.size()/2.] / pitch;
+	std::sort( dedx_empty_v.begin(), dedx_empty_v.end() );
+	//std::nth_element(dedx_empty_v.begin(), dedx_empty_v.end(), dedx_empty_v.end() );
+	dedx = dedx_empty_v[dedx_empty_v.size()/2.];
       }
 
+      for (auto const& aa : dedx_empty_v)
+	std::cout << "dedx Module : \t dedx = " << aa << std::endl;
       std::cout << "dedx Module : Final dEdx = " << dedx << std::endl;
-
 
       if (pl == 0) {
 	_pitch0 = pitch;
@@ -215,42 +215,16 @@ namespace showerreco {
 	_ntot2 = hits.size();
       }
 
-      resultShower.fBestdEdxPlane = pl;
-      resultShower.fdEdx_v[pl] = dedx;
-      if (pl == 2)
+      resultShower.fdEdx_v.at(pl) = dedx;
+      if (pl == 2) {
+	resultShower.fBestdEdxPlane = pl;
 	resultShower.fBestdEdx   = dedx;
+      }
       
     }// for all clusters (planes)
 
     _dedx_tree->Fill();
     
-    return;
-  }
-
-  void dEdxModule::ResetTTree() {
-
-    _dedx0 = 0;
-    _dedx1 = 0;
-    _dedx2 = 0;
-    _dedx0_v.clear();
-    _dedx1_v.clear();
-    _dedx2_v.clear();
-    _dist0_v.clear();
-    _dist1_v.clear();
-    _dist2_v.clear();
-    _pl0 = 0;
-    _pl1 = 0;
-    _pl2 = 0;
-    _pitch0 = 0;
-    _pitch1 = 0;
-    _pitch2 = 0;
-    _nhits0 = 0;
-    _nhits1 = 0;
-    _nhits2 = 0;
-    _ntot0 = 0;
-    _ntot1 = 0;
-    _ntot2 = 0;
-
     return;
   }
 

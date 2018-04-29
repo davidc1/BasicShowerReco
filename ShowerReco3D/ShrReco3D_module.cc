@@ -135,9 +135,16 @@ ShrReco3D::ShrReco3D(fhicl::ParameterSet const & p)
   _manager->Initialize();
 
   auto recomb = p.get<double>("recombination");
-  auto adctoe = p.get<double>("ADCtoE");
-  auto calib = adctoe * 0.0000236 / recomb;
-  std::cout << "Calibration constant : " << calib << std::endl;
+  auto adctoe = p.get<std::vector<double> >("ADCtoE");
+  if (adctoe.size() != 3) {
+    std::cout << "ERROR provided !3 planes for calorimetry" << std::endl;
+  }
+
+  std::vector<double> calib = {adctoe[0] * 0.0000236 / recomb,
+			       adctoe[1] * 0.0000236 / recomb,
+			       adctoe[2] * 0.0000236 / recomb };
+
+  //std::cout << "Calibration constant : " << calib << std::endl;
   _psalg->setCalorimetry(calib);
 
 }

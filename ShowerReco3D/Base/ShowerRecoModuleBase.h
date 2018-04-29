@@ -23,8 +23,6 @@
 #include "lardata/Utilities/GeometryUtilities.h"
 
 
-#include "TTree.h"
-
 // art TOOLS
 #include "art/Utilities/ToolMacros.h"
 #include "art/Utilities/make_tool.h"
@@ -69,11 +67,6 @@ public:
     void setVerbosity(bool on) { _verbose = on; }
 
     /**
-     * @brief Function to return the algorithm's tree
-     */
-    TTree* GetTree() { return _tree; }
-
-    /**
      * @brief Function to initialize the algorithm (such as setting up tree)
      */
     virtual void initialize() {};
@@ -92,8 +85,6 @@ protected:
     std::string _name;
 
     bool _verbose;
-
-    TTree* _tree;
 
 };
 
