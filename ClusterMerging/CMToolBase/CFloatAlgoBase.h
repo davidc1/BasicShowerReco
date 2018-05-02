@@ -1,14 +1,14 @@
 /**
  * \file CFloatAlgoBase.h
  *
- * \ingroup CMTool
+ * \ingroup Clusmtool
  * 
  * \brief Class def header for a class CFloatAlgoBase
  *
  * @author kazuhiro
  */
 
-/** \addtogroup CMTool
+/** \addtogroup Clusmtool
 
     @{*/
 #ifndef RECOTOOL_CFLOATALGOBASE_H
@@ -16,7 +16,7 @@
 
 #include "CMAlgoBase.h"
 
-namespace cmtool {
+namespace clusmtool {
 
   /**
      \class CFloatAlgoBase

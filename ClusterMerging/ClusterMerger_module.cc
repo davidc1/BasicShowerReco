@@ -67,7 +67,7 @@ private:
   ::cluster::ClusterMaker* _CMaker;
   
   // cluster helper
-  ::cmtool::CMergeHelper* _merge_helper;
+  ::clusmtool::CMergeHelper* _merge_helper;
 
   std::string fClusterProducer, fVertexProducer;
 
@@ -86,14 +86,14 @@ ClusterMerger::ClusterMerger(fhicl::ParameterSet const & pset)
 // Initialize member data here.
 {
 
-  _merge_helper = new ::cmtool::CMergeHelper();
+  _merge_helper = new ::clusmtool::CMergeHelper();
 
   _merge_helper->GetManager().Reset();
-  _merge_helper->GetManager().DebugMode(cmtool::CMManagerBase::kPerIteration);
+  _merge_helper->GetManager().DebugMode(clusmtool::CMManagerBase::kPerIteration);
   _merge_helper->GetManager().MergeTillConverge(false);
 
   //const fhicl::ParameterSet& priorityTool = pset.get<fhicl::ParameterSet>("PriorityTool");
-  //_merge_helper->GetManager().AddPriorityAlgo(art::make_tool<cmtool::CPriorityAlgoBase>(priorityTool));
+  //_merge_helper->GetManager().AddPriorityAlgo(art::make_tool<clusmtool::CPriorityAlgoBase>(priorityTool));
   
   _CMaker = new ::cluster::ClusterMaker();
   
@@ -108,9 +108,14 @@ ClusterMerger::ClusterMerger(fhicl::ParameterSet const & pset)
 
   // grab algorithms for merging
   const fhicl::ParameterSet& mergeTools = pset.get<fhicl::ParameterSet>("MergeTools");
+  std::cout << "DD got parameter set. start loop..." << std::endl;
   for (const std::string& mergeTool : mergeTools.get_pset_names()) {
+    std::cout << "DD \t in loop..." << std::endl;
     const fhicl::ParameterSet& merge_pset = mergeTools.get<fhicl::ParameterSet>(mergeTool);
-    _merge_helper->GetManager().AddMergeAlgo(art::make_tool<cmtool::CBoolAlgoBase>(merge_pset));
+    std::cout << "DD \t add merge algo..." << std::endl;
+    //_merge_helper->GetManager().AddMergeAlgo(merge_pset);
+    _merge_helper->GetManager().AddMergeAlgo( art::make_tool<clusmtool::CBoolAlgoBase>(merge_pset) );
+    std::cout << "DD \t done adding algo" << std::endl;
   }// for all algorithms to be added
 
   _merge_helper->GetManager().ReportAlgoChain();

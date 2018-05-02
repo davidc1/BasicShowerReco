@@ -1,14 +1,14 @@
 /**
  * \file CMatchBookKeeper.h
  *
- * \ingroup CMTool
+ * \ingroup Clusmtool
  * 
  * \brief Class def header for a class CMatchBookKeeper
  *
  * @author kazuhiro
  */
 
-/** \addtogroup CMTool
+/** \addtogroup Clusmtool
 
     @{*/
 #ifndef RECOTOOL_CMATCHBOOKKEEPER_H
@@ -19,7 +19,7 @@
 #include <map>
 #include "CMTException.h"
 
-namespace cmtool {
+namespace clusmtool {
   /**
      \class CMatchBookKeeper
      User defined class CMatchBookKeeper ... these comments are used to generate

@@ -1,20 +1,27 @@
 // base class
+#include <iostream>
 #include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CFloatAlgoBase.h"
 
-
+#include "TTree.h"
+#include "art/Utilities/ToolMacros.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "larcore/Geometry/Geometry.h"
 
 namespace clusmtool {
 
 
-  class CFAlgoIoU : public CFloatAlgoBase {
+  class CFAlgoTimeOverlap : public CFloatAlgoBase {
     
   public:
     
     /// Default constructor
-    explicit CFAlgoIoU(const fhicl::ParameterSet& pset);
+    explicit CFAlgoTimeOverlap(const fhicl::ParameterSet& pset);
     
     /// Default destructor
-    ~CFAlgoIoU(){};
+    ~CFAlgoTimeOverlap(){};
 
     /**This algorithm calculates the difference between start and end times for merged clusters,
 		and compares across planes to form matches. 
@@ -30,50 +37,86 @@ namespace clusmtool {
     void getMinMaxTime(const cluster::Cluster* cluster, double& min, double& max);
 
     void configure(const fhicl::ParameterSet& pset);
+
+    /**
+       Is a hit matched on the other plane?
+     */
+    int Matched(const float& time, const std::vector<cluster::pt>& otherhits);
     
-    float _iou_min;
+    float _timetolerance;
+
+    /*
+    TTree* _match_tree;
+    int _induction; // which induction plane are we matching to?
+    double _compat; // compatibility score
+    */
+
   };
   
   
   //-------------------------------------------------------
-  CFAlgoIoU::CFAlgoIoU(const fhicl::ParameterSet& pset) 
+  CFAlgoTimeOverlap::CFAlgoTimeOverlap(const fhicl::ParameterSet& pset) 
   //-------------------------------------------------------
   {
-    _name = "CFAlgoIoU";
+    _name = "CFAlgoTimeOverlap";
     configure(pset);
   }
 
   //--------------------------------------------------------
-  void CFAlgoIoU::configure(const fhicl::ParameterSet& pset)
+  void CFAlgoTimeOverlap::configure(const fhicl::ParameterSet& pset)
   //--------------------------------------------------------
   {
-    _iou_min = pset.get<float>("iou_min");
-    _verbose = pset.get<bool> ("verbose",false);
+    _timetolerance = pset.get<float>("timetolerance");
+    _verbose       = pset.get<bool> ("verbose",false);
+
+    std::cout << "TTTTTTT configuring" << std::endl;
+
+    /*
+    art::ServiceHandle<art::TFileService> tfs;
+    _match_tree = tfs->make<TTree>("match_tree","Match TTree");
+    _match_tree->Branch("_induction",&_induction,"induction/I");
+    _match_tree->Branch("_compat"   ,&_compat   ,"compat/D"   );
+    */
+
     return;
   }
 
   //-----------------------------
-  void CFAlgoIoU::Reset()
+  void CFAlgoTimeOverlap::Reset()
   //-----------------------------
   {
 
   }
 
   //----------------------------------------------------------------------------------------------
-  float CFAlgoIoU::Float(const std::vector<const cluster::Cluster*> &clusters)
+  float CFAlgoTimeOverlap::Float(const std::vector<const cluster::Cluster*> &clusters)
   //----------------------------------------------------------------------------------------------
   {
 
 
-    std::cout << "Running algo " << _name << std::endl;
+    std::cout << " BLABLABLA" << std::endl;
 
     // if 3 clusters -> skip
     if (clusters.size() != 2) return -1;
 
-    // require collection plane
-    if ( (clusters[0]->_plane != 2) && (clusters[1]->_plane != 2) ) return -1;
-
-    if ( (clusters[0]->size() < 10) || (clusters[1]->size() < 10) ) return -1;
+    // identify collection plane
+    // if no collection-plane cluster -> ignore match
+    size_t collectionPlane = 0;
+    size_t inductionPlane  = 0;
+    bool   collectionPresent = false;
+    if (clusters[0]->_plane == 2) {
+      collectionPresent = true;
+      collectionPlane   = 0;
+      inductionPlane    = 1;
+    }
+    if (clusters[1]->_plane == 2) {
+      collectionPresent = true;
+      collectionPlane   = 1;
+      inductionPlane    = 0;
+    }
+    
+    if (collectionPresent == false)
+      return -1;
 
     double t_min_abs = 9600; // smallest start point of the 3
     double t_max_abs = 0;    // largest start point of the three
@@ -143,33 +186,47 @@ namespace clusmtool {
     }// for all clusters
     
     if (overlap == false) return -1;
+
+    // if the clusters overlap to some degree, check compatibility on hit-by-hit level
+    double compatibility = 0.;
+    auto const& hitsCollection = clusters[collectionPlane]->GetHits();
+    auto const& hitsInduction  = clusters[inductionPlane ]->GetHits();
     
-    if (_verbose) {
-      std::cout << "T common interval : [" <<  t_min_common << ", " << t_max_common << " ]"<< std::endl
-		<< "T total  interval : [" <<  t_min_abs    << ", " << t_max_abs    << " ]"<< std::endl;
-    }	
+    for (auto const& hitC : hitsCollection) 
+      compatibility += Matched(hitC._t,hitsInduction);
+
+    compatibility /= (double)(hitsCollection.size());
+
+    //_induction = clusters[inductionPlane]->_plane;
+    //_compat    = compatibility;
+    //std::cout << "Induction @ plane " << _induction << " with compatibility = " << _compat << std::endl;
+
+    //_match_tree->Fill();
     
-    // calculate overlap
-    double iou = (t_max_common - t_min_common) / (t_max_abs - t_min_abs);
-
-    if (_verbose)
-      std::cout << "Cluster IoU : " << iou
-		<< std::endl << std::endl;
-
-    if (iou < _iou_min) return -1;
-
-    return iou;
+    return compatibility;
   }
   
   
   //------------------------------
-  void CFAlgoIoU::Report()
+  void CFAlgoTimeOverlap::Report()
   //------------------------------
   {
   }
   
+
+  int CFAlgoTimeOverlap::Matched(const float& time, const std::vector<cluster::pt>& otherhits) {
+
+    for (auto const& hit : otherhits) {
+
+      if ( fabs(hit._t - time) < _timetolerance) 
+	return 1;
+      
+    }// for all hits in other cluster
+
+    return 0;
+  }
   
-  void CFAlgoIoU::getMinMaxTime(const cluster::Cluster* cluster, double& min, double& max)
+  void CFAlgoTimeOverlap::getMinMaxTime(const cluster::Cluster* cluster, double& min, double& max)
   {
     
     auto const& hits = cluster->GetHits();
@@ -187,5 +244,6 @@ namespace clusmtool {
     return;
   }
   
-  DEFINE_ART_CLASS_TOOL(CFAlgoIoU)    
+  DEFINE_ART_CLASS_TOOL(CFAlgoTimeOverlap)    
 }
+

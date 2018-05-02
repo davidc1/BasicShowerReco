@@ -1,13 +1,13 @@
 /**
  * \file CPriorityAlgoBase.h *
- * \ingroup CMTool
+ * \ingroup Clusmtool
  * 
  * \brief Class def header for a class CPriorityAlgoBase
  *
  * @author kazuhiro
  */
 
-/** \addtogroup CMTool
+/** \addtogroup Clusmtool
 
     @{*/
 #ifndef RECOTOOL_CPRIORITYALGOBASE_H
@@ -15,7 +15,7 @@
 
 #include "CMAlgoBase.h"
 
-namespace cmtool {
+namespace clusmtool {
 
   /**
      \class CPriorityAlgoBase

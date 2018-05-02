@@ -1,14 +1,14 @@
 /**
  * \file CMergeHelper.h
  *
- * \ingroup CMToolApp
+ * \ingroup ClusmtoolApp
  * 
  * \brief Class def header for a class CMergeHelper
  *
  * @author kazuhiro
  */
 
-/** \addtogroup CMToolApp
+/** \addtogroup ClusmtoolApp
 
     @{*/
 #ifndef CMERGEHELPER_H
@@ -18,7 +18,7 @@
 #include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CMergeManager.h"
 #include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/ClusterMaker.h"
 
-namespace cmtool {
+namespace clusmtool {
   /**
      \class CMergeHelper
      User defined class CMergeHelper ... these comments are used to generate
@@ -49,8 +49,8 @@ namespace cmtool {
 
   protected:
 
-    ::cmtool::CMergeManager _mgr;
-    //std::vector< ::cmtool::CMergeManager> _mgr_v;
+    ::clusmtool::CMergeManager _mgr;
+    //std::vector< ::clusmtool::CMergeManager> _mgr_v;
 
     CMergeBookKeeper _bk;
     

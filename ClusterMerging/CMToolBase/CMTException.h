@@ -1,7 +1,7 @@
 /**
  * \file CMTException.h
  *
- * \ingroup CMTool
+ * \ingroup Clusmtool
  * 
  * \brief Class def header for exception classes in CMTException
  *
@@ -17,7 +17,7 @@
 #include <iostream>
 #include <exception>
 
-namespace cmtool {
+namespace clusmtool {
   /**
      \class CMTException
      Generic (base) exception class

@@ -3,7 +3,7 @@
 
 #include "CMManagerBase.h"
 
-namespace cmtool {
+namespace clusmtool {
 
   CMManagerBase::CMManagerBase()
   {

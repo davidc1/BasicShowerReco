@@ -117,7 +117,7 @@ ShrReco3D::ShrReco3D(fhicl::ParameterSet const & p)
   for (const std::string& showerrecoTool : showerrecoTools.get_pset_names()) {
     std::cout << "DD \t in loop..." << std::endl;
     const fhicl::ParameterSet& showerreco_pset = showerrecoTools.get<fhicl::ParameterSet>(showerrecoTool);
-    std::cout << "DD \t add merge algo..." << std::endl;
+    std::cout << "DD \t add shower algo..." << std::endl;
     _manager->AddAlgo(art::make_tool<showerreco::ShowerRecoModuleBase>(showerreco_pset));
     std::cout << "DD \t done adding algo" << std::endl;
   }// for all algorithms to be added

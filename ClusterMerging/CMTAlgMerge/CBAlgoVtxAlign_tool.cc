@@ -4,7 +4,7 @@
 #include <iostream>
 #include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CBoolAlgoBase.h"
 
-namespace cmtool {
+namespace clusmtool {
 
   /**
      \class CBAlgoVtxAlign
@@ -63,6 +63,9 @@ namespace cmtool {
     _pair_wise             = pset.get<bool >("pair_wise");
     _merge_till_converge   = pset.get<bool >("mergetillconverge");
     _verbose               = pset.get<bool> ("verbose",false);
+
+    std::cout << "DD \t MIN NHITS "  << _min_nhits << std::endl;
+    std::cout << "DD \t verbose is " << _verbose   << std::endl;
 
     return;
   }

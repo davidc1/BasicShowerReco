@@ -3,6 +3,7 @@ art_make(
 			uboone_BasicShowerReco_ShowerReco3D_Base
 			uboone_BasicShowerReco_ShowerReco3D_ProtoShower
 			${ART_FRAMEWORK_CORE}
+			art_Framework_Services_Registry
 			larcorealg_Geometry	
 		   	uboone_Geometry		
 			larcore_Geometry_Geometry_service

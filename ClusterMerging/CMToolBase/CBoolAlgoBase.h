@@ -1,14 +1,14 @@
 /**
  * \file CBoolAlgoBase.hh
  *
- * \ingroup CMTool
+ * \ingroup Clusmtool
  * 
  * \brief Class def header for algorithm classes for CMergeManager
  *
  * @author kazuhiro
  */
 
-/** \addtogroup CMTool
+/** \addtogroup Clusmtool
 
     @{*/
 #ifndef RECOTOOL_CBOOLALGOBASE_H
@@ -16,7 +16,7 @@
 
 #include "CMAlgoBase.h"
 
-namespace cmtool {
+namespace clusmtool {
 
   /**
      \class CBoolAlgoBase

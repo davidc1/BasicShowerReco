@@ -1,20 +1,18 @@
 art_make(
           LIB_LIBRARIES
+	  		uboone_BasicShowerReco_ClusterMerging_CMToolBase
 			uboone_BasicShowerReco_TwoDimTools
-			art_Framework_Core
+			$ART_FRAMEWORK_CORE}
 			art_Framework_Services_Registry
-			art_Framework_Principal
-			lardataobj_RecoBase
-			${ART_FRAMEWORK_CORE}
 			larcorealg_Geometry	
-			lardata_Utilities # added now
 		   	uboone_Geometry		
-			larcore_Geometry_Geometry_service	
+			larcore_Geometry_Geometry_service
+			lardata_Utilities
+			larreco_Calorimetry
 			art_Utilities canvas
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}
                         ${CETLIB}
-			${Boost_FILESYSTEM_LIBRARY}
                         ${Boost_SYSTEM_LIBRARY}
                         ${ROOT_BASIC_LIB_LIST}
 		   	${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -47,12 +45,11 @@ art_make(
 			  ${MF_UTILITIES}
 			  ${FHICLCPP}
 			  ${CETLIB}
+			  ${ROOT_GEOM}
 			  ${Boost_FILESYSTEM_LIBRARY}
 			  ${Boost_SYSTEM_LIBRARY}
                           ${CLHEP}
 			  ${ROOT_BASIC_LIB_LIST}
-
-
         )
 
 
