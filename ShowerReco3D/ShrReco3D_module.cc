@@ -117,7 +117,7 @@ ShrReco3D::ShrReco3D(fhicl::ParameterSet const & p)
   for (const std::string& showerrecoTool : showerrecoTools.get_pset_names()) {
     std::cout << "DD \t in loop..." << std::endl;
     const fhicl::ParameterSet& showerreco_pset = showerrecoTools.get<fhicl::ParameterSet>(showerrecoTool);
-    std::cout << "DD \t add merge algo..." << std::endl;
+    std::cout << "DD \t add shower algo..." << std::endl;
     _manager->AddAlgo(art::make_tool<showerreco::ShowerRecoModuleBase>(showerreco_pset));
     std::cout << "DD \t done adding algo" << std::endl;
   }// for all algorithms to be added
@@ -135,9 +135,16 @@ ShrReco3D::ShrReco3D(fhicl::ParameterSet const & p)
   _manager->Initialize();
 
   auto recomb = p.get<double>("recombination");
-  auto adctoe = p.get<double>("ADCtoE");
-  auto calib = adctoe * 0.0000236 / recomb;
-  std::cout << "Calibration constant : " << calib << std::endl;
+  auto adctoe = p.get<std::vector<double> >("ADCtoE");
+  if (adctoe.size() != 3) {
+    std::cout << "ERROR provided !3 planes for calorimetry" << std::endl;
+  }
+
+  std::vector<double> calib = {adctoe[0] * 0.0000236 / recomb,
+			       adctoe[1] * 0.0000236 / recomb,
+			       adctoe[2] * 0.0000236 / recomb };
+
+  //std::cout << "Calibration constant : " << calib << std::endl;
   _psalg->setCalorimetry(calib);
 
 }

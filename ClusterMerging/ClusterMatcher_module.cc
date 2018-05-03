@@ -73,7 +73,7 @@ private:
   std::string fClusterProducer, fVertexProducer;
 
   // cluster match manager
-  ::cmtool::CMatchManager* _mgr;
+  ::clusmtool::CMatchManager* _mgr;
 
 };
 
@@ -90,9 +90,9 @@ ClusterMatcher::ClusterMatcher(fhicl::ParameterSet const & pset)
   _time2cm = detp->SamplingRate() / 1000.0 * detp->DriftVelocity( detp->Efield(), detp->Temperature() );
 
   // Call appropriate produces<>() functions here.
-  _mgr = new ::cmtool::CMatchManager(geom->Nplanes());
+  _mgr = new ::clusmtool::CMatchManager(geom->Nplanes());
   _mgr->Reset();
-  _mgr->DebugMode(cmtool::CMManagerBase::kPerIteration);
+  _mgr->DebugMode(clusmtool::CMManagerBase::kPerIteration);
 
   _CMaker = new ::cluster::ClusterMaker();
   
@@ -101,11 +101,11 @@ ClusterMatcher::ClusterMatcher(fhicl::ParameterSet const & pset)
 
   // grab algorithm for pirority
   const fhicl::ParameterSet& priorityTool = pset.get<fhicl::ParameterSet>("PriorityTool");
-  _mgr->AddPriorityAlgo(art::make_tool<cmtool::CPriorityAlgoBase>(priorityTool));
+  _mgr->AddPriorityAlgo(art::make_tool<clusmtool::CPriorityAlgoBase>(priorityTool));
 
   // grab algorithm for matching
   const fhicl::ParameterSet& matchTool = pset.get<fhicl::ParameterSet>("MatchTool");
-  _mgr->AddMatchAlgo(art::make_tool<cmtool::CFloatAlgoBase>(matchTool));
+  _mgr->AddMatchAlgo(art::make_tool<clusmtool::CFloatAlgoBase>(matchTool));
 
   _mgr->ReportAlgoChain();
 

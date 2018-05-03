@@ -38,8 +38,8 @@ namespace protoshower {
       ::util::PxHit hit2d( clus->Plane().Plane,
 			   hit->WireID().Wire * _wire2cm,
 			   (hit->PeakTime() - detp->TriggerOffset()) * _time2cm,
-			   hit->Integral() * _ADC_to_MeV,
-			   hit->Integral() * _ADC_to_MeV,
+			   hit->Integral() * _ADC_to_MeV[clus->Plane().Plane],
+			   hit->Integral() * _ADC_to_MeV[clus->Plane().Plane],
 			   hit->PeakAmplitude() );
       
       clus2d._hits.push_back( hit2d );

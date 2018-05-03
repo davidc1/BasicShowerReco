@@ -1,18 +1,15 @@
 /**
  * \file CMAlgoBase.h
  *
- * \ingroup CMTool
+ * \ingroup Clusmtool
  * 
  * \brief Class def header for a class CMAlgoBase
  *
  * @author kazuhiro
  */
 
-// art TOOLS
-#include "art/Utilities/ToolMacros.h"
-#include "art/Utilities/make_tool.h"
 
-/** \addtogroup CMTool
+/** \addtogroup Clusmtool
 
     @{*/
 #ifndef RECOTOOL_CMALGOBASE_H
@@ -22,9 +19,16 @@
 #include "TFile.h"
 #include "Cluster.h"
 
+// art TOOLS
+#include "art/Utilities/ToolMacros.h"
+#include "art/Utilities/make_tool.h"
 #include "fhiclcpp/ParameterSet.h"
 
-namespace cmtool {
+#include "TTree.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+
+
+namespace clusmtool {
 
   /**
      \class CMAlgoBase

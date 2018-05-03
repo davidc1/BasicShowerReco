@@ -3,12 +3,10 @@
 
 #include "CMergeManager.h"
 
-namespace cmtool {
+namespace clusmtool {
 
   CMergeManager::CMergeManager() : CMManagerBase()
   {
-    _iter_ctr=0;
-    _merge_algo_v.clear();
     Reset();
   }
 

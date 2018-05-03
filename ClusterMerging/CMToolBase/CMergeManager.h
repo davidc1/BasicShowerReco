@@ -1,14 +1,14 @@
 /**
  * \file CMergeManager.h
  *
- * \ingroup CMTool
+ * \ingroup Clusmtool
  * 
  * \brief Class def header for a class CMergeManager
  *
  * @author kazuhiro
  */
 
-/** \addtogroup CMTool
+/** \addtogroup Clusmtool
 
     @{*/
 #ifndef RECOTOOL_CMERGEMANAGER_H
@@ -16,13 +16,18 @@
 
 #include <iostream>
 
+#include <vector>
+
 #include <typeinfo>
 
 #include "CMManagerBase.h"
 #include "CMergeBookKeeper.h"
 #include "CBoolAlgoBase.h"
 
-namespace cmtool {
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Utilities/make_tool.h"
+
+namespace clusmtool {
 
   /**
      \class CMergeManager
@@ -44,7 +49,18 @@ namespace cmtool {
     virtual void Reset();
 
     /// A simple method to add an algorithm for merging
-    void AddMergeAlgo(std::unique_ptr<cmtool::CBoolAlgoBase>&& algo) { _merge_algo_v.push_back(std::move(algo)); }
+    void AddMergeAlgo(std::unique_ptr<clusmtool::CBoolAlgoBase> algo)
+    //void AddMergeAlgo(const fhicl::ParameterSet& pset) 
+    {
+      std::cout << "DD \t\t\t currently there are "  << _merge_algo_v.size() << " algorithms" << std::endl;
+      if (_merge_algo_v.size()) {
+	std::cout << "DD \t\t\t report last algo's name " << std::endl;
+	std::cout << "DD \t\t\t last algo added : " << _merge_algo_v.back()->Name() << std::endl;
+      }
+      _merge_algo_v.push_back(std::move(algo));
+      //_merge_algo_v.push_back( art::make_tool<clusmtool::CBoolAlgoBase>(pset) ); 
+      std::cout << "DD \t\t\t and now there are   "  << _merge_algo_v.size() << " algorithms" << std::endl;
+    }
 
     /// A method to obtain output clusters
     const std::vector<::cluster::Cluster>& GetClusters() const { return _out_clusters; }
@@ -102,7 +118,7 @@ namespace cmtool {
     /// Book keeper instance
     CMergeBookKeeper _book_keeper;
 
-    size_t _iter_ctr;
+    size_t _iter_ctr = 0;
 
     std::vector<CMergeBookKeeper> _book_keeper_v;
 
@@ -111,7 +127,7 @@ namespace cmtool {
     std::vector<::cluster::Cluster> _tmp_merged_clusters;
 
     /// Merging algorithm
-    std::vector<std::unique_ptr<::cmtool::CBoolAlgoBase> > _merge_algo_v;
+    std::vector<std::unique_ptr<::clusmtool::CBoolAlgoBase> > _merge_algo_v;
     
 
   };

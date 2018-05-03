@@ -3,9 +3,9 @@
 
 #include "CMergeHelper.h"
 
-namespace cmtool {
+namespace clusmtool {
 
-  ::cmtool::CMergeManager& CMergeHelper::GetManager()//size_t mgr_id)
+  ::clusmtool::CMergeManager& CMergeHelper::GetManager()//size_t mgr_id)
   {
     return _mgr;
     /*
@@ -19,7 +19,7 @@ namespace cmtool {
   }
 
   /*
-  ::cmtool::CMergeManager& CMergeHelper::GetManager(size_t mgr_id)
+  ::clusmtool::CMergeManager& CMergeHelper::GetManager(size_t mgr_id)
   {
     if(_mgr_v.size() <= mgr_id) _mgr_v.resize(mgr_id+1);
     return _mgr_v[mgr_id];
@@ -34,7 +34,7 @@ namespace cmtool {
 
   void CMergeHelper::Process(const std::vector< ::cluster::Cluster >& clusters) 
   {
-    _bk = ::cmtool::CMergeBookKeeper(clusters.size());
+    _bk = ::clusmtool::CMergeBookKeeper(clusters.size());
 
     //for(size_t i=0; i<_mgr_v.size(); ++i) {
       

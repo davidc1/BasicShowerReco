@@ -1,7 +1,7 @@
 #include <iostream>
 #include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CBoolAlgoBase.h"
 
-namespace cmtool {
+namespace clusmtool {
 
   /**
      \class CBAlgoFake

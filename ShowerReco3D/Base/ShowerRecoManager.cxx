@@ -54,11 +54,13 @@ namespace showerreco {
     
     // make a local copy of the shower to track differences
     Shower_t localCopy = result;
-    
+
+
     // loop through reconstruction modules
     for (size_t n = 0; n < _alg_v.size(); n++) {
       
       _watch.Start();
+      
       try {
 	_alg_v[n] -> do_reconstruction(proto_shower, result);
       }// if reco succeeds
@@ -75,7 +77,7 @@ namespace showerreco {
 	localCopy = result;
       }// if verbose
     }// for all reconstruction modules
-
+  
     // if we made it this far, the shower is good!
     result.fPassedReconstruction = true;    
 
@@ -444,15 +446,6 @@ void ShowerRecoManager::Finalize(TFile* fout)
 
   std::cout << "=====================================================" << std::endl
             << std::endl;
-
-  // for each algorithm, get its tree and write it to output
-  if (fout) {
-    fout->cd();
-    for (auto & alg : _alg_v) {
-      auto tree = alg->GetTree();
-      if (tree) { tree->Write(); }
-    }// for each modular algo
-  }// if output file exists
 
   return;
 }

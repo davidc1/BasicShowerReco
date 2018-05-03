@@ -3,7 +3,7 @@
 
 #include "CMatchManager.h"
 
-namespace cmtool {
+namespace clusmtool {
 
   CMatchManager::CMatchManager() : CMManagerBase()
   {
@@ -224,7 +224,6 @@ namespace cmtool {
       auto const& score = _match_algo->Float(ptr_v);
 
       if(_debug_mode <= kPerMerging)
-
         std::cout << " ... Time taken = " << localWatch.RealTime() << " [s]" << std::endl;
 
       if(score>0)

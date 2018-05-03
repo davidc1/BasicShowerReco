@@ -3,7 +3,7 @@
 
 #include "CMergeBookKeeper.h"
 
-namespace cmtool {
+namespace clusmtool {
 
   CMergeBookKeeper::CMergeBookKeeper(unsigned short nclusters)
   { 

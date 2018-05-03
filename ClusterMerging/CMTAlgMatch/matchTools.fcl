@@ -7,4 +7,19 @@ match_cfalgoiou:
  verbose: false
 }
 
+match_cfalgotimeoverlap:
+{
+ tool_type: CFAlgoTimeOverlap
+ timetolerance: 0.5 # cm
+ verbose: false
+}
+
+match_cfalgodevel:
+{
+ tool_type: CFAlgoDevel
+ timetolerance: 0.5 # cm
+ minoverlap: 0.5
+ verbose: false
+}
+
 END_PROLOG

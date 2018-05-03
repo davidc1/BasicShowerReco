@@ -1,14 +1,14 @@
 /**
  * \file CMergeBookKeeper.h
  *
- * \ingroup CMTool
+ * \ingroup Clusmtool
  * 
  * \brief Class def header for a class CMergeBookKeeper
  *
  * @author kazuhiro
  */
 
-/** \addtogroup CMTool
+/** \addtogroup Clusmtool
 
     @{*/
 #ifndef RECOTOOL_CMERGEBOOKKEEPER_H
@@ -19,7 +19,7 @@
 #include <TString.h>
 #include "CMTException.h"
 
-namespace cmtool {
+namespace clusmtool {
 
   /**
      \class CMergeBookKeeper

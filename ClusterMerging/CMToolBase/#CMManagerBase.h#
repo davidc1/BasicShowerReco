@@ -1,14 +1,14 @@
 /**
  * \file CMManagerBase.h
  *
- * \ingroup CMTool
+ * \ingroup Clusmtool
  * 
  * \brief Class def header for a class CMManagerBase
  *
  * @author kazuhiro
  */
 
-/** \addtogroup CMTool
+/** \addtogroup Clusmtool
 
     @{*/
 #ifndef RECOTOOL_CMMANAGERBASE_H
@@ -62,7 +62,7 @@ namespace clusmtool {
     void Reset();
 
     /// Setter to add an algorithm for priority determination
-    void AddPriorityAlgo(std::unique_ptr<clusmtool::CPriorityAlgoBase>&& algo) { _priority_algo = std::move(algo); }
+    void AddPriorityAlgo(std::unique_ptr<cmtool::CPriorityAlgoBase>&& algo) { _priority_algo = std::move(algo); }
 
     /// Switch to continue merging till converges
     void MergeTillConverge(bool doit=true) {_merge_till_converge = doit;}
@@ -125,7 +125,7 @@ namespace clusmtool {
     std::vector<::cluster::Cluster> _in_clusters;
 
     /// Priority algorithm
-    std::unique_ptr<::clusmtool::CPriorityAlgoBase> _priority_algo;
+    std::unique_ptr<::cmtool::CPriorityAlgoBase> _priority_algo;
 
     /// Output analysis plot TFile
     TFile* _fout;

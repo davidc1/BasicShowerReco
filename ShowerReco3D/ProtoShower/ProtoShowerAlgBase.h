@@ -73,7 +73,7 @@ public:
      Set calorimetry conversion for ADC to MeV
      ADC refers to Hit Integral()
    */
-  void setCalorimetry(double c) { _ADC_to_MeV = c; }
+  void setCalorimetry(std::vector<double> c) { _ADC_to_MeV = c; }
 
 protected:
 
@@ -82,7 +82,7 @@ protected:
   double _wire2cm, _time2cm;
 
   // conversion from ADC to MeV
-  double _ADC_to_MeV;
+  std::vector<double> _ADC_to_MeV;
 
 };
 

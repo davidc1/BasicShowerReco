@@ -9,6 +9,8 @@
 
 #include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibService.h"
 #include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibProvider.h"
+#include "TTree.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 
 /**
    \class ShowerRecoModuleBase
@@ -41,7 +43,10 @@ namespace showerreco {
 			   const int& pl, const lariov::TPCEnergyCalibProvider& energyCalibProvider);
 
     //double _recomb, _ADC_to_e, _e_to_MeV;
-
+    TTree* _energy_tree;
+    double _e0, _e1, _e2;
+    int    _nhit0, _nhit1, _nhit2;
+    
   };
   
   LinearEnergy::LinearEnergy(const fhicl::ParameterSet& pset)
@@ -49,15 +54,23 @@ namespace showerreco {
     
     configure(pset);
     _name = "LinearEnergy";
+
+    art::ServiceHandle<art::TFileService> tfs;
+    _energy_tree = tfs->make<TTree>("_energy_tree","Energy TTree");
+    _energy_tree->Branch("_e0",&_e0,"e0/D");
+    _energy_tree->Branch("_e1",&_e1,"e1/D");
+    _energy_tree->Branch("_e2",&_e2,"e2/D");
+    _energy_tree->Branch("_nhit0",&_nhit0,"nhit0/I");
+    _energy_tree->Branch("_nhit1",&_nhit1,"nhit1/I");
+    _energy_tree->Branch("_nhit2",&_nhit2,"nhit2/I");
+
     return;
   }
 
   void LinearEnergy::configure(const fhicl::ParameterSet& pset)
   {
-    //_recomb    = pset.get<float>("recomb");
-    //_ADC_to_e  = pset.get<float>("ADC_to_e");
     _verbose   = pset.get<bool>("verbose",false);
-    //_e_to_MeV  = 23.6 * (1e-6);
+
     return;
   }
   
@@ -72,7 +85,13 @@ namespace showerreco {
 
     //handle to tpc energy calibration provider
     const lariov::TPCEnergyCalibProvider& energyCalibProvider  = art::ServiceHandle<lariov::TPCEnergyCalibService>()->GetProvider();
-    
+
+    _e0 = 0.;
+    _e1 = 0.;
+    _e2 = 0.;
+    _nhit0 = 0;
+    _nhit1 = 0;
+    _nhit2 = 0;
 
     //if the module does not have 2D cluster info -> fail the reconstruction
     if (!proto_shower.hasCluster2D()){
@@ -119,8 +138,22 @@ namespace showerreco {
       // set the energy for this plane
       resultShower.fTotalEnergy_v[pl] = E;
 
+      if (pl==0) {
+	_nhit0 = hits.size();
+	_e0     = E;
+      }
+      if (pl==1) {
+	_nhit1 = hits.size();
+	_e1     = E;
+      }
+      if (pl==2) {
+	_nhit2 = hits.size();
+	_e2     = E;
+      }
       
     }// for all input clusters
+
+    _energy_tree->Fill();
     
     if (hasPl2)
       resultShower.fTotalEnergy = resultShower.fTotalEnergy_v[2];

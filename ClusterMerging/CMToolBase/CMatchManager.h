@@ -1,14 +1,14 @@
 /**
  * \file CMatchManager.h
  *
- * \ingroup CMTool
+ * \ingroup Clusmtool
  * 
  * \brief Class def header for a class CMatchManager
  *
  * @author kazuhiro
  */
 
-/** \addtogroup CMTool
+/** \addtogroup Clusmtool
 
     @{*/
 #ifndef RECOTOOL_CMATCHMANAGER_H
@@ -21,7 +21,7 @@
 #include "CMatchBookKeeper.h"
 #include "CFloatAlgoBase.h"
 
-namespace cmtool {
+namespace clusmtool {
 
   /**
      \class CMatchManager
@@ -46,7 +46,7 @@ namespace cmtool {
     virtual void Reset();
 
     /// A simple method to add an algorithm for merging
-    void AddMatchAlgo(std::unique_ptr<::cmtool::CFloatAlgoBase>&& algo) {_match_algo = std::move(algo);}
+    void AddMatchAlgo(std::unique_ptr<::clusmtool::CFloatAlgoBase>&& algo) {_match_algo = std::move(algo);}
 
     /// A method to obtain book keeper
     const CMatchBookKeeper& GetBookKeeper() const { return _book_keeper; }
@@ -83,7 +83,7 @@ namespace cmtool {
     CMatchBookKeeper _book_keeper;
 
     /// Matching algorithm
-    std::unique_ptr<::cmtool::CFloatAlgoBase> _match_algo;
+    std::unique_ptr<::clusmtool::CFloatAlgoBase> _match_algo;
 
     /// Number of planes
     size_t _nplanes;

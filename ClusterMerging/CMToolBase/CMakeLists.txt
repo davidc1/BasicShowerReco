@@ -19,7 +19,8 @@ art_make(
                         ${ROOT_BASIC_LIB_LIST}
 		   	${ART_FRAMEWORK_SERVICES_REGISTRY}
 		   	${ART_FRAMEWORK_SERVICES_OPTIONAL}
-          TOOL_LIBRARIES  SignalShapingServiceMicroBooNE_service
+          TOOL_LIBRARIES  
+			  uboone_BasicShowerReco_TwoDimTools
                           lardata_Utilities_LArFFT_service
                           larcorealg_Geometry
 			  larevt_CalibrationDBI_IOVData

@@ -3,7 +3,7 @@
 
 #include "CMatchBookKeeper.h"
 
-namespace cmtool {
+namespace clusmtool {
 
   CMatchBookKeeper::CMatchBookKeeper()
   { 
