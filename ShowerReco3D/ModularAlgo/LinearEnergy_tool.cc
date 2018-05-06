@@ -7,11 +7,10 @@
 #include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 #include "uboone/BasicShowerReco/ShowerReco3D/Base/Calorimetry.h"
 
+#include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibService.h"
+#include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibProvider.h"
 #include "TTree.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-
-//#include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibService.h"
-//#include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibProvider.h"
 
 /**
    \class ShowerRecoModuleBase
@@ -40,10 +39,14 @@ namespace showerreco {
     
   private:
 
+    float ChargeCorrection(const double& q, const double& w, const double& t, const TVector3& dir, const TVector3& vtx,
+			   const int& pl, const lariov::TPCEnergyCalibProvider& energyCalibProvider);
+
+    //double _recomb, _ADC_to_e, _e_to_MeV;
     TTree* _energy_tree;
     double _e0, _e1, _e2;
     int    _nhit0, _nhit1, _nhit2;
-
+    
   };
   
   LinearEnergy::LinearEnergy(const fhicl::ParameterSet& pset)
@@ -79,6 +82,9 @@ namespace showerreco {
   void LinearEnergy::do_reconstruction(const ::protoshower::ProtoShower & proto_shower,
 				       Shower_t& resultShower) {
     
+
+    //handle to tpc energy calibration provider
+    const lariov::TPCEnergyCalibProvider& energyCalibProvider  = art::ServiceHandle<lariov::TPCEnergyCalibService>()->GetProvider();
 
     _e0 = 0.;
     _e1 = 0.;
@@ -121,8 +127,10 @@ namespace showerreco {
       double E  = 0.;
       
       // loop over hits
-      for (auto const &h : hits) 
-	E += h.charge;// * _ADC_to_e * _e_to_MeV / _recomb;
+      for (auto const &h : hits) {
+	auto relcalib = ChargeCorrection(h.charge, h.w, h.t, resultShower.fDCosStart, resultShower.fXYZStart, pl, energyCalibProvider);
+	E += h.charge * relcalib;
+      }
       
       if (_verbose)
 	std::cout << "energy on plane " << pl << " is : " << E << std::endl;
@@ -153,6 +161,28 @@ namespace showerreco {
       resultShower.fTotalEnergy = ( resultShower.fTotalEnergy_v[0] + resultShower.fTotalEnergy_v[1] ) / 2.;
     
     return;
+  }
+
+  float LinearEnergy::ChargeCorrection(const double& q, const double& w, const double& t, const TVector3& dir, const TVector3& vtx,
+				       const int& pl, const lariov::TPCEnergyCalibProvider& energyCalibProvider){
+
+    // find 3D position of hit                                                                                                        
+    double z = w;
+    double x = t;
+
+    // get 2D distance of hit to vtx                                                                                                  
+    double r2D = sqrt( ( (z-vtx.Z()) * (z-vtx.Z()) ) + ( (x-vtx.X()) * (x-vtx.X()) ) );
+    double r3D = r2D/dir[1];
+
+    auto xyz = vtx + dir * r3D;
+
+    float yzcorrection = energyCalibProvider.YZdqdxCorrection(pl, xyz.Y(), xyz.Z());
+    float xcorrection  = energyCalibProvider.XdqdxCorrection(pl,  xyz.X());
+
+    if (!yzcorrection) yzcorrection = 1.;
+    if (!xcorrection ) xcorrection  = 1.;
+
+    return yzcorrection * xcorrection;
   }
 
   DEFINE_ART_CLASS_TOOL(LinearEnergy)

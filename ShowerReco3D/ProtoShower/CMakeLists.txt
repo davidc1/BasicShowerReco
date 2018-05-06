@@ -3,6 +3,7 @@ art_make(
 			art_Framework_Core
 			art_Framework_Services_Registry
 			art_Framework_Principal
+			art_Persistency_Provenance
 			${ART_FRAMEWORK_CORE}
 			larcorealg_Geometry	
 			lardataobj_RecoBase
