@@ -1,4 +1,4 @@
-#ifndef DQDXMODULE_CXX
+#ifndef DEDXMODULE_CXX
 #define DEDXMODULE_CXX
 
 #include <iostream>
@@ -44,6 +44,7 @@ namespace showerreco {
     double _pitch0, _pitch1, _pitch2;
     int    _nhits0, _nhits1, _nhits2;
     int    _ntot0, _ntot1, _ntot2;
+    double _px, _py, _pz;
     
   };
   
@@ -54,6 +55,10 @@ namespace showerreco {
 
     art::ServiceHandle<art::TFileService> tfs;
     _dedx_tree = tfs->make<TTree>("_dedx_tree","dE/dx TTree");
+
+    _dedx_tree->Branch("_px",&_px,"px/D");
+    _dedx_tree->Branch("_py",&_py,"py/D");
+    _dedx_tree->Branch("_pz",&_pz,"pz/D");
 
     _dedx_tree->Branch("_pl0",&_pl0,"pl0/I");
     _dedx_tree->Branch("_pitch0",&_pitch0,"pitch0/D");
@@ -108,6 +113,10 @@ namespace showerreco {
     auto const& dir3D = resultShower.fDCosStart;
 
     std::cout << "3D shower direction : " << dir3D[0] << ", " << dir3D[1] << ", " << dir3D[2] << std::endl;
+
+    _px = dir3D[0];
+    _py = dir3D[1];
+    _pz = dir3D[2];
 
     auto const& geomH = ::util::GeometryUtilities();
 

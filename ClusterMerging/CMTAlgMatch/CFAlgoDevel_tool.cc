@@ -45,6 +45,8 @@ namespace clusmtool {
     TTree* _match_tree;
     double _compat;
     int    _induction;
+    int    _nhit_induction;
+    int    _nhit_collection;
 
   };
   
@@ -60,6 +62,8 @@ namespace clusmtool {
     _match_tree = tfs->make<TTree>("match_tree","Match TTree");
     _match_tree->Branch("_induction",&_induction,"induction/I");
     _match_tree->Branch("_compat"   ,&_compat   ,"compat/D"   );
+    _match_tree->Branch("_nhit_induction" ,&_nhit_induction  ,"nhit_induction/I" );
+    _match_tree->Branch("_nhit_collection",&_nhit_collection,"nhit_collection/I");
 
   }
 
@@ -112,6 +116,9 @@ namespace clusmtool {
     double compatibility = 0.;
     auto const& hitsCollection = clusters[collectionPlane]->GetHits();
     auto const& hitsInduction  = clusters[inductionPlane ]->GetHits();
+
+    _nhit_induction  = hitsInduction.size();
+    _nhit_collection = hitsCollection.size();
     
     for (auto const& hitC : hitsCollection) 
       compatibility += Isochronous(hitC._t,hitsInduction);
