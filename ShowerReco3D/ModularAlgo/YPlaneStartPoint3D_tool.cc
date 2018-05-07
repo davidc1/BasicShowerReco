@@ -45,9 +45,6 @@ namespace showerreco {
 {
 
 
-    auto const& geomH = ::util::GeometryUtilities::GetME();
-    auto const* geom  = ::lar::providerFrom<geo::Geometry>();
-  
     //if the module does not have 2D cluster info -> fail the reconstruction
     if (!proto_shower.hasCluster2D()) {
         std::stringstream ss;
@@ -61,7 +58,14 @@ namespace showerreco {
     }
     
     // get the proto-shower 3D vertex
-    auto const& vtx = proto_shower.vertex();
+    auto const& vtx3D = proto_shower.vertex();
+    auto const& dir3D = resultShower.fDCosStart;
+    double d2D;
+
+    std::cout << std::endl << " START 3D Start Point CALCULATION" << std::endl;
+
+    std::cout << " Vtx 3D : [" << vtx3D[0] << ", " << vtx3D[1] << ", " << vtx3D[2] << " ]" << std::endl;
+    std::cout << " dir 3D : [" << dir3D[0] << ", " << dir3D[1] << ", " << dir3D[2] << " ]" << std::endl;
     
     auto & clusters = proto_shower.clusters();
 
@@ -85,11 +89,17 @@ namespace showerreco {
       // project vertex onto this plane
       //auto const& vtx2D = util::PxPoint(pl,0,0);//geomH->Get2DPointProjection(vtx,pl);
       auto const* geom = ::lar::providerFrom<geo::Geometry>();
-      auto wire = geom->WireCoordinate(vtx[1],vtx[2],geo::PlaneID(0,0,pl)) * _wire2cm;
-      auto time = vtx[0];
-      util::PxPoint vtx2D(pl,wire,time);
-
+      auto wire = geom->WireCoordinate(vtx3D[1],vtx3D[2],geo::PlaneID(0,0,pl)) * _wire2cm;
+      auto time = vtx3D[0];
       auto const& start = clus._start;
+
+      util::PxPoint vtx2D(pl,wire,time);
+      
+      // calculate 2D distance between vertex and cluster start point on plane
+      d2D = sqrt( (start.w - vtx2D.w) * (start.w - vtx2D.w) + (start.t - vtx2D.t) * (start.t - vtx2D.t) );
+
+      std::cout << " Strt 2D : [" << start.w << ", " << start.t << " ]" << std::endl;
+      std::cout << " Vtx  2D : [" << vtx2D.w << ", " << vtx2D.t << " ]" << std::endl;
 
       pl0 = pl;
       strtpt0 = start;
@@ -102,89 +112,20 @@ namespace showerreco {
       throw ShowerRecoException(ss.str());
     }
 
-    ::util::PxHit strtpt1;
-    int pl1;
-    bool found = false; // did we find start point coord. on 2nd plane?
+    double f   = (1 - dir3D[1]*dir3D[1] );
+    double d3D = d2D / f;//(1-fabs(dir3D[1]));
 
-    // find a plane that is not the one with the min start-vtx distance
-    for (int p = 0; p < 3; p++) {
+    std::cout << " d2D : " << d2D << std::endl;
+    std::cout << " d3D : " << d3D << std::endl;
 
-      if (p != pl0) {
+    // extend by this amount in 3D
+    auto start3D = vtx3D + d3D * dir3D;
 
-	// project reconstructed 3D direction and vertex to this plane
+    std::cout << " Strt 3D : [" << start3D[0] << ", " << start3D[1] << ", " << start3D[2] << " ]" << std::endl;
 
-	auto const* geom = ::lar::providerFrom<geo::Geometry>();
-	auto wire = geom->WireCoordinate(vtx[1],vtx[2],geo::PlaneID(0,0,p)) * _wire2cm;
-	auto time = vtx[0];
-	util::PxPoint vtx2D(p,wire,time);
-	//auto const& vtx2D   = geomH->Get2DPointProjection(vtx,p);
-	auto const& dir3D   = resultShower.fDCosStart;
-	auto const& slope2D = geomH->Get2DangleFrom3D(p,dir3D);
-
-	// the 2D vertex and slope give us the line
-	// on which to search for the wire coordinate
-	// for the 3D start point on this plane
-	// to do so we know the time coordinate
-	// from the previously found point "strtpt"
-	// find where this time coordinate intersects the vtx -> slope line
-
-	// wire coordinate of the start point on this plane
-	double sw = ( strtpt0.t - vtx2D.t ) / slope2D + vtx2D.w;
-	double st = strtpt0.t; // start point time is the same! duh...
-
-	strtpt1.w = sw;
-	strtpt1.t = st;
-
-	if (sw / geom->WirePitch(0) >= geom->Nwires(p) ) continue;
-	if (sw / geom->WirePitch(0) < 0                ) continue;
-
-	pl1 = p;
-
-	found = true;
-	break;
-	
-      }// if "another" plane
-      
-    }// for all planes
-
-    if (found == false) {
-      std::stringstream ss;
-      ss << "Fail @ algo " << this->name() << " did not find start point on 2nd plane";
-      throw ShowerRecoException(ss.str());
-    }
-
-    // now take the 2 2D start points and reconstruct the 3D one
-
-    double sY, sZ;
-
-    unsigned int w0 = strtpt0.w / geom->WirePitch(0);
-    unsigned int w1 = strtpt1.w / geom->WirePitch(0);
-
-    // check start/end point range
-    if ( (w0 < 0) or (w0 > geom->Nwires(pl0)) or
-	 (w1 < 0) or (w1 > geom->Nwires(pl1)) ) {
-      std::stringstream ss;
-      ss << "Fail @ algo " << this->name() << " due to wires out of range";
-      throw ShowerRecoException(ss.str());
-    }
-
-    if (_verbose)
-      std::cout << "pl " << pl0 << " wire : " << w0
-		<< "pl " << pl1 << " wire : " << w1 << std::endl;
+    std::cout << " END 3D Start Point CALCULATION" << std::endl << std::endl;
     
-    geom->IntersectionPoint( w0, w1, pl0, pl1, 0, 0, sY, sZ);
-
-    // check if reconstructed start point is outside of TPC volume    
-    /*
-    if (geomH->ContainedYZ(sY, sZ) == false){
-      std::stringstream ss;
-      ss << "Fail @ algo " << this->name() << " due to start point reconstructed out of TPC bouns : [Y,Z] -> ["
-	 << sY << ", " << sZ << " ]" ; 
-      throw ShowerRecoException(ss.str());
-    }
-    */
-
-    resultShower.fXYZStart = { strtpt0.t, sY, sZ} ;
+    resultShower.fXYZStart = start3D;
 
     //std::cout << "DONE " << std::endl << std::endl;
     
