@@ -65,7 +65,6 @@ namespace clusmtool {
   {
 
 
-    std::cout << "Running algo " << _name << std::endl;
 
     // if 3 clusters -> skip
     if (clusters.size() != 2) return -1;
