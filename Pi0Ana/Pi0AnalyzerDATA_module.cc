@@ -29,6 +29,7 @@
 #include "lardataobj/RecoBase/Vertex.h"
 #include "lardataobj/RecoBase/Track.h"
 #include "lardataobj/RecoBase/Shower.h"
+#include "lardataobj/AnalysisBase/Calorimetry.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "lardataobj/MCBase/MCShower.h"
 #include "lardata/Utilities/AssociationUtil.h"
@@ -83,6 +84,7 @@ private:
   // pi0-by-pi0 ttree
   TTree* _pi0_tree;
   TTree* _rcshr_tree;
+  TTree* _trk_tree;
 
   // variables common to both ttrees
   int _run, _sub, _evt;
@@ -126,7 +128,14 @@ private:
   double _rcmass;
   double _rcangle;
 
+  std::vector<float> _dqdx_v, _dedx_v, _rr_v;
+  double _dvtx, _length;
+  double _xs, _ys, _zs, _xe, _ye, _ze;
+  int _pl;
+
   std::string fShrProducer;
+  std::string fTrkProducer;
+  std::string fCaloProducer;
 
 };
 
@@ -136,7 +145,9 @@ Pi0AnalyzerDATA::Pi0AnalyzerDATA(fhicl::ParameterSet const & p)
   EDAnalyzer(p)  // ,
  // More initializers here.
 {
-  fShrProducer = p.get<std::string>("ShrProducer");
+  fShrProducer  = p.get<std::string>("ShrProducer" );
+  fTrkProducer  = p.get<std::string>("TrkProducer" );
+  fCaloProducer = p.get<std::string>("CaloProducer");
   SetTTree();
 }
 
@@ -150,7 +161,9 @@ void Pi0AnalyzerDATA::analyze(art::Event const & e)
   // load input showers
   auto const& shr_h = e.getValidHandle<std::vector<recob::Shower>>(fShrProducer);
   // load input tracks
-  //auto const& trk_h = e.getValidHandle<std::vector<recob::Track>>("pandoraCosmic");
+  auto const& trk_h = e.getValidHandle<std::vector<recob::Track>>(fTrkProducer);
+  // load calorimetry associated to tracks
+  art::FindManyP<anab::Calorimetry> trk_calo_assn_v(trk_h, e, fCaloProducer);
   // load input vertices
   auto const& vtx_h = e.getValidHandle<std::vector<recob::Vertex>>("ccvertex");
 
@@ -163,6 +176,64 @@ void Pi0AnalyzerDATA::analyze(art::Event const & e)
     _rc_vtx_y = rcxyz[1];
     _rc_vtx_z = rcxyz[2];
   }
+
+  // track portion of this analysis
+  TVector3 nuvtx(_rc_vtx_x,_rc_vtx_y,_rc_vtx_z);
+  for (size_t t=0; t < trk_h->size(); t++) {
+    
+    auto const& trk = trk_h->at(t);
+    auto const& beg = trk.Vertex();
+    auto const& end = trk.End();
+
+    _xs = beg.X();
+    _ys = beg.Y();
+    _zs = beg.Z();
+    _xe = end.X();
+    _ye = end.Y();
+    _ze = end.Z();
+
+    double dvtx = 1000.;
+    // which one is closest?
+    if ( (nuvtx-beg).Mag() < (nuvtx-end).Mag() ) 
+      dvtx = (nuvtx-beg).Mag();
+    else 
+      dvtx = (nuvtx-end).Mag();
+
+    if (dvtx < 5.0) {
+
+      _length = trk.Length();
+      _dvtx   = dvtx;
+      
+      // fill calorimetry info for this track
+      // grab the associated calorimetry object
+      //const std::vector<const anab::Calorimetry*>& Calo_v = trk_calo_assn_v.at(t);
+      auto Calo_v = trk_calo_assn_v.at(t);
+      
+      for (size_t pl=0; pl < Calo_v.size(); pl++){
+	
+	auto const& calo = Calo_v.at(pl);
+	
+	_pl = calo->PlaneID().Plane;
+	
+	// grab point-by-point information
+	auto const& dqdx_v = calo->dQdx();
+	auto const& dedx_v = calo->dEdx();
+	auto const& rr_v   = calo->ResidualRange();
+	_dqdx_v.clear();
+	_dedx_v.clear();
+	_rr_v.clear();
+	for (auto const& dqdx : dqdx_v)
+	  _dqdx_v.push_back((float)dqdx);
+	for (auto const& dedx : dedx_v)
+	  _dedx_v.push_back((float)dedx);
+	for (auto const& rr : rr_v)
+	  _rr_v.push_back((float)rr);
+
+	_trk_tree->Fill();
+	
+      }// for all planes
+    }// if within 5 cm of vertex
+  }// for all tracks
 
   // Store MC and RC showers in vectors
   _n_reco_showers = shr_h->size();
@@ -377,6 +448,24 @@ void Pi0AnalyzerDATA::SetTTree() {
   _rcshr_tree->Branch("_rc_shr_pz",&_rc_shr_pz,"rc_shr_pz/D");
   _rcshr_tree->Branch("_rcradlen",&_rcradlen,"rcradlen/D");
 
+
+  // track tree
+  _trk_tree = tfs->make<TTree>("_trk_tree","track tree");
+  _trk_tree->Branch("_run",&_run,"run/I");
+  _trk_tree->Branch("_sub",&_sub,"sub/I");
+  _trk_tree->Branch("_evt",&_evt,"evt/I");
+  _trk_tree->Branch("_dqdx_v","std::vector<float>",&_dqdx_v);
+  _trk_tree->Branch("_dedx_v","std::vector<float>",&_dedx_v);
+  _trk_tree->Branch("_rr_v"  ,"std::vector<float>",&_rr_v  );
+  _trk_tree->Branch("_pl",&_pl,"pl/I");
+  _trk_tree->Branch("_dvtx",&_dvtx,"dvtx/D");
+  _trk_tree->Branch("_length",&_length,"length/D");
+  _trk_tree->Branch("_xs",&_xs,"xs/D");
+  _trk_tree->Branch("_ys",&_ys,"ys/D");
+  _trk_tree->Branch("_zs",&_zs,"zs/D");
+  _trk_tree->Branch("_xe",&_xe,"xe/D");
+  _trk_tree->Branch("_ye",&_ye,"ye/D");
+  _trk_tree->Branch("_ze",&_ze,"ze/D");
   
   // pi0 ttree
   _pi0_tree = tfs->make<TTree>("_pi0_tree","Pi0 Tree TTree");
