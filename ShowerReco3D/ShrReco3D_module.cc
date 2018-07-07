@@ -23,6 +23,8 @@
 // include specific protoshower and recomanager instances
 #include "ProtoShower/ProtoShowerCMTool.h"
 
+#include "art/Framework/Services/Optional/TFileService.h"
+
 // larsoft data-products
 #include "lardataobj/RecoBase/Cluster.h"
 #include "lardataobj/RecoBase/Hit.h"
@@ -35,6 +37,7 @@
 
 #include "art/Persistency/Common/PtrMaker.h"
 
+#include "TTree.h"
 
 #include <memory>
 
@@ -73,6 +76,13 @@ private:
   // ProtoShowerAlgBase to make protoshowers
   ::protoshower::ProtoShowerAlgBase* _psalg;
 
+  // reconstruction ttree
+  TTree* _rcshr_tree;
+  double _shr_px, _shr_py, _shr_pz;
+  double _shr_x, _shr_y, _shr_z;
+  std::vector<double> _shr_dedx_v, _shr_dedx_pl0_v, _shr_dedx_pl1_v, _shr_dedx_pl2_v;
+  std::vector<double> _shr_e_v;
+
   /**
      @brief Save output showers produced by reconstruction algorithms
      @input s : index in output shower vector, to associate back to PFP index
@@ -97,6 +107,11 @@ private:
 		  std::unique_ptr< art::Assns <recob::Shower, recob::Hit>        >& Shower_Hit_assn_v );
   
   // Declare member data here.
+
+  /**
+     @brief Set TTree to be used to save reconstructed shower variables
+   */
+  void SetTTree();
   
 };
 
@@ -234,6 +249,20 @@ void ShrReco3D::SaveShower(const size_t idx,
     return;
   }
 
+  // save shower variables to TTree
+  _shr_dedx_pl0_v = shower.fdEdx_v_v[0];
+  _shr_dedx_pl1_v = shower.fdEdx_v_v[1];
+  _shr_dedx_pl2_v = shower.fdEdx_v_v[2];
+  _shr_dedx_v     = shower.fdEdx_v;
+  _shr_px     = shower.fDCosStart[0];
+  _shr_py     = shower.fDCosStart[1];
+  _shr_pz     = shower.fDCosStart[2];
+  _shr_x      = shower.fXYZStart[0];
+  _shr_y      = shower.fXYZStart[1];
+  _shr_z      = shower.fXYZStart[2];
+  _shr_e_v    = shower.fTotalEnergy_v;
+  _rcshr_tree->Fill();
+
   recob::Shower s;
   s.set_id ( Shower_v->size() );
   s.set_total_energy          ( shower.fTotalEnergy_v         );
@@ -269,6 +298,26 @@ void ShrReco3D::SaveShower(const size_t idx,
     Shower_Hit_assn_v->addSingle( ShrPtr, hit_v.at(h) );
   
   return;
+}
+
+void ShrReco3D::SetTTree() {
+
+  art::ServiceHandle<art::TFileService> tfs;
+
+  // MC shower-by-shower TTree
+  _rcshr_tree = tfs->make<TTree>("_rcshr_tree","ShrReco3D Shower TTree");
+  _rcshr_tree->Branch("_shr_x",&_shr_x,"shr_x/D");
+  _rcshr_tree->Branch("_shr_y",&_shr_y,"shr_y/D");
+  _rcshr_tree->Branch("_shr_z",&_shr_z,"shr_z/D");
+  _rcshr_tree->Branch("_shr_dedx_pl0_v","std::vector<double>",&_shr_dedx_pl0_v);
+  _rcshr_tree->Branch("_shr_dedx_pl1_v","std::vector<double>",&_shr_dedx_pl1_v);
+  _rcshr_tree->Branch("_shr_dedx_pl2_v","std::vector<double>",&_shr_dedx_pl2_v);
+  _rcshr_tree->Branch("_shr_e_v","std::vector<double>",&_shr_e_v);
+  _rcshr_tree->Branch("_shr_dedx_v","std::vector<double>",&_shr_dedx_v);
+  _rcshr_tree->Branch("_shr_px",&_shr_px,"shr_px/D");
+  _rcshr_tree->Branch("_shr_py",&_shr_py,"shr_py/D");
+  _rcshr_tree->Branch("_shr_pz",&_shr_pz,"shr_pz/D");
+
 }
 
 DEFINE_ART_MODULE(ShrReco3D)

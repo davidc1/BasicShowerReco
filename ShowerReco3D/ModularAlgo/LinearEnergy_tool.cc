@@ -9,6 +9,7 @@
 
 #include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibService.h"
 #include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibProvider.h"
+
 #include "TTree.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 
@@ -84,7 +85,7 @@ namespace showerreco {
     
 
     //handle to tpc energy calibration provider
-    const lariov::TPCEnergyCalibProvider& energyCalibProvider  = art::ServiceHandle<lariov::TPCEnergyCalibService>()->GetProvider();
+    //const lariov::TPCEnergyCalibProvider& energyCalibProvider  = art::ServiceHandle<lariov::TPCEnergyCalibService>()->GetProvider();
 
     _e0 = 0.;
     _e1 = 0.;
@@ -128,8 +129,8 @@ namespace showerreco {
       
       // loop over hits
       for (auto const &h : hits) {
-	auto relcalib = ChargeCorrection(h.charge, h.w, h.t, resultShower.fDCosStart, resultShower.fXYZStart, pl, energyCalibProvider);
-	E += h.charge * relcalib;
+	//auto relcalib = ChargeCorrection(h.charge, h.w, h.t, resultShower.fDCosStart, resultShower.fXYZStart, pl, energyCalibProvider);
+	E += h.charge;// * relcalib;
       }
       
       if (_verbose)

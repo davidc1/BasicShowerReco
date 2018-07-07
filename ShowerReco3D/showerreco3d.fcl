@@ -11,6 +11,7 @@ ShrReco3D: {
      {
         Algo0: @local::filterpfpart
         Algo1: @local::angle3dfromvtxqweighted
+        #Algo2: @local::startpointfromy2d
         Algo2: @local::yplanestartpoint3d
         Algo3: @local::linearenergy
         Algo4: @local::dedxmodule
@@ -18,7 +19,14 @@ ShrReco3D: {
         Algo6: @local::filtershowers
      }
  recombination : 0.6
- ADCtoE : 243.
+ ADCtoE : [1.,1.,1.] # these values purposely incorrect
 }
+
+ShrReco3Ddata: @local::ShrReco3D
+ShrReco3Ddata.ADCtoE: [237.,228.,243.] # e-/ADC
+
+ShrReco3Dmcc8: @local::ShrReco3D
+ShrReco3Dmcc8.ADCtoE: [193.,197.,197.] # e-/ADC
+
 
 END_PROLOG

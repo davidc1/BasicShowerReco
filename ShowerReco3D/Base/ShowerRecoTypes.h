@@ -52,6 +52,7 @@ struct Shower_t {
 
   double fdEdx;                               ///< Calculated dEdx
   double fSigmadEdx;                          ///< Calculated dEdx uncertainty
+  std::vector< std::vector<double> > fdEdx_v_v;///< Calculated dEdx entries, segment-by-segment, per each plane
   std::vector< double > fdEdx_v;              ///< Calculated dEdx per each plane
   std::vector< double > fSigmadEdx_v;         ///< Calculated dEdx per each plane
 
@@ -100,6 +101,8 @@ struct Shower_t {
     fSigmaTotalEnergy_v.clear();
     fdEdx = kDOUBLE_MIN;
     fSigmadEdx = kDOUBLE_MIN;
+    fdEdx_v_v.clear();
+    fdEdx_v_v.resize(3);
     fdEdx_v.clear();
     fdEdx_v = {kDOUBLE_MIN, kDOUBLE_MIN, kDOUBLE_MIN};
     fdQdx = kDOUBLE_MIN;

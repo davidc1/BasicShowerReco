@@ -4,6 +4,9 @@
 #include <iostream>
 #include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 
+#include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibService.h"
+#include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibProvider.h"
+
 #include "TTree.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 
@@ -34,6 +37,9 @@ namespace showerreco {
 
     // distance along which to calculate dEdx
     double _dtrunk;
+
+    float ChargeCorrection(const double& q, const double& w, const double& t, const TVector3& dir, const TVector3& vtx,
+			   const int& pl, const lariov::TPCEnergyCalibProvider& energyCalibProvider);
 
     // debugging tree
     TTree* _dedx_tree;
@@ -99,6 +105,9 @@ namespace showerreco {
   }
   
   void dEdxModule::do_reconstruction(const ::protoshower::ProtoShower & proto_shower, Shower_t & resultShower) {
+
+    //handle to tpc energy calibration provider
+    //const lariov::TPCEnergyCalibProvider& energyCalibProvider  = art::ServiceHandle<lariov::TPCEnergyCalibService>()->GetProvider();
     
     //if the module does not have 2D cluster info -> fail the reconstruction
     if (!proto_shower.hasCluster2D()){
@@ -162,7 +171,8 @@ namespace showerreco {
 	double d2D = sqrt( pow(h.w - start2D.w, 2) + pow(h.t - start2D.t, 2) );
 	double d3D = d2D / cosPlane;
 	size_t d3Delement = (size_t)(d3D * 3);
-	double dEdx = h.charge / pitch;
+	double dE = h.charge;// * ChargeCorrection(h.charge, h.w, h.t, resultShower.fDCosStart, resultShower.fXYZStart, pl, energyCalibProvider);
+	double dEdx = dE / pitch;
 
 	if (d3Delement >= dedx_v.size()) continue;
 
@@ -182,6 +192,7 @@ namespace showerreco {
 	if (dedx_v.at(n) != 0){
 	  std::cout << "\t adding an element..." << std::endl;
 	  dedx_empty_v.push_back(dedx_v.at(n));
+	  resultShower.fdEdx_v_v.at(pl).push_back(dedx_v.at(n));
 	  std::cout << "\t added..." << std::endl;
 	}
       }// for all dedx values
@@ -235,6 +246,28 @@ namespace showerreco {
     _dedx_tree->Fill();
     
     return;
+  }
+
+  float dEdxModule::ChargeCorrection(const double& q, const double& w, const double& t, const TVector3& dir, const TVector3& vtx,
+				     const int& pl, const lariov::TPCEnergyCalibProvider& energyCalibProvider){
+
+    // find 3D position of hit                                                                                                        
+    double z = w;
+    double x = t;
+
+    // get 2D distance of hit to vtx                                                                                                  
+    double r2D = sqrt( ( (z-vtx.Z()) * (z-vtx.Z()) ) + ( (x-vtx.X()) * (x-vtx.X()) ) );
+    double r3D = r2D/dir[1];
+
+    auto xyz = vtx + dir * r3D;
+
+    float yzcorrection = energyCalibProvider.YZdqdxCorrection(pl, xyz.Y(), xyz.Z());
+    float xcorrection  = energyCalibProvider.XdqdxCorrection(pl,  xyz.X());
+
+    if (!yzcorrection) yzcorrection = 1.;
+    if (!xcorrection ) xcorrection  = 1.;
+
+    return yzcorrection * xcorrection;
   }
 
   DEFINE_ART_CLASS_TOOL(dEdxModule)
