@@ -17,7 +17,7 @@
 #include <iostream>
 #include <vector>
 
-#include "uboone/BasicShowerReco/TwoDimTools/Linearity.h"
+#include "ubreco/ShowerReco/TwoDimTools/Linearity.h"
 
 /**
    \class Cluster

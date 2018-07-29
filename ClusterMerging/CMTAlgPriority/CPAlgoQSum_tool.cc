@@ -1,5 +1,5 @@
 #include <iostream>
-#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CPriorityAlgoBase.h"
+#include "ubreco/ShowerReco/ClusterMerging/CMToolBase/CPriorityAlgoBase.h"
 
 namespace clusmtool {
 

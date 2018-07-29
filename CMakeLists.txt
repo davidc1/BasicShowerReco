@@ -6,11 +6,11 @@ art_make(
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 			cetlib cetlib_except
-                   	larpandora_LArPandoraInterface	
+                   	#larpandora_LArPandoraInterface	
                         ${Boost_SYSTEM_LIBRARY}
 			${ROOT_BASIC_LIB_LIST}
           MODULE_LIBRARIES 
-		   	larpandora_LArPandoraInterface	
+		   	#larpandora_LArPandoraInterface	
 			larcorealg_Geometry
 			larcore_Geometry_Geometry_service
 			lardataobj_RecoBase
@@ -52,6 +52,5 @@ add_subdirectory(Pi0Ana)
 add_subdirectory(TruthFilters)
 
 install_headers()
-install_fhicl()
 install_source()
 

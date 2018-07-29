@@ -9,7 +9,7 @@
  */
 
 #include <iostream>
-#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CBoolAlgoBase.h"
+#include "ubreco/ShowerReco/ClusterMerging/CMToolBase/CBoolAlgoBase.h"
 
 namespace clusmtool {
 

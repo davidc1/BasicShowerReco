@@ -2,7 +2,7 @@
 #define ANGLE3DFORMULA_CXX
 
 #include <iostream>
-#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
+#include "ubreco/ShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 /**
    \class ShowerRecoModuleBase
    User defined class ShowerRecoModuleBase ... these comments are used to generate
@@ -127,8 +127,8 @@ namespace showerreco {
 
     
     // get the average theta & phi
-    double theta, phi = 0.;
-    double theta_err, phi_err = 0.;
+    double theta = 0., phi = 0.;
+    double theta_err = 0., phi_err = 0.;
     // if no values actually used -> return
     if (theta_v.size() == 0)
       return;

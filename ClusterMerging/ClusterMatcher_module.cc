@@ -25,8 +25,8 @@
 
 #include "art/Utilities/make_tool.h"
 
-#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/ClusterMaker.h"
-#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CMatchManager.h"
+#include "ubreco/ShowerReco/ClusterMerging/CMToolBase/ClusterMaker.h"
+#include "ubreco/ShowerReco/ClusterMerging/CMToolBase/CMatchManager.h"
 
 #include <memory>
 

@@ -1,5 +1,5 @@
 // base class
-#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CFloatAlgoBase.h"
+#include "ubreco/ShowerReco/ClusterMerging/CMToolBase/CFloatAlgoBase.h"
 
 
 

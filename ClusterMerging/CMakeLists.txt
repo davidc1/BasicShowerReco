@@ -6,7 +6,7 @@ art_make(
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 			cetlib cetlib_except
-                   	larpandora_LArPandoraInterface	
+                   	#larpandora_LArPandoraInterface	
                         ${Boost_SYSTEM_LIBRARY}
 			${ROOT_BASIC_LIB_LIST}
 			larcorealg_Geometry
@@ -15,9 +15,9 @@ art_make(
 			lardataobj_MCBase
 			larcore_Geometry_Geometry_service
           MODULE_LIBRARIES 
-			uboone_BasicShowerReco_ClusterMerging_CMToolBase
-			uboone_BasicShowerReco_ClusterMerging_CMToolApp
-		   	larpandora_LArPandoraInterface	
+			ubreco_ShowerReco_ClusterMerging_CMToolBase
+			ubreco_ShowerReco_ClusterMerging_CMToolApp
+		   	#larpandora_LArPandoraInterface	
 			larcorealg_Geometry
 			larcore_Geometry_Geometry_service
 			lardataobj_RecoBase
@@ -58,6 +58,5 @@ add_subdirectory(CMTAlgPriority)
 add_subdirectory(CMToolApp)
 
 install_headers()
-install_fhicl()
 install_source()
 

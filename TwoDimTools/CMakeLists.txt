@@ -5,7 +5,7 @@ art_make(
 			art_Framework_Services_Registry
 			art_Framework_Principal ${ART_FRAMEWORK_CORE}
 			larcorealg_Geometry lardataobj_RecoBase
-			uboone_Geometry
+			larcorealg_Geometry
 			larcore_Geometry_Geometry_service
 			art_Utilities canvas ${MF_MESSAGELOGGER}
 			${MF_UTILITIES} ${CETLIB}
@@ -18,6 +18,5 @@ art_make(
         )
 
 install_headers()
-install_fhicl()
 install_source()
 

@@ -1,6 +1,6 @@
 art_make(
           LIB_LIBRARIES
-			uboone_BasicShowerReco_TwoDimTools
+			ubreco_ShowerReco_TwoDimTools
 			art_Framework_Core
 			art_Framework_Services_Registry
 			art_Framework_Principal
@@ -8,7 +8,7 @@ art_make(
 			${ART_FRAMEWORK_CORE}
 			larcorealg_Geometry	
 			lardata_Utilities # added now
-		   	uboone_Geometry		
+		   	#uboone_Geometry		
 			larcore_Geometry_Geometry_service	
 			art_Utilities canvas
                         ${MF_MESSAGELOGGER}
@@ -52,6 +52,5 @@ art_make(
 
 
 install_headers()
-install_fhicl()
 install_source()
 

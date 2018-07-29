@@ -15,8 +15,8 @@
 #define CMERGEHELPER_H
 
 #include <iostream>
-#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/CMergeManager.h"
-#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/ClusterMaker.h"
+#include "ubreco/ShowerReco/ClusterMerging/CMToolBase/CMergeManager.h"
+#include "ubreco/ShowerReco/ClusterMerging/CMToolBase/ClusterMaker.h"
 
 namespace clusmtool {
   /**

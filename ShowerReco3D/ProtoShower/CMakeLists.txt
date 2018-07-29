@@ -7,12 +7,12 @@ art_make(
 			${ART_FRAMEWORK_CORE}
 			larcorealg_Geometry	
 			lardataobj_RecoBase
-		   	uboone_Geometry		
+		   	larcorealg_Geometry		
 			larcore_Geometry_Geometry_service	
 			art_Utilities canvas
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}
-                        ${CETLIB}
+                        ${CETLIB} cetlib_except
                         ${Boost_SYSTEM_LIBRARY}
                         ${ROOT_BASIC_LIB_LIST}
 		   	${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -22,6 +22,5 @@ art_make(
 
 
 install_headers()
-install_fhicl()
 install_source()
 

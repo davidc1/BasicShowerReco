@@ -29,11 +29,11 @@
 
 #include "lardata/Utilities/FindManyInChainP.h"
 
-#include "uboone/BasicShowerReco/TwoDimTools/Linearity.h"
-#include "uboone/BasicShowerReco/TwoDimTools/Poly2D.h"
+#include "ubreco/ShowerReco/TwoDimTools/Linearity.h"
+#include "ubreco/ShowerReco/TwoDimTools/Poly2D.h"
 
-#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/Cluster.h"
-#include "uboone/BasicShowerReco/ClusterMerging/CMToolBase/ClusterMaker.h"
+#include "ubreco/ShowerReco/ClusterMerging/CMToolBase/Cluster.h"
+#include "ubreco/ShowerReco/ClusterMerging/CMToolBase/ClusterMaker.h"
 
 #include "art/Persistency/Common/PtrMaker.h"
 

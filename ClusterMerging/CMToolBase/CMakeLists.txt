@@ -1,26 +1,26 @@
 art_make(
           LIB_LIBRARIES
-			uboone_BasicShowerReco_TwoDimTools
+			ubreco_ShowerReco_TwoDimTools
 			art_Framework_Core
 			art_Framework_Services_Registry
 			art_Framework_Principal
 			lardataobj_RecoBase
 			${ART_FRAMEWORK_CORE}
-			larcorealg_Geometry	
+			larcorealg_Geometry
 			lardata_Utilities # added now
-		   	uboone_Geometry		
+		   	#uboone_Geometry		
 			larcore_Geometry_Geometry_service	
 			art_Utilities canvas
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}
-                        ${CETLIB}
+                        ${CETLIB} cetlib_except
 			${Boost_FILESYSTEM_LIBRARY}
                         ${Boost_SYSTEM_LIBRARY}
                         ${ROOT_BASIC_LIB_LIST}
 		   	${ART_FRAMEWORK_SERVICES_REGISTRY}
 		   	${ART_FRAMEWORK_SERVICES_OPTIONAL}
           TOOL_LIBRARIES  
-			  uboone_BasicShowerReco_TwoDimTools
+			  ubreco_ShowerReco_TwoDimTools
                           lardata_Utilities_LArFFT_service
                           larcorealg_Geometry
 			  larevt_CalibrationDBI_IOVData
@@ -44,7 +44,7 @@ art_make(
 			  ${MF_MESSAGELOGGER}
 			  ${MF_UTILITIES}
 			  ${FHICLCPP}
-			  ${CETLIB}
+			  ${CETLIB} cetlib_except
 			  ${Boost_FILESYSTEM_LIBRARY}
 			  ${Boost_SYSTEM_LIBRARY}
                           ${CLHEP}
@@ -53,6 +53,5 @@ art_make(
 
 
 install_headers()
-install_fhicl()
 install_source()
 

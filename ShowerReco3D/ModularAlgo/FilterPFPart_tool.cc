@@ -2,7 +2,7 @@
 #define FILTERPFPART_CXX
 
 #include <iostream>
-#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
+#include "ubreco/ShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 
 #include <sstream>
 

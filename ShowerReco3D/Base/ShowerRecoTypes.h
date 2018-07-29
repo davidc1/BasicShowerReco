@@ -4,7 +4,7 @@
 #include <TVector3.h>
 #include <vector>
 
-#include "uboone/BasicShowerReco/ShowerReco3D/ProtoShower/ProtoShower.h"
+#include "ubreco/ShowerReco/ShowerReco3D/ProtoShower/ProtoShower.h"
 
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/GeometryCore.h"

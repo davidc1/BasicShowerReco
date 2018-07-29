@@ -16,8 +16,8 @@
 
 #include <iostream>
 
-#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoTypes.h"
-#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoException.h"
+#include "ubreco/ShowerReco/ShowerReco3D/Base/ShowerRecoTypes.h"
+#include "ubreco/ShowerReco/ShowerReco3D/Base/ShowerRecoException.h"
 
 #include "larcore/Geometry/Geometry.h"
 #include "lardata/Utilities/GeometryUtilities.h"

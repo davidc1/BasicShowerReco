@@ -1,6 +1,6 @@
 art_make(
           LIB_LIBRARIES
-			uboone_BasicShowerReco_ClusterMerging_CMToolBase
+			ubreco_ShowerReco_ClusterMerging_CMToolBase
 			art_Framework_Core
 			art_Framework_Services_Registry
 			art_Framework_Principal
@@ -8,12 +8,12 @@ art_make(
 			${ART_FRAMEWORK_CORE}
 			larcorealg_Geometry	
 			lardata_Utilities # added now
-		   	uboone_Geometry		
+		   	#uboone_Geometry		
 			larcore_Geometry_Geometry_service	
 			art_Utilities canvas
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}
-                        ${CETLIB}
+                        ${CETLIB} cetlib_except
                         ${Boost_SYSTEM_LIBRARY}
                         ${ROOT_BASIC_LIB_LIST}
 		   	${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -23,6 +23,5 @@ art_make(
 
 
 install_headers()
-install_fhicl()
 install_source()
 

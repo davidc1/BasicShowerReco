@@ -2,7 +2,7 @@
 #define ANGLE3DFROMVERTEX_CXX
 
 #include <iostream>
-#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
+#include "ubreco/ShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 /**
    \class ShowerRecoModuleBase
    User defined class ShowerRecoModuleBase ... these comments are used to generate

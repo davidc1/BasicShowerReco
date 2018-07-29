@@ -2,10 +2,10 @@
 #define DEDXMODULE_CXX
 
 #include <iostream>
-#include "uboone/BasicShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
+#include "ubreco/ShowerReco/ShowerReco3D/Base/ShowerRecoModuleBase.h"
 
-#include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibService.h"
-#include "uboone/Database/TPCEnergyCalib/TPCEnergyCalibProvider.h"
+//#include "ubreco/Database/TPCEnergyCalib/TPCEnergyCalibService.h"
+//#include "ubreco/Database/TPCEnergyCalib/TPCEnergyCalibProvider.h"
 
 #include "TTree.h"
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -38,8 +38,10 @@ namespace showerreco {
     // distance along which to calculate dEdx
     double _dtrunk;
 
+    /*
     float ChargeCorrection(const double& q, const double& w, const double& t, const TVector3& dir, const TVector3& vtx,
 			   const int& pl, const lariov::TPCEnergyCalibProvider& energyCalibProvider);
+    */
 
     // debugging tree
     TTree* _dedx_tree;
@@ -127,7 +129,7 @@ namespace showerreco {
     _py = dir3D[1];
     _pz = dir3D[2];
 
-    auto const& geomH = ::util::GeometryUtilities();
+    // unused auto const& geomH = ::util::GeometryUtilities();
 
     // loop through planes
     for (size_t n = 0; n < clusters.size(); n++) {
@@ -248,6 +250,7 @@ namespace showerreco {
     return;
   }
 
+  /*
   float dEdxModule::ChargeCorrection(const double& q, const double& w, const double& t, const TVector3& dir, const TVector3& vtx,
 				     const int& pl, const lariov::TPCEnergyCalibProvider& energyCalibProvider){
 
@@ -269,6 +272,7 @@ namespace showerreco {
 
     return yzcorrection * xcorrection;
   }
+  */
 
   DEFINE_ART_CLASS_TOOL(dEdxModule)
 } //showerreco
